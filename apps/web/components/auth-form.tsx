@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { FormEvent, useMemo, useState } from 'react';
 import {
   authStorage,
@@ -18,7 +17,6 @@ interface AuthFormProps {
 }
 
 export function AuthForm({ mode }: AuthFormProps) {
-  const router = useRouter();
   const { language } = useLanguage();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -103,14 +101,14 @@ export function AuthForm({ mode }: AuthFormProps) {
       setSuccessMessage(
         isRegister
           ? isArabic
-            ? 'تم إنشاء الحساب بنجاح. يتم تحويلك إلى صفحة الحساب...'
-            : 'Account created successfully. Redirecting to your account...'
+            ? 'تم إنشاء الحساب بنجاح. يتم تحويلك إلى الصفحة الرئيسية...'
+            : 'Account created successfully. Redirecting to the home page...'
           : isArabic
-            ? 'تم تسجيل الدخول بنجاح. يتم تحويلك إلى صفحة الحساب...'
-            : 'Login successful. Redirecting to your account...',
+            ? 'تم تسجيل الدخول بنجاح. يتم تحويلك إلى الصفحة الرئيسية...'
+            : 'Login successful. Redirecting to the home page...',
       );
-      router.push('/account');
-      router.refresh();
+      window.location.replace('/');
+      return;
     } catch (submissionError) {
       setError(
         submissionError instanceof Error
