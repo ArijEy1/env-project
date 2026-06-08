@@ -235,6 +235,49 @@ export class AssessmentService {
     return this.getById(assessmentId, userId);
   }
 
+  async getReportData(assessmentId: string, userId: string) {
+    const entityId = await this.getEntityId(userId);
+    const row = await this.findAssessment(assessmentId);
+
+    if (!row) {
+      throw new NotFoundException('Assessment not found');
+    }
+    if (row.entity_id !== entityId) {
+      throw new ForbiddenException('You do not have access to this assessment');
+    }
+    if (row.status !== 'submitted') {
+      throw new BadRequestException('Report is only available for submitted assessments');
+    }
+
+    const entity = await this.findEntityById(entityId);
+    const answers = await this.db.query<{ question_id: string; score: number }>(
+      'SELECT question_id, score FROM assessment_answers WHERE assessment_id = $1',
+      [assessmentId],
+    );
+
+    const recommendations = generateRecommendations(
+      answers.rows.map((a) => ({ questionId: a.question_id, score: a.score })),
+    );
+
+    return {
+      entityNameAr: entity?.name_ar ?? '',
+      entityNameEn: entity?.name_en ?? null,
+      submittedAt: row.submitted_at ? this.toIso(row.submitted_at) : new Date().toISOString(),
+      totalScore: row.total_score ? Number(row.total_score) : 0,
+      governanceScore: row.governance_score ? Number(row.governance_score) : 0,
+      complianceScore: row.compliance_score ? Number(row.compliance_score) : 0,
+      maturityLevel: row.maturity_level ?? 1,
+      recommendations: recommendations.map((r) => ({
+        rank: r.rank,
+        questionTextAr: r.questionTextAr,
+        score: r.score,
+        actionAr: r.actionAr,
+        impactAr: r.impactAr,
+        referenceAr: r.referenceAr,
+      })),
+    };
+  }
+
   async getRecommendations(assessmentId: string, userId: string): Promise<Recommendation[]> {
     const entityId = await this.getEntityId(userId);
     const row = await this.findAssessment(assessmentId);
@@ -257,6 +300,14 @@ export class AssessmentService {
     return generateRecommendations(
       answers.rows.map((a) => ({ questionId: a.question_id, score: a.score })),
     );
+  }
+
+  private async findEntityById(entityId: string) {
+    const result = await this.db.query<{ name_ar: string; name_en: string | null }>(
+      'SELECT name_ar, name_en FROM entities WHERE id = $1',
+      [entityId],
+    );
+    return result.rows[0] ?? null;
   }
 
   private async findAssessment(id: string) {
