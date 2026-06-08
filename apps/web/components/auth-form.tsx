@@ -8,6 +8,7 @@ import {
   registerUser,
   type AuthResponse,
 } from '../lib/auth-client';
+import { translateError } from '../lib/error-messages';
 import { useLanguage } from './language-provider';
 
 type AuthMode = 'login' | 'register';
@@ -168,7 +169,7 @@ export function AuthForm({ mode }: AuthFormProps) {
     } catch (submissionError) {
       setError(
         submissionError instanceof Error
-          ? submissionError.message
+          ? translateError(submissionError.message, isArabic)
           : isArabic ? 'تعذر تنفيذ طلبك حاليًا.' : 'Unable to process your request right now.',
       );
     } finally {
