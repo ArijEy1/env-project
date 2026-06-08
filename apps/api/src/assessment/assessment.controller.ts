@@ -1,10 +1,11 @@
-import { Body, Controller, Get, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
-import { Request } from 'express';
+import { Body, Controller, Get, Param, Post, Put, Req, Res, UseGuards } from '@nestjs/common';
+import { Request, Response } from 'express';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { AssessmentService } from './assessment.service';
 import { SaveAnswerDto } from './dto/save-answer.dto';
 import { UpdateProgressDto } from './dto/update-progress.dto';
+import { generatePdfReport, generateReferenceNumber } from './pdf-report';
 
 type AuthenticatedRequest = Request & { user: JwtPayload };
 
@@ -32,6 +33,23 @@ export class AssessmentController {
   @Get(':id/recommendations')
   getRecommendations(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
     return this.assessmentService.getRecommendations(id, req.user.sub);
+  }
+
+  @Get(':id/report')
+  async getReport(
+    @Param('id') id: string,
+    @Req() req: AuthenticatedRequest,
+    @Res() res: Response,
+  ) {
+    const data = await this.assessmentService.getReportData(id, req.user.sub);
+    const referenceNumber = generateReferenceNumber(data.submittedAt);
+    const reportData = { ...data, referenceNumber };
+    const doc = generatePdfReport(reportData);
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${referenceNumber}.pdf"`);
+    doc.pipe(res);
+    doc.end();
   }
 
   @Get(':id')
