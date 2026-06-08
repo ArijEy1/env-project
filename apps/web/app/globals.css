@@ -3157,8 +3157,8 @@ body[data-language='en'] .wizard-domain-badge {
   display: flex;
   gap: 6px;
   align-items: center;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+  flex-wrap: nowrap;
+  flex-direction: row;
 }
 
 .admin-action-link {
