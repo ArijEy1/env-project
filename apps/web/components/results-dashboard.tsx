@@ -5,6 +5,7 @@ import { getAssessment, fetchRecommendations, downloadReport, type Assessment, t
 import { fetchProfile, authStorage, type AuthUser } from '../lib/auth-client';
 import { translateError } from '../lib/error-messages';
 import { useLanguage } from './language-provider';
+import { useToast } from './toast-provider';
 import { ScoreDonut } from './score-donut';
 
 interface ResultsDashboardProps {
@@ -34,6 +35,7 @@ const DOMAIN_INFO: Record<string, { ar: string; en: string; weight: number }> = 
 
 export function ResultsDashboard({ assessmentId }: ResultsDashboardProps) {
   const { language } = useLanguage();
+  const { showToast } = useToast();
   const isArabic = language === 'ar';
 
   const [assessment, setAssessment] = useState<Assessment | null>(null);
@@ -70,7 +72,9 @@ export function ResultsDashboard({ assessmentId }: ResultsDashboardProps) {
           setRecommendations(recs);
         }
       } catch (err) {
-        setError(err instanceof Error ? translateError(err.message, isArabic) : isArabic ? 'فشل تحميل النتائج' : 'Failed to load results');
+        const errorMessage = err instanceof Error ? translateError(err.message, isArabic) : isArabic ? 'فشل تحميل النتائج' : 'Failed to load results';
+        setError(errorMessage);
+        showToast(errorMessage, 'error');
       } finally {
         setIsLoading(false);
       }
@@ -111,8 +115,11 @@ export function ResultsDashboard({ assessmentId }: ResultsDashboardProps) {
     setDownloading(true);
     try {
       await downloadReport(assessmentId);
+      showToast(isArabic ? 'تم تحميل التقرير' : 'Report downloaded', 'success');
     } catch (err) {
-      setError(err instanceof Error ? translateError(err.message, isArabic) : isArabic ? 'فشل تحميل التقرير' : 'Failed to download report');
+      const errorMessage = err instanceof Error ? translateError(err.message, isArabic) : isArabic ? 'فشل تحميل التقرير' : 'Failed to download report';
+      setError(errorMessage);
+      showToast(errorMessage, 'error');
     } finally {
       setDownloading(false);
     }

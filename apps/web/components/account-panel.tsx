@@ -12,9 +12,11 @@ import {
 import { listAssessments, type AssessmentListItem } from '../lib/assessment-client';
 import { translateError } from '../lib/error-messages';
 import { useLanguage } from './language-provider';
+import { useToast } from './toast-provider';
 
 export function AccountPanel() {
   const { language } = useLanguage();
+  const { showToast } = useToast();
   const [user, setUser] = useState<AuthUser | null>(null);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -77,6 +79,7 @@ export function AccountPanel() {
     localStorage.removeItem(authStorage.userKey);
     setUser(null);
     setError(isArabic ? 'تم إنهاء الجلسة.' : 'Session cleared.');
+    showToast(isArabic ? 'تم تسجيل الخروج' : 'Logged out', 'info');
   }
 
   function startEditProfile() {
@@ -112,8 +115,11 @@ export function AccountPanel() {
       setUser(updated);
       localStorage.setItem(authStorage.userKey, JSON.stringify(updated));
       setEditingProfile(false);
+      showToast(isArabic ? 'تم تحديث الملف الشخصي' : 'Profile updated', 'success');
     } catch (err) {
-      setError(err instanceof Error ? translateError(err.message, isArabic) : isArabic ? 'فشل التحديث.' : 'Update failed.');
+      const errorMessage = err instanceof Error ? translateError(err.message, isArabic) : isArabic ? 'فشل التحديث.' : 'Update failed.';
+      setError(errorMessage);
+      showToast(errorMessage, 'error');
     } finally {
       setSaving(false);
     }
@@ -133,8 +139,11 @@ export function AccountPanel() {
       });
       setUser((prev) => prev ? { ...prev, entity: updatedEntity } : prev);
       setEditingEntity(false);
+      showToast(isArabic ? 'تم تحديث بيانات المنشأة' : 'Entity updated', 'success');
     } catch (err) {
-      setError(err instanceof Error ? translateError(err.message, isArabic) : isArabic ? 'فشل التحديث.' : 'Update failed.');
+      const errorMessage = err instanceof Error ? translateError(err.message, isArabic) : isArabic ? 'فشل التحديث.' : 'Update failed.';
+      setError(errorMessage);
+      showToast(errorMessage, 'error');
     } finally {
       setSaving(false);
     }

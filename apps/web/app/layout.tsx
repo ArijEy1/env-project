@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Noto_Sans_Arabic } from 'next/font/google';
 import { LanguageProvider } from '../components/language-provider';
 import { Navbar } from '../components/navbar';
+import { ToastProvider } from '../components/toast-provider';
 import './globals.css';
 
 const notoSansArabic = Noto_Sans_Arabic({
@@ -25,8 +26,10 @@ export default function RootLayout({
     <html dir="rtl" lang="ar">
       <body className={notoSansArabic.variable}>
         <LanguageProvider>
-          <Navbar />
-          {children}
+          <ToastProvider>
+            <Navbar />
+            {children}
+          </ToastProvider>
         </LanguageProvider>
       </body>
     </html>

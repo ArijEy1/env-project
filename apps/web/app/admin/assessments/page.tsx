@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { AdminLayout } from '../../../components/admin-layout';
 import { fetchAdminAssessments, downloadAdminReport, type AdminAssessment } from '../../../lib/admin-client';
 import { useLanguage } from '../../../components/language-provider';
+import { useToast } from '../../../components/toast-provider';
 
 const MATURITY_LABELS: Record<number, { ar: string; en: string }> = {
   1: { ar: 'مبتدئ', en: 'Beginning' },
@@ -19,6 +20,7 @@ const MATURITY_COLORS: Record<number, string> = {
 
 export default function AdminAssessmentsPage() {
   const { language } = useLanguage();
+  const { showToast } = useToast();
   const isArabic = language === 'ar';
   const [assessments, setAssessments] = useState<AdminAssessment[]>([]);
   const [error, setError] = useState('');
@@ -28,7 +30,11 @@ export default function AdminAssessmentsPage() {
   const [levelFilter, setLevelFilter] = useState('');
 
   useEffect(() => {
-    fetchAdminAssessments().then(setAssessments).catch((err: unknown) => setError(err instanceof Error ? err.message : 'Error'));
+    fetchAdminAssessments().then(setAssessments).catch((err: unknown) => {
+      const errorMessage = err instanceof Error ? err.message : 'Error';
+      setError(errorMessage);
+      showToast(errorMessage, 'error');
+    });
   }, []);
 
   const filtered = useMemo(() => {
@@ -47,8 +53,11 @@ export default function AdminAssessmentsPage() {
     setDownloading(id);
     try {
       await downloadAdminReport(id);
+      showToast(isArabic ? 'تم تحميل التقرير' : 'Report downloaded', 'success');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Download failed');
+      const errorMessage = err instanceof Error ? err.message : 'Download failed';
+      setError(errorMessage);
+      showToast(errorMessage, 'error');
     } finally {
       setDownloading(null);
     }

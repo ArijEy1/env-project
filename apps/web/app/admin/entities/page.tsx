@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { AdminLayout } from '../../../components/admin-layout';
 import { fetchAdminEntities, type AdminEntity } from '../../../lib/admin-client';
 import { useLanguage } from '../../../components/language-provider';
+import { useToast } from '../../../components/toast-provider';
 
 const SECTOR_LABELS: Record<string, { ar: string; en: string }> = {
   industrial: { ar: 'صناعي', en: 'Industrial' },
@@ -19,6 +20,7 @@ const SECTOR_LABELS: Record<string, { ar: string; en: string }> = {
 
 export default function AdminEntitiesPage() {
   const { language } = useLanguage();
+  const { showToast } = useToast();
   const isArabic = language === 'ar';
   const [entities, setEntities] = useState<AdminEntity[]>([]);
   const [error, setError] = useState('');
@@ -27,7 +29,11 @@ export default function AdminEntitiesPage() {
   const [cityFilter, setCityFilter] = useState('');
 
   useEffect(() => {
-    fetchAdminEntities().then(setEntities).catch((err: unknown) => setError(err instanceof Error ? err.message : 'Error'));
+    fetchAdminEntities().then(setEntities).catch((err: unknown) => {
+      const errorMessage = err instanceof Error ? err.message : 'Error';
+      setError(errorMessage);
+      showToast(errorMessage, 'error');
+    });
   }, []);
 
   const cities = useMemo(() => [...new Set(entities.map((e) => e.city))].sort(), [entities]);

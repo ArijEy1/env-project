@@ -10,6 +10,7 @@ import {
 } from '../lib/auth-client';
 import { translateError } from '../lib/error-messages';
 import { useLanguage } from './language-provider';
+import { useToast } from './toast-provider';
 
 type AuthMode = 'login' | 'register';
 
@@ -40,6 +41,7 @@ const EMPLOYEE_BRACKETS = [
 
 export function AuthForm({ mode }: AuthFormProps) {
   const { language } = useLanguage();
+  const { showToast } = useToast();
   const isArabic = language === 'ar';
   const isRegister = mode === 'register';
 
@@ -164,14 +166,20 @@ export function AuthForm({ mode }: AuthFormProps) {
           ? isArabic ? 'تم إنشاء الحساب بنجاح. يتم تحويلك...' : 'Account created. Redirecting...'
           : isArabic ? 'تم تسجيل الدخول بنجاح. يتم تحويلك...' : 'Login successful. Redirecting...',
       );
+      showToast(
+        isRegister
+          ? (isArabic ? 'تم إنشاء الحساب بنجاح' : 'Account created successfully')
+          : (isArabic ? 'تم تسجيل الدخول بنجاح' : 'Login successful'),
+        'success',
+      );
       window.location.replace('/account');
       return;
     } catch (submissionError) {
-      setError(
-        submissionError instanceof Error
-          ? translateError(submissionError.message, isArabic)
-          : isArabic ? 'تعذر تنفيذ طلبك حاليًا.' : 'Unable to process your request right now.',
-      );
+      const translatedError = submissionError instanceof Error
+        ? translateError(submissionError.message, isArabic)
+        : isArabic ? 'تعذر تنفيذ طلبك حاليًا.' : 'Unable to process your request right now.';
+      setError(translatedError);
+      showToast(translatedError, 'error');
     } finally {
       setIsSubmitting(false);
     }

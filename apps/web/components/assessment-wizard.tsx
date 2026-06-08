@@ -12,6 +12,7 @@ import {
 } from '../lib/assessment-client';
 import { translateError } from '../lib/error-messages';
 import { useLanguage } from './language-provider';
+import { useToast } from './toast-provider';
 
 interface AssessmentWizardProps {
   assessmentId: string;
@@ -19,6 +20,7 @@ interface AssessmentWizardProps {
 
 export function AssessmentWizard({ assessmentId }: AssessmentWizardProps) {
   const { language } = useLanguage();
+  const { showToast } = useToast();
   const isArabic = language === 'ar';
 
   const [questionsData, setQuestionsData] = useState<QuestionsData | null>(null);
@@ -163,6 +165,7 @@ export function AssessmentWizard({ assessmentId }: AssessmentWizardProps) {
       // Save to localStorage as fallback
       setPendingAnswer(question.id, score);
       setSaveStatus('failed');
+      showToast(isArabic ? 'فشل الحفظ — محفوظ محلياً' : 'Save failed — saved locally', 'error');
     } finally {
       setSaving(false);
     }
@@ -200,9 +203,12 @@ export function AssessmentWizard({ assessmentId }: AssessmentWizardProps) {
     setError('');
     try {
       await submitAssessment(assessmentId);
+      showToast(isArabic ? 'تم إرسال التقييم بنجاح' : 'Assessment submitted successfully', 'success');
       window.location.replace(`/assessment/${assessmentId}/results`);
     } catch (err) {
-      setError(err instanceof Error ? translateError(err.message, isArabic) : isArabic ? 'فشل إرسال التقييم' : 'Failed to submit');
+      const errorMessage = err instanceof Error ? translateError(err.message, isArabic) : isArabic ? 'فشل إرسال التقييم' : 'Failed to submit';
+      setError(errorMessage);
+      showToast(errorMessage, 'error');
       setShowConfirm(false);
     } finally {
       setSubmitting(false);

@@ -4,15 +4,21 @@ import { useEffect, useState } from 'react';
 import { AdminLayout } from '../../components/admin-layout';
 import { fetchAdminStats, type AdminStats } from '../../lib/admin-client';
 import { useLanguage } from '../../components/language-provider';
+import { useToast } from '../../components/toast-provider';
 
 export default function AdminDashboardPage() {
   const { language } = useLanguage();
+  const { showToast } = useToast();
   const isArabic = language === 'ar';
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetchAdminStats().then(setStats).catch((err: unknown) => setError(err instanceof Error ? err.message : 'Error'));
+    fetchAdminStats().then(setStats).catch((err: unknown) => {
+      const errorMessage = err instanceof Error ? err.message : 'Error';
+      setError(errorMessage);
+      showToast(errorMessage, 'error');
+    });
   }, []);
 
   return (
