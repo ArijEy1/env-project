@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AdminLayout } from '../../../components/admin-layout';
 import { fetchAdminAssessments, downloadAdminReport, type AdminAssessment } from '../../../lib/admin-client';
 import { useLanguage } from '../../../components/language-provider';
@@ -23,10 +23,25 @@ export default function AdminAssessmentsPage() {
   const [assessments, setAssessments] = useState<AdminAssessment[]>([]);
   const [error, setError] = useState('');
   const [downloading, setDownloading] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [levelFilter, setLevelFilter] = useState('');
 
   useEffect(() => {
     fetchAdminAssessments().then(setAssessments).catch((err: unknown) => setError(err instanceof Error ? err.message : 'Error'));
   }, []);
+
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase();
+    return assessments.filter((a) => {
+      if (q && !a.entityNameAr.toLowerCase().includes(q) && !(a.entityNameEn ?? '').toLowerCase().includes(q) && !a.userFullName.toLowerCase().includes(q)) {
+        return false;
+      }
+      if (statusFilter && a.status !== statusFilter) return false;
+      if (levelFilter && String(a.maturityLevel) !== levelFilter) return false;
+      return true;
+    });
+  }, [assessments, search, statusFilter, levelFilter]);
 
   async function handleDownload(id: string) {
     setDownloading(id);
@@ -44,13 +59,40 @@ export default function AdminAssessmentsPage() {
       <AdminLayout>
         <div className="admin-page-header">
           <h1>{isArabic ? 'التقييمات' : 'Assessments'}</h1>
-          <p>{isArabic ? `${assessments.length} تقييم` : `${assessments.length} assessments`}</p>
+          <p>{isArabic ? `${filtered.length} من ${assessments.length} تقييم` : `${filtered.length} of ${assessments.length} assessments`}</p>
         </div>
 
         {error && <p className="auth-feedback auth-feedback-error">{error}</p>}
 
+        <div className="admin-filters">
+          <input
+            className="admin-search-input"
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={isArabic ? 'بحث بالمنشأة أو المستخدم...' : 'Search by entity or user...'}
+          />
+          <select className="admin-filter-select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+            <option value="">{isArabic ? 'جميع الحالات' : 'All statuses'}</option>
+            <option value="draft">{isArabic ? 'مسودة' : 'Draft'}</option>
+            <option value="submitted">{isArabic ? 'مكتمل' : 'Submitted'}</option>
+          </select>
+          <select className="admin-filter-select" value={levelFilter} onChange={(e) => setLevelFilter(e.target.value)}>
+            <option value="">{isArabic ? 'جميع المستويات' : 'All levels'}</option>
+            {[1, 2, 3, 4, 5].map((l) => {
+              const label = MATURITY_LABELS[l];
+              return <option key={l} value={l}>{l} — {isArabic ? label.ar : label.en}</option>;
+            })}
+          </select>
+          {(search || statusFilter || levelFilter) && (
+            <button className="admin-filter-clear" onClick={() => { setSearch(''); setStatusFilter(''); setLevelFilter(''); }} type="button">
+              {isArabic ? 'مسح' : 'Clear'}
+            </button>
+          )}
+        </div>
+
         <div className="admin-table-list">
-          {assessments.map((a) => {
+          {filtered.map((a) => {
             const levelLabel = MATURITY_LABELS[a.maturityLevel ?? 0];
             const levelColor = MATURITY_COLORS[a.maturityLevel ?? 0];
             return (
@@ -93,7 +135,7 @@ export default function AdminAssessmentsPage() {
                         disabled={downloading === a.id}
                         type="button"
                       >
-                        {downloading === a.id ? '...' : (isArabic ? 'PDF' : 'PDF')}
+                        {downloading === a.id ? '...' : 'PDF'}
                       </button>
                     </>
                   )}
@@ -101,9 +143,11 @@ export default function AdminAssessmentsPage() {
               </div>
             );
           })}
-          {assessments.length === 0 && !error && (
-            <p style={{ color: 'rgba(245,240,230,0.5)', textAlign: 'center', padding: '24px' }}>
-              {isArabic ? 'لا توجد تقييمات بعد' : 'No assessments yet'}
+          {filtered.length === 0 && !error && (
+            <p className="admin-empty-text">
+              {search || statusFilter || levelFilter
+                ? (isArabic ? 'لا توجد نتائج مطابقة' : 'No matching results')
+                : (isArabic ? 'لا توجد تقييمات بعد' : 'No assessments yet')}
             </p>
           )}
         </div>

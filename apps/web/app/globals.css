@@ -3101,6 +3101,85 @@ body[data-language='en'] .wizard-domain-badge {
   letter-spacing: 0.04em;
 }
 
+.admin-filters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.admin-search-input {
+  flex: 1;
+  min-width: 200px;
+  padding: 10px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  font-size: 0.9rem;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--white);
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.admin-search-input::placeholder {
+  color: rgba(207, 227, 221, 0.35);
+}
+
+.admin-search-input:focus {
+  border-color: rgba(216, 177, 108, 0.4);
+}
+
+.admin-filter-select {
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  font-size: 0.85rem;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--white);
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  padding-inline-end: 32px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(207,227,221,0.5)' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: calc(100% - 12px) center;
+}
+
+body[data-language='en'] .admin-filter-select {
+  background-position: calc(100% - 12px) center;
+}
+
+.admin-filter-select:focus {
+  border-color: rgba(216, 177, 108, 0.4);
+}
+
+.admin-filter-select option {
+  background: #0f3d48;
+  color: var(--white);
+}
+
+.admin-filter-clear {
+  padding: 10px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  font-size: 0.85rem;
+  background: rgba(226, 75, 74, 0.1);
+  color: #E24B4A;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  white-space: nowrap;
+}
+
+.admin-filter-clear:hover {
+  background: rgba(226, 75, 74, 0.2);
+}
+
+.admin-empty-text {
+  color: rgba(245, 240, 230, 0.5);
+  text-align: center;
+  padding: 24px;
+}
+
 .admin-table-list {
   display: flex;
   flex-direction: column;

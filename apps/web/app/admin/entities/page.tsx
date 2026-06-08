@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AdminLayout } from '../../../components/admin-layout';
 import { fetchAdminEntities, type AdminEntity } from '../../../lib/admin-client';
 import { useLanguage } from '../../../components/language-provider';
@@ -22,23 +22,67 @@ export default function AdminEntitiesPage() {
   const isArabic = language === 'ar';
   const [entities, setEntities] = useState<AdminEntity[]>([]);
   const [error, setError] = useState('');
+  const [search, setSearch] = useState('');
+  const [sectorFilter, setSectorFilter] = useState('');
+  const [cityFilter, setCityFilter] = useState('');
 
   useEffect(() => {
     fetchAdminEntities().then(setEntities).catch((err: unknown) => setError(err instanceof Error ? err.message : 'Error'));
   }, []);
+
+  const cities = useMemo(() => [...new Set(entities.map((e) => e.city))].sort(), [entities]);
+  const sectors = useMemo(() => [...new Set(entities.map((e) => e.sector))].sort(), [entities]);
+
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase();
+    return entities.filter((e) => {
+      if (q && !e.nameAr.toLowerCase().includes(q) && !(e.nameEn ?? '').toLowerCase().includes(q) && !e.crNumber.toLowerCase().includes(q)) {
+        return false;
+      }
+      if (sectorFilter && e.sector !== sectorFilter) return false;
+      if (cityFilter && e.city !== cityFilter) return false;
+      return true;
+    });
+  }, [entities, search, sectorFilter, cityFilter]);
 
   return (
     <main className="page-shell auth-background-page admin-background-page">
       <AdminLayout>
         <div className="admin-page-header">
           <h1>{isArabic ? 'المنشآت' : 'Entities'}</h1>
-          <p>{isArabic ? `${entities.length} منشأة مسجلة` : `${entities.length} registered entities`}</p>
+          <p>{isArabic ? `${filtered.length} من ${entities.length} منشأة` : `${filtered.length} of ${entities.length} entities`}</p>
         </div>
 
         {error && <p className="auth-feedback auth-feedback-error">{error}</p>}
 
+        <div className="admin-filters">
+          <input
+            className="admin-search-input"
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={isArabic ? 'بحث بالاسم أو رقم السجل...' : 'Search by name or CR number...'}
+          />
+          <select className="admin-filter-select" value={sectorFilter} onChange={(e) => setSectorFilter(e.target.value)}>
+            <option value="">{isArabic ? 'جميع القطاعات' : 'All sectors'}</option>
+            {sectors.map((s) => {
+              const label = SECTOR_LABELS[s] ?? { ar: s, en: s };
+              return <option key={s} value={s}>{isArabic ? label.ar : label.en}</option>;
+            })}
+          </select>
+          <select className="admin-filter-select" value={cityFilter} onChange={(e) => setCityFilter(e.target.value)}>
+            <option value="">{isArabic ? 'جميع المدن' : 'All cities'}</option>
+            {cities.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+          {(search || sectorFilter || cityFilter) && (
+            <button className="admin-filter-clear" onClick={() => { setSearch(''); setSectorFilter(''); setCityFilter(''); }} type="button">
+              {isArabic ? 'مسح' : 'Clear'}
+            </button>
+          )}
+        </div>
+
         <div className="admin-table-list">
-          {entities.map((e) => {
+          {filtered.map((e) => {
             const sector = SECTOR_LABELS[e.sector] ?? { ar: e.sector, en: e.sector };
             return (
               <div key={e.id} className="admin-table-row">
@@ -69,9 +113,11 @@ export default function AdminEntitiesPage() {
               </div>
             );
           })}
-          {entities.length === 0 && !error && (
-            <p style={{ color: 'rgba(245,240,230,0.5)', textAlign: 'center', padding: '24px' }}>
-              {isArabic ? 'لا توجد منشآت مسجلة بعد' : 'No entities registered yet'}
+          {filtered.length === 0 && !error && (
+            <p className="admin-empty-text">
+              {search || sectorFilter || cityFilter
+                ? (isArabic ? 'لا توجد نتائج مطابقة' : 'No matching results')
+                : (isArabic ? 'لا توجد منشآت مسجلة بعد' : 'No entities registered yet')}
             </p>
           )}
         </div>
