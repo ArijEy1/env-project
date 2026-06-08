@@ -2135,3 +2135,74 @@ body[data-language='en'] .session-badge {
   font-size: 12px;
   color: #6b8a82;
 }
+
+/* --- M1: Account page --- */
+.account-page-shell {
+  width: min(900px, calc(100% - 32px));
+  margin: 40px auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.account-card {
+  background: var(--white);
+  border-radius: 16px;
+  padding: 28px;
+  color: #17302c;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+}
+
+.account-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.account-card-header h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.account-edit-btn {
+  font-size: 13px;
+  padding: 6px 16px;
+}
+
+.account-edit-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.account-edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.account-edit-field span {
+  font-size: 13px;
+  color: #4d6761;
+}
+
+.account-edit-field input {
+  padding: 10px 14px;
+  border: 1px solid #d5ddd9;
+  border-radius: 10px;
+  font-size: 14px;
+  background: #f7fbf9;
+}
+
+.account-edit-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.account-logout-btn {
+  align-self: flex-start;
+}
