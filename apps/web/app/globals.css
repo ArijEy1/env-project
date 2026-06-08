@@ -2763,3 +2763,95 @@ body[data-language='en'] .wizard-domain-badge {
     grid-template-columns: 1fr;
   }
 }
+
+/* --- M5: Recommendations --- */
+.results-recommendations {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.results-section-title {
+  margin: 8px 0 0;
+  font-size: 1.15rem;
+  color: var(--white);
+}
+
+.results-rec-card {
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 24px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.results-rec-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.results-rec-rank {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(216, 177, 108, 0.2), rgba(216, 177, 108, 0.08));
+  border: 1px solid rgba(216, 177, 108, 0.2);
+  color: var(--sand);
+  font-weight: 800;
+  font-size: 0.95rem;
+}
+
+.results-rec-question {
+  flex: 1;
+}
+
+.results-rec-question-text {
+  margin: 0 0 6px;
+  color: var(--white);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.results-rec-score {
+  font-size: 0.8rem;
+  color: rgba(226, 75, 74, 0.9);
+  background: rgba(226, 75, 74, 0.1);
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.results-rec-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.results-rec-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.results-rec-label {
+  font-size: 0.78rem;
+  color: rgba(207, 227, 221, 0.55);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.results-rec-item p {
+  margin: 0;
+  color: rgba(245, 240, 230, 0.85);
+  font-size: 0.9rem;
+  line-height: 1.65;
+}
