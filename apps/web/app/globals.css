@@ -2999,8 +2999,8 @@ body[data-language='en'] .wizard-domain-badge {
   display: grid;
   grid-template-columns: 200px 1fr;
   gap: 24px;
-  width: calc(100% - 48px);
-  max-width: 1400px;
+  width: calc(100% - 32px);
+  max-width: 1600px;
   margin: 0 auto;
   min-height: calc(100vh - 160px);
 }
@@ -3188,7 +3188,7 @@ body[data-language='en'] .admin-filter-select {
 
 .admin-table-row {
   display: grid;
-  grid-template-columns: 1.5fr repeat(4, minmax(80px, 0.7fr)) 120px;
+  grid-template-columns: 1.5fr repeat(4, minmax(80px, 0.7fr)) 160px;
   align-items: center;
   gap: 12px;
   padding: 16px 20px;
