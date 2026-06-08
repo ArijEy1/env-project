@@ -15,13 +15,16 @@ export function Navbar() {
   const navigationId = useId();
 
   const isArabic = language === 'ar';
+  const isAuthenticated = hasSession === true;
 
   const links = [
     { href: '/', label: isArabic ? 'الرئيسية' : 'Home' },
     { href: '/#why-platform', label: isArabic ? 'لماذا الأداة؟' : 'Why It Works' },
     { href: '/#domains', label: isArabic ? 'مجالات التقييم' : 'Domains' },
     { href: '/#reports', label: isArabic ? 'التقارير' : 'Reports' },
-    { href: '/login', label: isArabic ? 'تسجيل الدخول' : 'Login' },
+    ...(!isAuthenticated
+      ? [{ href: '/login', label: isArabic ? 'تسجيل الدخول' : 'Login' }]
+      : []),
   ];
 
   useEffect(() => {
@@ -53,10 +56,6 @@ export function Navbar() {
 
   function closeMenu() {
     setIsMenuOpen(false);
-  }
-
-  if (!hasSession) {
-    return null;
   }
 
   return (
@@ -129,9 +128,9 @@ export function Navbar() {
             </button>
           </div>
           <span className={`session-badge${hasSession ? ' is-online' : ''}`}>
-            {hasSession ? (isArabic ? 'جلسة نشطة' : 'Active session') : isArabic ? 'زائر' : 'Guest'}
+            {isAuthenticated ? (isArabic ? 'جلسة نشطة' : 'Active session') : isArabic ? 'زائر' : 'Guest'}
           </span>
-          {hasSession ? (
+          {isAuthenticated ? (
             <button className="secondary-btn site-header-button" onClick={handleLogout} type="button">
               {isArabic ? 'تسجيل الخروج' : 'Logout'}
             </button>

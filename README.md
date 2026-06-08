@@ -11,18 +11,23 @@ Starter monorepo avec `NestJS` pour l'API et `Next.js` pour le frontend.
 
 - `POST /api/auth/register`
 - `POST /api/auth/login`
+- `POST /api/auth/forgot-password`
+- `POST /api/auth/reset-password`
 - `GET /api/auth/me`
 
 ## Pages frontend
 
 - `http://localhost:3000/register`
 - `http://localhost:3000/login`
+- `http://localhost:3000/forgot-password`
+- `http://localhost:3000/reset-password?token=...`
 - `http://localhost:3000/account`
 
 ## Variables d'environnement
 
 - Copier `apps/api/.env.example` vers `.env` si besoin côté API.
 - Copier `apps/web/.env.example` vers `.env.local` si besoin côté web.
+- Configurer SMTP côté API pour l'envoi du lien de réinitialisation.
 
 ## Lancement
 

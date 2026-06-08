@@ -93,7 +93,17 @@ export function AuthForm({ mode }: AuthFormProps) {
       }
 
       const response: AuthResponse = isRegister
-        ? await registerUser({ fullName: registerFullName, email, password: hasPasswordInput ? password : generatedPassword })
+        ? await registerUser({
+            firstName: firstName.trim(),
+            lastName: lastName.trim() || undefined,
+            fullName: registerFullName,
+            email,
+            phone: phone.trim() || undefined,
+            countryCode: countryCode.trim() || undefined,
+            entity: entity.trim() || undefined,
+            jobRole: jobRole.trim() || undefined,
+            password: hasPasswordInput ? password : generatedPassword,
+          })
         : await loginUser({ email, password });
 
       localStorage.setItem(authStorage.tokenKey, response.accessToken);
@@ -253,7 +263,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                 <span>{isArabic ? 'تذكرني' : 'Remember me'}</span>
               </label>
 
-              <Link className="login-forgot-link" href="/register">
+              <Link className="login-forgot-link" href="/forgot-password">
                 {isArabic ? 'نسيت كلمة المرور؟' : 'Forgot password?'}
               </Link>
             </div>

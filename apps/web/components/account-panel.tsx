@@ -90,6 +90,24 @@ export function AccountPanel() {
               <span>{isArabic ? 'البريد الإلكتروني' : 'Email'}</span>
               <strong>{user.email}</strong>
             </div>
+            {user.phone ? (
+              <div className="account-item">
+                <span>{isArabic ? 'رقم الجوال' : 'Mobile number'}</span>
+                <strong>{`${user.countryCode ?? ''} ${user.phone}`.trim()}</strong>
+              </div>
+            ) : null}
+            {user.entity ? (
+              <div className="account-item">
+                <span>{isArabic ? 'الجهة' : 'Entity'}</span>
+                <strong>{user.entity}</strong>
+              </div>
+            ) : null}
+            {user.jobRole ? (
+              <div className="account-item">
+                <span>{isArabic ? 'الدور الوظيفي' : 'Job role'}</span>
+                <strong>{user.jobRole}</strong>
+              </div>
+            ) : null}
             <div className="account-item">
               <span>{isArabic ? 'معرف المستخدم' : 'User ID'}</span>
               <strong>{user.id}</strong>

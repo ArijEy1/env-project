@@ -3,8 +3,14 @@ export const apiBaseUrl =
 
 export interface AuthUser {
   id: string;
+  firstName: string;
+  lastName: string | null;
   fullName: string;
   email: string;
+  phone: string | null;
+  countryCode: string | null;
+  entity: string | null;
+  jobRole: string | null;
   createdAt: string;
 }
 
@@ -14,14 +20,33 @@ export interface AuthResponse {
 }
 
 export interface RegisterPayload {
+  firstName: string;
+  lastName?: string;
   fullName: string;
   email: string;
+  phone?: string;
+  countryCode?: string;
+  entity?: string;
+  jobRole?: string;
   password: string;
 }
 
 export interface LoginPayload {
   email: string;
   password: string;
+}
+
+export interface ForgotPasswordPayload {
+  email: string;
+}
+
+export interface ResetPasswordPayload {
+  token: string;
+  password: string;
+}
+
+export interface ApiMessageResponse {
+  message: string;
 }
 
 interface ErrorPayload {
@@ -69,6 +94,20 @@ export function registerUser(payload: RegisterPayload) {
 
 export function loginUser(payload: LoginPayload) {
   return request<AuthResponse>('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export function requestPasswordReset(payload: ForgotPasswordPayload) {
+  return request<ApiMessageResponse>('/auth/forgot-password', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export function resetPassword(payload: ResetPasswordPayload) {
+  return request<ApiMessageResponse>('/auth/reset-password', {
     method: 'POST',
     body: JSON.stringify(payload),
   });

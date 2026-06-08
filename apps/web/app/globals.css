@@ -1091,7 +1091,8 @@ body[data-language='en'] .session-badge {
   background:
     linear-gradient(180deg, rgba(4, 22, 31, 0.52), rgba(4, 22, 31, 0.72)),
     radial-gradient(circle at top right, rgba(30, 122, 201, 0.26), transparent 28%),
-    url('/auth-city-bg.jpg') center/cover no-repeat;
+    radial-gradient(circle at bottom left, rgba(216, 177, 108, 0.18), transparent 24%),
+    linear-gradient(135deg, #0d3d43 0%, #114d58 42%, #0d2f33 100%);
   box-shadow: var(--shadow);
 }
 
@@ -1595,6 +1596,50 @@ body[data-language='en'] .session-badge {
   font-weight: 700;
 }
 
+.password-reset-shell {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: calc(100vh - 132px);
+}
+
+.password-reset-card {
+  width: min(640px, 100%);
+  padding: 32px;
+  border-radius: 28px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(248, 246, 241, 0.99));
+  border: 1px solid rgba(16, 73, 65, 0.1);
+  box-shadow: 0 18px 48px rgba(15, 49, 45, 0.08);
+}
+
+.password-reset-badge {
+  background: rgba(26, 106, 88, 0.1);
+  color: #1a6a58;
+}
+
+.password-reset-card h1 {
+  margin: 18px 0 12px;
+  color: #1d5148;
+  font-size: clamp(2rem, 4vw, 2.8rem);
+}
+
+.password-reset-description {
+  margin: 0 0 24px;
+  color: #6f857f;
+  line-height: 1.75;
+}
+
+.password-reset-form {
+  display: grid;
+  gap: 18px;
+}
+
+.password-reset-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-start;
+}
+
 .auth-form {
   display: grid;
   gap: 18px;
@@ -1963,9 +2008,18 @@ body[data-language='en'] .session-badge {
     flex-direction: column-reverse;
   }
 
+  .password-reset-actions {
+    flex-direction: column-reverse;
+  }
+
   .register-submit-button,
   .register-cancel-button {
     width: 100%;
+  }
+
+  .password-reset-card {
+    padding: 24px 20px;
+    border-radius: 22px;
   }
 
   .login-visual-panel,
