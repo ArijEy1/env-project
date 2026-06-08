@@ -9,6 +9,7 @@ import {
   updateProfile,
   type AuthUser,
 } from '../lib/auth-client';
+import { listAssessments, type AssessmentListItem } from '../lib/assessment-client';
 import { translateError } from '../lib/error-messages';
 import { useLanguage } from './language-provider';
 
@@ -20,6 +21,7 @@ export function AccountPanel() {
   const [editingProfile, setEditingProfile] = useState(false);
   const [editingEntity, setEditingEntity] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [assessments, setAssessments] = useState<AssessmentListItem[]>([]);
   const isArabic = language === 'ar';
 
   // Profile edit state
@@ -48,6 +50,12 @@ export function AccountPanel() {
         const profile = await fetchProfile(token);
         setUser(profile);
         localStorage.setItem(authStorage.userKey, JSON.stringify(profile));
+        try {
+          const assessmentList = await listAssessments();
+          setAssessments(assessmentList);
+        } catch {
+          // Non-critical, don't block account page
+        }
       } catch (profileError) {
         setError(
           profileError instanceof Error
@@ -181,6 +189,59 @@ export function AccountPanel() {
       </div>
 
       {error ? <p className="auth-feedback auth-feedback-error">{error}</p> : null}
+
+      {/* Assessment Card */}
+      <div className="account-card account-assessment-card">
+        <div className="account-card-header">
+          <h2>{isArabic ? 'التقييم البيئي' : 'Environmental Assessment'}</h2>
+        </div>
+        {(() => {
+          const draft = assessments.find((a) => a.status === 'draft');
+          const submitted = assessments.filter((a) => a.status === 'submitted');
+
+          return (
+            <>
+              {draft ? (
+                <div className="account-assessment-draft">
+                  <p className="account-assessment-draft-label">
+                    {isArabic ? 'لديك تقييم غير مكتمل' : 'You have an incomplete assessment'}
+                  </p>
+                  <div className="account-assessment-progress">
+                    <div className="account-assessment-progress-bar">
+                      <div className="account-assessment-progress-fill" style={{ width: `${(draft.answeredCount / draft.totalQuestions) * 100}%` }} />
+                    </div>
+                    <span className="account-assessment-progress-text">
+                      {draft.answeredCount} / {draft.totalQuestions}
+                    </span>
+                  </div>
+                  <a href={`/assessment/${draft.id}`} className="primary-btn account-assessment-btn">
+                    {isArabic ? 'متابعة التقييم' : 'Continue Assessment'}
+                  </a>
+                </div>
+              ) : (
+                <a href="/assessment/new" className="primary-btn account-assessment-btn">
+                  {isArabic ? 'بدء تقييم جديد' : 'Start New Assessment'}
+                </a>
+              )}
+              {submitted.length > 0 && (
+                <div className="account-assessment-history">
+                  <p className="account-assessment-history-label">
+                    {isArabic ? 'التقييمات السابقة' : 'Previous assessments'}
+                  </p>
+                  {submitted.map((a) => (
+                    <a key={a.id} href={`/assessment/${a.id}/results`} className="account-assessment-history-item">
+                      <span>{new Date(a.submittedAt!).toLocaleDateString(isArabic ? 'ar-SA' : 'en-US')}</span>
+                      <span className="account-assessment-history-score">
+                        {a.totalScore?.toFixed(1)} / 100
+                      </span>
+                    </a>
+                  ))}
+                </div>
+              )}
+            </>
+          );
+        })()}
+      </div>
 
       {/* Entity Card */}
       <div className="account-card">
