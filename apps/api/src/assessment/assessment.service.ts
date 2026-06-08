@@ -9,6 +9,7 @@ import { DatabaseService } from '../database/database.service';
 import { SaveAnswerDto } from './dto/save-answer.dto';
 import { UpdateProgressDto } from './dto/update-progress.dto';
 import { getQuestionById, TOTAL_QUESTIONS } from './questions';
+import { calculateScore } from './scoring';
 
 interface AssessmentRow {
   id: string;
@@ -16,6 +17,10 @@ interface AssessmentRow {
   user_id: string;
   status: string;
   current_question_index: number;
+  total_score: string | null;       // DECIMAL comes as string from pg
+  governance_score: string | null;
+  compliance_score: string | null;
+  maturity_level: number | null;
   created_at: Date | string;
   submitted_at: Date | string | null;
 }
@@ -63,7 +68,7 @@ export class AssessmentService {
     const entityId = await this.getEntityId(userId);
 
     const result = await this.db.query<AssessmentRow>(
-      `SELECT id, entity_id, user_id, status, current_question_index, created_at, submitted_at
+      `SELECT id, entity_id, user_id, status, current_question_index, total_score, governance_score, compliance_score, maturity_level, created_at, submitted_at
        FROM assessments WHERE entity_id = $1 ORDER BY created_at DESC`,
       [entityId],
     );
@@ -84,6 +89,10 @@ export class AssessmentService {
         submittedAt: row.submitted_at ? this.toIso(row.submitted_at) : null,
         answeredCount: Number(countResult.rows[0].count),
         totalQuestions: TOTAL_QUESTIONS,
+        totalScore: row.total_score ? Number(row.total_score) : null,
+        governanceScore: row.governance_score ? Number(row.governance_score) : null,
+        complianceScore: row.compliance_score ? Number(row.compliance_score) : null,
+        maturityLevel: row.maturity_level ?? null,
       });
     }
 
@@ -115,6 +124,10 @@ export class AssessmentService {
       currentQuestionIndex: row.current_question_index,
       createdAt: this.toIso(row.created_at),
       submittedAt: row.submitted_at ? this.toIso(row.submitted_at) : null,
+      totalScore: row.total_score ? Number(row.total_score) : null,
+      governanceScore: row.governance_score ? Number(row.governance_score) : null,
+      complianceScore: row.compliance_score ? Number(row.compliance_score) : null,
+      maturityLevel: row.maturity_level ?? null,
       answers: answers.rows.map((a) => ({
         questionId: a.question_id,
         score: a.score,
@@ -200,9 +213,22 @@ export class AssessmentService {
       );
     }
 
-    await this.db.query(
-      "UPDATE assessments SET status = 'submitted', submitted_at = NOW() WHERE id = $1",
+    // Fetch all answers for scoring
+    const answersResult = await this.db.query<AnswerRow>(
+      'SELECT question_id, score FROM assessment_answers WHERE assessment_id = $1',
       [assessmentId],
+    );
+
+    const scoreResult = calculateScore(
+      answersResult.rows.map((a) => ({ questionId: a.question_id, score: a.score })),
+    );
+
+    await this.db.query(
+      `UPDATE assessments
+       SET status = 'submitted', submitted_at = NOW(),
+           total_score = $1, governance_score = $2, compliance_score = $3, maturity_level = $4
+       WHERE id = $5`,
+      [scoreResult.totalScore, scoreResult.governanceScore, scoreResult.complianceScore, scoreResult.maturityLevel, assessmentId],
     );
 
     return this.getById(assessmentId, userId);
@@ -210,7 +236,7 @@ export class AssessmentService {
 
   private async findAssessment(id: string) {
     const result = await this.db.query<AssessmentRow>(
-      `SELECT id, entity_id, user_id, status, current_question_index, created_at, submitted_at
+      `SELECT id, entity_id, user_id, status, current_question_index, total_score, governance_score, compliance_score, maturity_level, created_at, submitted_at
        FROM assessments WHERE id = $1`,
       [id],
     );
