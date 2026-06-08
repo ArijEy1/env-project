@@ -152,10 +152,25 @@ export class DatabaseService implements OnModuleInit, OnApplicationShutdown {
         user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         status VARCHAR(20) NOT NULL DEFAULT 'draft',
         current_question_index INT NOT NULL DEFAULT 0,
+        total_score DECIMAL(5,2),
+        governance_score DECIMAL(5,2),
+        compliance_score DECIMAL(5,2),
+        maturity_level INT,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         submitted_at TIMESTAMPTZ
       )
     `);
+
+    // Add score columns if they don't exist (for existing tables)
+    const columns = await this.pool.query(
+      "SELECT column_name FROM information_schema.columns WHERE table_name = 'assessments' AND column_name = 'total_score'",
+    );
+    if (columns.rows.length === 0) {
+      await this.pool.query('ALTER TABLE assessments ADD COLUMN total_score DECIMAL(5,2)');
+      await this.pool.query('ALTER TABLE assessments ADD COLUMN governance_score DECIMAL(5,2)');
+      await this.pool.query('ALTER TABLE assessments ADD COLUMN compliance_score DECIMAL(5,2)');
+      await this.pool.query('ALTER TABLE assessments ADD COLUMN maturity_level INT');
+    }
 
     await this.pool.query(
       'CREATE INDEX IF NOT EXISTS assessments_entity_id_idx ON assessments (entity_id)',
