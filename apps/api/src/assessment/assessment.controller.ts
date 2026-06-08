@@ -29,6 +29,11 @@ export class AssessmentController {
     return { questions: QUESTIONS, domains: DOMAINS, answerOptions: ANSWER_OPTIONS, totalQuestions: TOTAL_QUESTIONS };
   }
 
+  @Get(':id/recommendations')
+  getRecommendations(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
+    return this.assessmentService.getRecommendations(id, req.user.sub);
+  }
+
   @Get(':id')
   getById(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
     return this.assessmentService.getById(id, req.user.sub);
