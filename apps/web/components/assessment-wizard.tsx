@@ -10,6 +10,7 @@ import {
   type Assessment,
   type QuestionsData,
 } from '../lib/assessment-client';
+import { translateError } from '../lib/error-messages';
 import { useLanguage } from './language-provider';
 
 interface AssessmentWizardProps {
@@ -48,7 +49,7 @@ export function AssessmentWizard({ assessmentId }: AssessmentWizardProps) {
         }
         setAnswers(answerMap);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load assessment');
+        setError(err instanceof Error ? translateError(err.message, isArabic) : isArabic ? 'فشل تحميل التقييم' : 'Failed to load assessment');
       } finally {
         setIsLoading(false);
       }
@@ -107,7 +108,7 @@ export function AssessmentWizard({ assessmentId }: AssessmentWizardProps) {
       await saveAnswer(assessmentId, question.id, score);
       setAnswers((prev) => ({ ...prev, [question.id]: score }));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save answer');
+      setError(err instanceof Error ? translateError(err.message, isArabic) : isArabic ? 'فشل حفظ الإجابة' : 'Failed to save answer');
     } finally {
       setSaving(false);
     }
@@ -147,7 +148,7 @@ export function AssessmentWizard({ assessmentId }: AssessmentWizardProps) {
       await submitAssessment(assessmentId);
       window.location.replace(`/assessment/${assessmentId}/results`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to submit');
+      setError(err instanceof Error ? translateError(err.message, isArabic) : isArabic ? 'فشل إرسال التقييم' : 'Failed to submit');
       setShowConfirm(false);
     } finally {
       setSubmitting(false);

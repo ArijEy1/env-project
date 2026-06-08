@@ -9,6 +9,7 @@ import {
   updateProfile,
   type AuthUser,
 } from '../lib/auth-client';
+import { translateError } from '../lib/error-messages';
 import { useLanguage } from './language-provider';
 
 export function AccountPanel() {
@@ -50,7 +51,7 @@ export function AccountPanel() {
       } catch (profileError) {
         setError(
           profileError instanceof Error
-            ? profileError.message
+            ? translateError(profileError.message, isArabic)
             : isArabic ? 'تعذر تحميل بيانات المستخدم.' : 'Unable to load user data.',
         );
         localStorage.removeItem(authStorage.tokenKey);
@@ -104,7 +105,7 @@ export function AccountPanel() {
       localStorage.setItem(authStorage.userKey, JSON.stringify(updated));
       setEditingProfile(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : isArabic ? 'فشل التحديث.' : 'Update failed.');
+      setError(err instanceof Error ? translateError(err.message, isArabic) : isArabic ? 'فشل التحديث.' : 'Update failed.');
     } finally {
       setSaving(false);
     }
@@ -125,7 +126,7 @@ export function AccountPanel() {
       setUser((prev) => prev ? { ...prev, entity: updatedEntity } : prev);
       setEditingEntity(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : isArabic ? 'فشل التحديث.' : 'Update failed.');
+      setError(err instanceof Error ? translateError(err.message, isArabic) : isArabic ? 'فشل التحديث.' : 'Update failed.');
     } finally {
       setSaving(false);
     }

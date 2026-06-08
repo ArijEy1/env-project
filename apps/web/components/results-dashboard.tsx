@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { getAssessment, fetchRecommendations, downloadReport, type Assessment, type Recommendation } from '../lib/assessment-client';
 import { fetchProfile, authStorage, type AuthUser } from '../lib/auth-client';
+import { translateError } from '../lib/error-messages';
 import { useLanguage } from './language-provider';
 import { ScoreDonut } from './score-donut';
 
@@ -69,7 +70,7 @@ export function ResultsDashboard({ assessmentId }: ResultsDashboardProps) {
           setRecommendations(recs);
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : isArabic ? 'فشل تحميل النتائج' : 'Failed to load results');
+        setError(err instanceof Error ? translateError(err.message, isArabic) : isArabic ? 'فشل تحميل النتائج' : 'Failed to load results');
       } finally {
         setIsLoading(false);
       }
@@ -111,7 +112,7 @@ export function ResultsDashboard({ assessmentId }: ResultsDashboardProps) {
     try {
       await downloadReport(assessmentId);
     } catch (err) {
-      setError(err instanceof Error ? err.message : isArabic ? 'فشل تحميل التقرير' : 'Failed to download report');
+      setError(err instanceof Error ? translateError(err.message, isArabic) : isArabic ? 'فشل تحميل التقرير' : 'Failed to download report');
     } finally {
       setDownloading(false);
     }
