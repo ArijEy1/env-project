@@ -2123,3 +2123,15 @@ body[data-language='en'] .session-badge {
     grid-template-columns: 1fr;
   }
 }
+
+/* --- M1: Register form section spacing --- */
+.register-section-heading-account {
+  margin-top: 28px;
+}
+
+.register-password-hint {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #6b8a82;
+}
