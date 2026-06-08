@@ -3188,7 +3188,7 @@ body[data-language='en'] .admin-filter-select {
 
 .admin-table-row {
   display: grid;
-  grid-template-columns: 1.5fr repeat(4, minmax(80px, 0.7fr)) auto;
+  grid-template-columns: 1.5fr repeat(4, minmax(80px, 0.7fr)) 120px;
   align-items: center;
   gap: 12px;
   padding: 16px 20px;
