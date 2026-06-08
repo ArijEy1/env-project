@@ -22,9 +22,12 @@ export function Navbar() {
     { href: '/#why-platform', label: isArabic ? 'لماذا الأداة؟' : 'Why It Works' },
     { href: '/#domains', label: isArabic ? 'مجالات التقييم' : 'Domains' },
     { href: '/#reports', label: isArabic ? 'التقارير' : 'Reports' },
-    ...(!isAuthenticated
-      ? [{ href: '/login', label: isArabic ? 'تسجيل الدخول' : 'Login' }]
-      : []),
+    ...(isAuthenticated
+      ? [
+          { href: '/assessment/new', label: isArabic ? 'بدء التقييم' : 'Start Assessment' },
+          { href: '/account', label: isArabic ? 'حسابي' : 'My Account' },
+        ]
+      : [{ href: '/login', label: isArabic ? 'تسجيل الدخول' : 'Login' }]),
   ];
 
   useEffect(() => {
