@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getAssessment, fetchRecommendations, type Assessment, type Recommendation } from '../lib/assessment-client';
+import { getAssessment, fetchRecommendations, downloadReport, type Assessment, type Recommendation } from '../lib/assessment-client';
 import { fetchProfile, authStorage, type AuthUser } from '../lib/auth-client';
 import { useLanguage } from './language-provider';
 import { ScoreDonut } from './score-donut';
@@ -40,6 +40,7 @@ export function ResultsDashboard({ assessmentId }: ResultsDashboardProps) {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -104,6 +105,17 @@ export function ResultsDashboard({ assessmentId }: ResultsDashboardProps) {
     { key: 'governance', score: assessment.governanceScore ?? 0 },
     { key: 'compliance', score: assessment.complianceScore ?? 0 },
   ];
+
+  async function handleDownloadPdf() {
+    setDownloading(true);
+    try {
+      await downloadReport(assessmentId);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : isArabic ? 'فشل تحميل التقرير' : 'Failed to download report');
+    } finally {
+      setDownloading(false);
+    }
+  }
 
   return (
     <div className="results-shell">
@@ -196,6 +208,9 @@ export function ResultsDashboard({ assessmentId }: ResultsDashboardProps) {
       {/* Actions */}
       <div className="results-actions">
         <a href="/account" className="secondary-btn">{isArabic ? '← العودة للحساب' : '← Back to Account'}</a>
+        <button className="primary-btn results-download-btn" onClick={handleDownloadPdf} disabled={downloading} type="button">
+          {downloading ? (isArabic ? 'جاري التحميل...' : 'Downloading...') : (isArabic ? 'تحميل التقرير PDF' : 'Download PDF Report')}
+        </button>
       </div>
     </div>
   );

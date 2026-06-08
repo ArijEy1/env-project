@@ -2855,3 +2855,8 @@ body[data-language='en'] .wizard-domain-badge {
   font-size: 0.9rem;
   line-height: 1.65;
 }
+
+/* --- M6: PDF Download --- */
+.results-download-btn {
+  cursor: pointer;
+}
