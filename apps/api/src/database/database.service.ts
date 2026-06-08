@@ -20,6 +20,8 @@ export class DatabaseService implements OnModuleInit, OnApplicationShutdown {
     await this.ensureEntitiesTable();
     await this.ensureUsersTable();
     await this.ensurePasswordResetTokensTable();
+    await this.ensureAssessmentsTable();
+    await this.ensureAssessmentAnswersTable();
     this.logger.log(`PostgreSQL ready on database "${this.databaseName}"`);
   }
 
@@ -139,6 +141,45 @@ export class DatabaseService implements OnModuleInit, OnApplicationShutdown {
     );
     await this.pool.query(
       'CREATE INDEX IF NOT EXISTS password_reset_tokens_expires_at_idx ON password_reset_tokens (expires_at)',
+    );
+  }
+
+  private async ensureAssessmentsTable() {
+    await this.pool.query(`
+      CREATE TABLE IF NOT EXISTS assessments (
+        id UUID PRIMARY KEY,
+        entity_id UUID NOT NULL REFERENCES entities(id) ON DELETE CASCADE,
+        user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        status VARCHAR(20) NOT NULL DEFAULT 'draft',
+        current_question_index INT NOT NULL DEFAULT 0,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        submitted_at TIMESTAMPTZ
+      )
+    `);
+
+    await this.pool.query(
+      'CREATE INDEX IF NOT EXISTS assessments_entity_id_idx ON assessments (entity_id)',
+    );
+    await this.pool.query(
+      'CREATE INDEX IF NOT EXISTS assessments_status_idx ON assessments (status)',
+    );
+  }
+
+  private async ensureAssessmentAnswersTable() {
+    await this.pool.query(`
+      CREATE TABLE IF NOT EXISTS assessment_answers (
+        id UUID PRIMARY KEY,
+        assessment_id UUID NOT NULL REFERENCES assessments(id) ON DELETE CASCADE,
+        question_id VARCHAR(20) NOT NULL,
+        score INT NOT NULL CHECK (score IN (0, 25, 50, 75, 100)),
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        UNIQUE(assessment_id, question_id)
+      )
+    `);
+
+    await this.pool.query(
+      'CREATE INDEX IF NOT EXISTS assessment_answers_assessment_id_idx ON assessment_answers (assessment_id)',
     );
   }
 
