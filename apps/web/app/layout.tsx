@@ -1,7 +1,15 @@
 import type { Metadata } from 'next';
+import { Noto_Sans_Arabic } from 'next/font/google';
 import { LanguageProvider } from '../components/language-provider';
 import { Navbar } from '../components/navbar';
 import './globals.css';
+
+const notoSansArabic = Noto_Sans_Arabic({
+  subsets: ['arabic'],
+  weight: ['400', '600', '700'],
+  display: 'swap',
+  variable: '--font-arabic',
+});
 
 export const metadata: Metadata = {
   title: 'الأداة الوطنية',
@@ -15,7 +23,7 @@ export default function RootLayout({
 }>) {
   return (
     <html dir="rtl" lang="ar">
-      <body>
+      <body className={notoSansArabic.variable}>
         <LanguageProvider>
           <Navbar />
           {children}
