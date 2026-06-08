@@ -26,12 +26,49 @@ export function AssessmentWizard({ assessmentId }: AssessmentWizardProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [saving, setSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'failed'>('idle');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [showTransition, setShowTransition] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const progressSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const saveStatusTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function getPendingAnswers(): Record<string, number> {
+    try {
+      const raw = localStorage.getItem(`env-pending-${assessmentId}`);
+      return raw ? JSON.parse(raw) : {};
+    } catch { return {}; }
+  }
+
+  function setPendingAnswer(questionId: string, score: number) {
+    const pending = getPendingAnswers();
+    pending[questionId] = score;
+    localStorage.setItem(`env-pending-${assessmentId}`, JSON.stringify(pending));
+  }
+
+  function removePendingAnswer(questionId: string) {
+    const pending = getPendingAnswers();
+    delete pending[questionId];
+    if (Object.keys(pending).length === 0) {
+      localStorage.removeItem(`env-pending-${assessmentId}`);
+    } else {
+      localStorage.setItem(`env-pending-${assessmentId}`, JSON.stringify(pending));
+    }
+  }
+
+  async function syncPendingAnswers() {
+    const pending = getPendingAnswers();
+    for (const [qId, score] of Object.entries(pending)) {
+      try {
+        await saveAnswer(assessmentId, qId, score);
+        removePendingAnswer(qId);
+      } catch {
+        // Still offline, leave pending
+      }
+    }
+  }
 
   useEffect(() => {
     async function load() {
@@ -48,6 +85,13 @@ export function AssessmentWizard({ assessmentId }: AssessmentWizardProps) {
           answerMap[a.questionId] = a.score;
         }
         setAnswers(answerMap);
+        // Merge pending localStorage answers
+        const pending = getPendingAnswers();
+        if (Object.keys(pending).length > 0) {
+          setAnswers((prev) => ({ ...prev, ...pending }));
+          // Attempt to sync pending answers in background
+          void syncPendingAnswers();
+        }
       } catch (err) {
         setError(err instanceof Error ? translateError(err.message, isArabic) : isArabic ? 'فشل تحميل التقييم' : 'Failed to load assessment');
       } finally {
@@ -103,12 +147,22 @@ export function AssessmentWizard({ assessmentId }: AssessmentWizardProps) {
 
   async function handleSelectAnswer(score: number) {
     setSaving(true);
+    setSaveStatus('saving');
     setError('');
+
+    // Update local state immediately
+    setAnswers((prev) => ({ ...prev, [question.id]: score }));
+
     try {
       await saveAnswer(assessmentId, question.id, score);
-      setAnswers((prev) => ({ ...prev, [question.id]: score }));
-    } catch (err) {
-      setError(err instanceof Error ? translateError(err.message, isArabic) : isArabic ? 'فشل حفظ الإجابة' : 'Failed to save answer');
+      removePendingAnswer(question.id);
+      setSaveStatus('saved');
+      if (saveStatusTimer.current) clearTimeout(saveStatusTimer.current);
+      saveStatusTimer.current = setTimeout(() => setSaveStatus('idle'), 2000);
+    } catch {
+      // Save to localStorage as fallback
+      setPendingAnswer(question.id, score);
+      setSaveStatus('failed');
     } finally {
       setSaving(false);
     }
@@ -207,6 +261,13 @@ export function AssessmentWizard({ assessmentId }: AssessmentWizardProps) {
         </div>
         <span className="wizard-progress-text">{currentIndex + 1} / {totalQuestions}</span>
       </div>
+      {saveStatus !== 'idle' && (
+        <div className={`wizard-save-indicator wizard-save-${saveStatus}`}>
+          {saveStatus === 'saving' && (isArabic ? 'جاري الحفظ...' : 'Saving...')}
+          {saveStatus === 'saved' && (isArabic ? 'تم الحفظ' : 'Saved')}
+          {saveStatus === 'failed' && (isArabic ? 'فشل الحفظ — محفوظ محلياً' : 'Save failed — saved locally')}
+        </div>
+      )}
       <div className="wizard-domain-badge">{isArabic ? domain.nameAr : domain.nameEn}</div>
       <div className="wizard-question-card">
         <span className="wizard-question-number">{isArabic ? `س${currentIndex + 1}` : `Q${currentIndex + 1}`}</span>
