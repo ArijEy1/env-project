@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getAssessment, type Assessment } from '../lib/assessment-client';
+import { getAssessment, fetchRecommendations, type Assessment, type Recommendation } from '../lib/assessment-client';
 import { fetchProfile, authStorage, type AuthUser } from '../lib/auth-client';
 import { useLanguage } from './language-provider';
 import { ScoreDonut } from './score-donut';
@@ -37,6 +37,7 @@ export function ResultsDashboard({ assessmentId }: ResultsDashboardProps) {
 
   const [assessment, setAssessment] = useState<Assessment | null>(null);
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
@@ -62,6 +63,10 @@ export function ResultsDashboard({ assessmentId }: ResultsDashboardProps) {
 
         setAssessment(assessmentData);
         setUser(profile);
+        if (assessmentData.status === 'submitted') {
+          const recs = await fetchRecommendations(assessmentId);
+          setRecommendations(recs);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : isArabic ? 'فشل تحميل النتائج' : 'Failed to load results');
       } finally {
@@ -149,6 +154,44 @@ export function ResultsDashboard({ assessmentId }: ResultsDashboardProps) {
           );
         })}
       </div>
+
+      {/* Recommendations */}
+      {recommendations.length > 0 && (
+        <div className="results-recommendations">
+          <h2 className="results-section-title">
+            {isArabic ? 'التوصيات' : 'Recommendations'}
+          </h2>
+          {recommendations.map((rec) => (
+            <div key={rec.questionId} className="results-rec-card">
+              <div className="results-rec-header">
+                <span className="results-rec-rank">{rec.rank}</span>
+                <div className="results-rec-question">
+                  <p className="results-rec-question-text">
+                    {isArabic ? rec.questionTextAr : rec.questionTextEn}
+                  </p>
+                  <span className="results-rec-score">
+                    {isArabic ? 'درجتك' : 'Your score'}: {rec.score} / 100
+                  </span>
+                </div>
+              </div>
+              <div className="results-rec-body">
+                <div className="results-rec-item">
+                  <span className="results-rec-label">{isArabic ? 'الإجراء المطلوب' : 'Recommended Action'}</span>
+                  <p>{isArabic ? rec.actionAr : rec.actionEn}</p>
+                </div>
+                <div className="results-rec-item">
+                  <span className="results-rec-label">{isArabic ? 'الأثر المتوقع' : 'Expected Impact'}</span>
+                  <p>{isArabic ? rec.impactAr : rec.impactEn}</p>
+                </div>
+                <div className="results-rec-item">
+                  <span className="results-rec-label">{isArabic ? 'المرجع' : 'Reference'}</span>
+                  <p>{isArabic ? rec.referenceAr : rec.referenceEn}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Actions */}
       <div className="results-actions">
