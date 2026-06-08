@@ -147,3 +147,29 @@ export interface Recommendation {
 export function fetchRecommendations(assessmentId: string) {
   return request<Recommendation[]>(`/assessments/${assessmentId}/recommendations`);
 }
+
+export async function downloadReport(assessmentId: string) {
+  const token = getToken();
+
+  const response = await fetch(`${apiBaseUrl}/assessments/${assessmentId}/report`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to download report');
+  }
+
+  const blob = await response.blob();
+  const disposition = response.headers.get('Content-Disposition') ?? '';
+  const filenameMatch = disposition.match(/filename="?([^"]+)"?/);
+  const filename = filenameMatch?.[1] ?? `assessment-report.pdf`;
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
