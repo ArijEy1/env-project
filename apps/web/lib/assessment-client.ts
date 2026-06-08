@@ -13,6 +13,10 @@ export interface Assessment {
   currentQuestionIndex: number;
   createdAt: string;
   submittedAt: string | null;
+  totalScore: number | null;
+  governanceScore: number | null;
+  complianceScore: number | null;
+  maturityLevel: number | null;
   answers: AssessmentAnswer[];
 }
 
@@ -26,6 +30,10 @@ export interface AssessmentListItem {
   submittedAt: string | null;
   answeredCount: number;
   totalQuestions: number;
+  totalScore: number | null;
+  governanceScore: number | null;
+  complianceScore: number | null;
+  maturityLevel: number | null;
 }
 
 export interface QuestionDef {
