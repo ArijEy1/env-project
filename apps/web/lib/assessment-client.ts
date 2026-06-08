@@ -129,3 +129,21 @@ export function updateProgress(assessmentId: string, currentQuestionIndex: numbe
 export function submitAssessment(assessmentId: string) {
   return request<Assessment>(`/assessments/${assessmentId}/submit`, { method: 'POST' });
 }
+
+export interface Recommendation {
+  rank: number;
+  questionId: string;
+  score: number;
+  questionTextAr: string;
+  questionTextEn: string;
+  actionAr: string;
+  actionEn: string;
+  impactAr: string;
+  impactEn: string;
+  referenceAr: string;
+  referenceEn: string;
+}
+
+export function fetchRecommendations(assessmentId: string) {
+  return request<Recommendation[]>(`/assessments/${assessmentId}/recommendations`);
+}
