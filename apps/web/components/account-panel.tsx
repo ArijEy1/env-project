@@ -172,12 +172,19 @@ export function AccountPanel() {
 
   return (
     <section className="account-page-shell">
+      <div className="account-page-header">
+        <div>
+          <h1>{isArabic ? `مرحبًا، ${user.firstName}` : `Welcome, ${user.firstName}`}</h1>
+          <p>{isArabic ? 'إدارة حسابك وبيانات المنشأة' : 'Manage your account and organization details'}</p>
+        </div>
+      </div>
+
       {error ? <p className="auth-feedback auth-feedback-error">{error}</p> : null}
 
       {/* Entity Card */}
       <div className="account-card">
         <div className="account-card-header">
-          <h2>{isArabic ? 'بيانات المنشأة' : 'Organization details'}</h2>
+          <h2><span className="account-card-icon">&#9679;</span>{isArabic ? 'بيانات المنشأة' : 'Organization details'}</h2>
           {user.role === 'admin' && !editingEntity && (
             <button className="secondary-btn account-edit-btn" onClick={startEditEntity} type="button">
               {isArabic ? 'تعديل' : 'Edit'}
@@ -227,7 +234,7 @@ export function AccountPanel() {
       {/* User Card */}
       <div className="account-card">
         <div className="account-card-header">
-          <h2>{isArabic ? 'معلوماتك' : 'Your profile'}</h2>
+          <h2><span className="account-card-icon">&#9734;</span>{isArabic ? 'معلوماتك' : 'Your profile'}</h2>
           {!editingProfile && (
             <button className="secondary-btn account-edit-btn" onClick={startEditProfile} type="button">
               {isArabic ? 'تعديل' : 'Edit'}
@@ -264,7 +271,7 @@ export function AccountPanel() {
             <div className="account-item"><span>{isArabic ? 'البريد الإلكتروني' : 'Email'}</span><strong>{user.email}</strong></div>
             {user.phone && <div className="account-item"><span>{isArabic ? 'الجوال' : 'Phone'}</span><strong>{user.phone}</strong></div>}
             {user.jobRole && <div className="account-item"><span>{isArabic ? 'الدور الوظيفي' : 'Job role'}</span><strong>{user.jobRole}</strong></div>}
-            <div className="account-item"><span>{isArabic ? 'الصلاحية' : 'Role'}</span><strong>{user.role === 'admin' ? (isArabic ? 'مسؤول' : 'Admin') : (isArabic ? 'مستخدم' : 'User')}</strong></div>
+            <div className="account-item"><span>{isArabic ? 'الصلاحية' : 'Role'}</span><strong><span className={`account-role-badge ${user.role === 'admin' ? 'account-role-badge-admin' : 'account-role-badge-user'}`}>{user.role === 'admin' ? (isArabic ? 'مسؤول' : 'Admin') : (isArabic ? 'مستخدم' : 'User')}</span></strong></div>
             <div className="account-item"><span>{isArabic ? 'تاريخ الإنشاء' : 'Created'}</span><strong>{new Date(user.createdAt).toLocaleDateString(isArabic ? 'ar-SA' : 'en-US')}</strong></div>
           </div>
         )}
