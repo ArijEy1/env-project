@@ -17,6 +17,7 @@ export class DatabaseService implements OnModuleInit, OnApplicationShutdown {
   async onModuleInit() {
     await this.ensureDatabaseExists();
     this.pool = this.createPool(this.databaseName);
+    await this.ensureEntitiesTable();
     await this.ensureUsersTable();
     await this.ensurePasswordResetTokensTable();
     this.logger.log(`PostgreSQL ready on database "${this.databaseName}"`);
@@ -80,19 +81,38 @@ export class DatabaseService implements OnModuleInit, OnApplicationShutdown {
     }
   }
 
+  private async ensureEntitiesTable() {
+    await this.pool.query(`
+      CREATE TABLE IF NOT EXISTS entities (
+        id UUID PRIMARY KEY,
+        name_ar VARCHAR(255) NOT NULL,
+        name_en VARCHAR(255),
+        cr_number VARCHAR(50) NOT NULL UNIQUE,
+        sector VARCHAR(100) NOT NULL,
+        city VARCHAR(100) NOT NULL,
+        region VARCHAR(100),
+        employee_count_bracket VARCHAR(50),
+        contact_email VARCHAR(255),
+        contact_phone VARCHAR(50),
+        unified_national_number VARCHAR(50),
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+  }
+
   private async ensureUsersTable() {
     await this.pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id UUID PRIMARY KEY,
+        entity_id UUID NOT NULL REFERENCES entities(id) ON DELETE CASCADE,
         first_name VARCHAR(120) NOT NULL,
         last_name VARCHAR(120),
         full_name VARCHAR(255) NOT NULL,
         email VARCHAR(255) NOT NULL UNIQUE,
         password_hash TEXT NOT NULL,
         phone VARCHAR(50),
-        country_code VARCHAR(10),
-        entity VARCHAR(120),
         job_role VARCHAR(120),
+        role VARCHAR(20) NOT NULL DEFAULT 'user',
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )
     `);
