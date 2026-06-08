@@ -11,6 +11,7 @@ export function Navbar() {
   const router = useRouter();
   const { language, setLanguage } = useLanguage();
   const [hasSession, setHasSession] = useState<boolean | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigationId = useId();
 
@@ -26,6 +27,9 @@ export function Navbar() {
       ? [
           { href: '/assessment/new', label: isArabic ? 'بدء التقييم' : 'Start Assessment' },
           { href: '/account', label: isArabic ? 'حسابي' : 'My Account' },
+          ...(userRole === 'superadmin'
+            ? [{ href: '/admin', label: isArabic ? 'لوحة التحكم' : 'Admin Panel' }]
+            : []),
         ]
       : [{ href: '/login', label: isArabic ? 'تسجيل الدخول' : 'Login' }]),
   ];
@@ -34,6 +38,17 @@ export function Navbar() {
     function syncSessionState() {
       const storedToken = localStorage.getItem(authStorage.tokenKey) ?? sessionStorage.getItem(authStorage.tokenKey);
       setHasSession(Boolean(storedToken));
+      try {
+        const userData = localStorage.getItem(authStorage.userKey);
+        if (userData) {
+          const parsed = JSON.parse(userData) as { role?: string };
+          setUserRole(parsed.role ?? null);
+        } else {
+          setUserRole(null);
+        }
+      } catch {
+        setUserRole(null);
+      }
     }
 
     syncSessionState();
@@ -52,6 +67,7 @@ export function Navbar() {
     sessionStorage.removeItem(authStorage.tokenKey);
     sessionStorage.removeItem(authStorage.userKey);
     setHasSession(false);
+    setUserRole(null);
     setIsMenuOpen(false);
     router.push('/login');
     router.refresh();
