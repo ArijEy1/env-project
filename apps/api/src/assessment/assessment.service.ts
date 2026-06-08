@@ -10,6 +10,7 @@ import { SaveAnswerDto } from './dto/save-answer.dto';
 import { UpdateProgressDto } from './dto/update-progress.dto';
 import { getQuestionById, TOTAL_QUESTIONS } from './questions';
 import { calculateScore } from './scoring';
+import { generateRecommendations, type Recommendation } from './recommendations';
 
 interface AssessmentRow {
   id: string;
@@ -232,6 +233,30 @@ export class AssessmentService {
     );
 
     return this.getById(assessmentId, userId);
+  }
+
+  async getRecommendations(assessmentId: string, userId: string): Promise<Recommendation[]> {
+    const entityId = await this.getEntityId(userId);
+    const row = await this.findAssessment(assessmentId);
+
+    if (!row) {
+      throw new NotFoundException('Assessment not found');
+    }
+    if (row.entity_id !== entityId) {
+      throw new ForbiddenException('You do not have access to this assessment');
+    }
+    if (row.status !== 'submitted') {
+      throw new BadRequestException('Recommendations are only available for submitted assessments');
+    }
+
+    const answers = await this.db.query<{ question_id: string; score: number }>(
+      'SELECT question_id, score FROM assessment_answers WHERE assessment_id = $1',
+      [assessmentId],
+    );
+
+    return generateRecommendations(
+      answers.rows.map((a) => ({ questionId: a.question_id, score: a.score })),
+    );
   }
 
   private async findAssessment(id: string) {
