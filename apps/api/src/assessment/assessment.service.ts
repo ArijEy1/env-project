@@ -9,12 +9,15 @@ import { DatabaseService } from '../database/database.service';
 import { SaveAnswerDto } from './dto/save-answer.dto';
 import { UpdateProgressDto } from './dto/update-progress.dto';
 import { ANSWER_OPTIONS, TOTAL_QUESTIONS } from './questions';
-import { generateRecommendations, type Recommendation } from './recommendations';
 import { computeEngineScore } from './engine-scoring';
 import {
   QuestionGenerationService,
   type AssessmentProfile,
 } from './question-generation.service';
+import {
+  RecommendationEngineService,
+  type EngineRecommendation,
+} from './recommendation-engine.service';
 
 interface AssessmentRow {
   id: string;
@@ -50,6 +53,7 @@ export class AssessmentService {
   constructor(
     private readonly db: DatabaseService,
     private readonly questionGeneration: QuestionGenerationService,
+    private readonly recommendationEngine: RecommendationEngineService,
   ) {}
 
   async create(userId: string) {
@@ -346,14 +350,7 @@ export class AssessmentService {
     }
 
     const entity = await this.findEntityById(entityId);
-    const answers = await this.db.query<{ question_id: string; score: number }>(
-      'SELECT question_id, score FROM assessment_answers WHERE assessment_id = $1',
-      [assessmentId],
-    );
-
-    const recommendations = generateRecommendations(
-      answers.rows.map((a) => ({ questionId: a.question_id, score: a.score })),
-    );
+    const recommendations = await this.recommendationEngine.build(assessmentId);
 
     return {
       entityNameAr: entity?.name_ar ?? '',
@@ -363,18 +360,23 @@ export class AssessmentService {
       governanceScore: row.governance_score ? Number(row.governance_score) : 0,
       complianceScore: row.compliance_score ? Number(row.compliance_score) : 0,
       maturityLevel: row.maturity_level ?? 1,
+      // Map the engine recommendation to the PDF's fields (immediate action +
+      // a compact impact line + the legal reference).
       recommendations: recommendations.map((r) => ({
         rank: r.rank,
         questionTextAr: r.questionTextAr,
-        score: r.score,
-        actionAr: r.actionAr,
-        impactAr: r.impactAr,
-        referenceAr: r.referenceAr,
+        score: r.currentScore,
+        actionAr: r.immediateActionAr,
+        impactAr: `أثر متوقع: +${r.scoreImpactPoints} نقطة · الجدول الزمني: ${r.timelineWeeks} أسبوع`,
+        referenceAr: r.legalReference ?? '',
       })),
     };
   }
 
-  async getRecommendations(assessmentId: string, userId: string): Promise<Recommendation[]> {
+  async getRecommendations(
+    assessmentId: string,
+    userId: string,
+  ): Promise<EngineRecommendation[]> {
     const entityId = await this.getEntityId(userId);
     const row = await this.findAssessment(assessmentId);
 
@@ -388,14 +390,7 @@ export class AssessmentService {
       throw new BadRequestException('Recommendations are only available for submitted assessments');
     }
 
-    const answers = await this.db.query<{ question_id: string; score: number }>(
-      'SELECT question_id, score FROM assessment_answers WHERE assessment_id = $1',
-      [assessmentId],
-    );
-
-    return generateRecommendations(
-      answers.rows.map((a) => ({ questionId: a.question_id, score: a.score })),
-    );
+    return this.recommendationEngine.build(assessmentId);
   }
 
   private async findEntityById(entityId: string) {

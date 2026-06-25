@@ -33,6 +33,12 @@ const DOMAIN_INFO: Record<string, { ar: string; en: string; weight: number }> = 
   compliance: { ar: 'الامتثال التنظيمي', en: 'Regulatory Compliance', weight: 55 },
 };
 
+const EFFORT_LABELS: Record<string, { ar: string; en: string }> = {
+  low: { ar: 'منخفض', en: 'Low' },
+  medium: { ar: 'متوسط', en: 'Medium' },
+  high: { ar: 'مرتفع', en: 'High' },
+};
+
 export function ResultsDashboard({ assessmentId }: ResultsDashboardProps) {
   const { language } = useLanguage();
   const { showToast } = useToast();
@@ -41,6 +47,7 @@ export function ResultsDashboard({ assessmentId }: ResultsDashboardProps) {
   const [assessment, setAssessment] = useState<Assessment | null>(null);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [roadmapTab, setRoadmapTab] = useState<'immediate' | 'short' | 'medium'>('immediate');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [downloading, setDownloading] = useState(false);
@@ -175,41 +182,74 @@ export function ResultsDashboard({ assessmentId }: ResultsDashboardProps) {
         })}
       </div>
 
-      {/* Recommendations */}
+      {/* Recommendations roadmap */}
       {recommendations.length > 0 && (
         <div className="results-recommendations">
           <h2 className="results-section-title">
-            {isArabic ? 'التوصيات' : 'Recommendations'}
+            {isArabic ? 'خطة التحسين' : 'Improvement Roadmap'}
           </h2>
-          {recommendations.map((rec) => (
-            <div key={rec.questionId} className="results-rec-card">
-              <div className="results-rec-header">
-                <span className="results-rec-rank">{rec.rank}</span>
-                <div className="results-rec-question">
-                  <p className="results-rec-question-text">
-                    {isArabic ? rec.questionTextAr : rec.questionTextEn}
-                  </p>
-                  <span className="results-rec-score">
-                    {isArabic ? 'درجتك' : 'Your score'}: {rec.score} / 100
-                  </span>
+
+          <div className="roadmap-tabs">
+            {([
+              ['immediate', isArabic ? 'فوري' : 'Immediate'],
+              ['short', isArabic ? 'قصير المدى' : 'Short-term'],
+              ['medium', isArabic ? 'متوسط المدى' : 'Medium-term'],
+            ] as const).map(([key, label]) => (
+              <button
+                key={key}
+                type="button"
+                className={`roadmap-tab ${roadmapTab === key ? 'roadmap-tab-active' : ''}`}
+                onClick={() => setRoadmapTab(key)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {recommendations.map((rec) => {
+            const action =
+              roadmapTab === 'immediate'
+                ? (isArabic ? rec.immediateActionAr : rec.immediateActionEn)
+                : roadmapTab === 'short'
+                  ? (isArabic ? rec.shortTermActionAr : rec.shortTermActionEn)
+                  : (isArabic ? rec.mediumTermActionAr : rec.mediumTermActionEn);
+            const effortLabel = EFFORT_LABELS[rec.effortLevel] ?? { ar: rec.effortLevel, en: rec.effortLevel };
+            return (
+              <div key={rec.recommendationId} className="results-rec-card">
+                <div className="results-rec-header">
+                  <span className="results-rec-rank">{rec.rank}</span>
+                  <div className="results-rec-question">
+                    <p className="results-rec-question-text">
+                      {isArabic ? rec.questionTextAr : rec.questionTextEn}
+                      {rec.isCompliance ? (
+                        <span className="rec-priority-badge">{isArabic ? 'أولوية امتثال' : 'Compliance priority'}</span>
+                      ) : null}
+                    </p>
+                    <span className="results-rec-score">
+                      {isArabic ? 'درجتك' : 'Your score'}: {rec.currentScore} / 100
+                    </span>
+                  </div>
+                </div>
+                <div className="results-rec-body">
+                  <div className="results-rec-item">
+                    <span className="results-rec-label">
+                      {roadmapTab === 'immediate' ? (isArabic ? 'إجراء فوري' : 'Immediate action')
+                        : roadmapTab === 'short' ? (isArabic ? 'إجراء قصير المدى' : 'Short-term action')
+                          : (isArabic ? 'إجراء متوسط المدى' : 'Medium-term action')}
+                    </span>
+                    <p>{action}</p>
+                  </div>
+                  <div className="rec-meta">
+                    <span className="rec-meta-chip">{isArabic ? 'الأثر' : 'Impact'}: +{rec.scoreImpactPoints} {isArabic ? 'نقطة' : 'pts'}</span>
+                    <span className="rec-meta-chip">{isArabic ? 'الجهد' : 'Effort'}: {isArabic ? effortLabel.ar : effortLabel.en}</span>
+                    <span className="rec-meta-chip">{isArabic ? 'المدة' : 'Timeline'}: {rec.timelineWeeks} {isArabic ? 'أسبوع' : 'wks'}</span>
+                    {rec.costEstimate ? <span className="rec-meta-chip">{isArabic ? 'التكلفة' : 'Cost'}: {rec.costEstimate}</span> : null}
+                    {rec.legalReference ? <span className="rec-meta-chip rec-meta-legal">{rec.legalReference}</span> : null}
+                  </div>
                 </div>
               </div>
-              <div className="results-rec-body">
-                <div className="results-rec-item">
-                  <span className="results-rec-label">{isArabic ? 'الإجراء المطلوب' : 'Recommended Action'}</span>
-                  <p>{isArabic ? rec.actionAr : rec.actionEn}</p>
-                </div>
-                <div className="results-rec-item">
-                  <span className="results-rec-label">{isArabic ? 'الأثر المتوقع' : 'Expected Impact'}</span>
-                  <p>{isArabic ? rec.impactAr : rec.impactEn}</p>
-                </div>
-                <div className="results-rec-item">
-                  <span className="results-rec-label">{isArabic ? 'المرجع' : 'Reference'}</span>
-                  <p>{isArabic ? rec.referenceAr : rec.referenceEn}</p>
-                </div>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

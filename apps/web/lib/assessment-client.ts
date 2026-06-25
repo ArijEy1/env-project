@@ -165,16 +165,25 @@ export function submitAssessment(assessmentId: string) {
 
 export interface Recommendation {
   rank: number;
+  recommendationId: string;
   questionId: string;
-  score: number;
+  domainId: string;
+  materialityTopicId: string | null;
+  currentScore: number;
+  isCompliance: boolean;
   questionTextAr: string;
   questionTextEn: string;
-  actionAr: string;
-  actionEn: string;
-  impactAr: string;
-  impactEn: string;
-  referenceAr: string;
-  referenceEn: string;
+  immediateActionAr: string;
+  immediateActionEn: string;
+  shortTermActionAr: string;
+  shortTermActionEn: string;
+  mediumTermActionAr: string;
+  mediumTermActionEn: string;
+  costEstimate: string | null;
+  effortLevel: string;
+  scoreImpactPoints: number;
+  timelineWeeks: number;
+  legalReference: string | null;
 }
 
 export function fetchRecommendations(assessmentId: string) {
