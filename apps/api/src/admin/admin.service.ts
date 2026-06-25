@@ -60,6 +60,57 @@ interface StatsRow {
   total_assessments: string;
   submitted_assessments: string;
   average_score: string | null;
+  average_maturity: string | null;
+}
+
+interface SectorStatRow {
+  sector: string;
+  entity_count: string;
+  completed: string;
+  avg_maturity: string | null;
+}
+
+interface QuestionBankRow {
+  id: string;
+  domain_id: string;
+  domain_name_en: string;
+  text_ar: string;
+  text_en: string;
+  help_text_ar: string | null;
+  help_text_en: string | null;
+  materiality_topic_id: string | null;
+  base_weight: string;
+  calculator_type: string | null;
+  active: boolean;
+}
+
+interface RecLibRow {
+  id: string;
+  materiality_topic_id: string | null;
+  domain_id: string;
+  trigger_max_score: number;
+  immediate_action_ar: string;
+  immediate_action_en: string;
+  short_term_action_ar: string;
+  short_term_action_en: string;
+  medium_term_action_ar: string;
+  medium_term_action_en: string;
+  cost_estimate: string | null;
+  effort_level: string;
+  score_impact_points: number;
+  timeline_weeks: number;
+  legal_reference: string | null;
+  active: boolean;
+}
+
+interface RegMapRow {
+  id: string;
+  bank_question_id: string;
+  question_text_en: string | null;
+  regulation: string;
+  clause: string | null;
+  authority: string | null;
+  url: string | null;
 }
 
 @Injectable()
@@ -73,7 +124,20 @@ export class AdminService {
         (SELECT COUNT(*) FROM users WHERE role != 'superadmin') as total_users,
         (SELECT COUNT(*) FROM assessments) as total_assessments,
         (SELECT COUNT(*) FROM assessments WHERE status = 'submitted') as submitted_assessments,
-        (SELECT ROUND(AVG(total_score)::numeric, 2) FROM assessments WHERE status = 'submitted') as average_score
+        (SELECT ROUND(AVG(total_score)::numeric, 2) FROM assessments WHERE status = 'submitted') as average_score,
+        (SELECT ROUND(AVG(maturity_level)::numeric, 2) FROM assessments WHERE status = 'submitted') as average_maturity
+    `);
+
+    const bySector = await this.db.query<SectorStatRow>(`
+      SELECT e.sector,
+             COUNT(DISTINCT e.id) as entity_count,
+             COUNT(a.id) FILTER (WHERE a.status = 'submitted') as completed,
+             ROUND(AVG(a.maturity_level) FILTER (WHERE a.status = 'submitted')::numeric, 2) as avg_maturity
+      FROM entities e
+      LEFT JOIN assessments a ON a.entity_id = e.id
+      WHERE e.cr_number != 'SYSTEM-000001'
+      GROUP BY e.sector
+      ORDER BY entity_count DESC
     `);
 
     const row = result.rows[0];
@@ -83,6 +147,153 @@ export class AdminService {
       totalAssessments: Number(row.total_assessments),
       submittedAssessments: Number(row.submitted_assessments),
       averageScore: row.average_score ? Number(row.average_score) : null,
+      averageMaturity: row.average_maturity ? Number(row.average_maturity) : null,
+      bySector: bySector.rows.map((s) => ({
+        sector: s.sector,
+        entityCount: Number(s.entity_count),
+        completed: Number(s.completed),
+        averageMaturity: s.avg_maturity ? Number(s.avg_maturity) : null,
+      })),
+    };
+  }
+
+  // --- Question bank management (Section 9) ---
+
+  async listQuestions() {
+    const result = await this.db.query<QuestionBankRow>(`
+      SELECT qb.id, qb.domain_id, d.name_en AS domain_name_en, qb.text_ar, qb.text_en,
+             qb.help_text_ar, qb.help_text_en, qb.materiality_topic_id, qb.base_weight,
+             qb.calculator_type, qb.active
+      FROM question_bank qb
+      JOIN domains d ON d.id = qb.domain_id
+      ORDER BY d.display_order ASC, qb.id ASC
+    `);
+    return result.rows.map((q) => ({
+      id: q.id,
+      domainId: q.domain_id,
+      domainNameEn: q.domain_name_en,
+      textAr: q.text_ar,
+      textEn: q.text_en,
+      helpTextAr: q.help_text_ar,
+      helpTextEn: q.help_text_en,
+      materialityTopicId: q.materiality_topic_id,
+      baseWeight: Number(q.base_weight),
+      calculatorType: q.calculator_type,
+      active: q.active,
+    }));
+  }
+
+  async updateQuestion(id: string, dto: Record<string, unknown>) {
+    const map: Array<[string, string]> = [
+      ['textAr', 'text_ar'],
+      ['textEn', 'text_en'],
+      ['helpTextAr', 'help_text_ar'],
+      ['helpTextEn', 'help_text_en'],
+      ['baseWeight', 'base_weight'],
+      ['active', 'active'],
+    ];
+    const fields: string[] = [];
+    const values: unknown[] = [];
+    let i = 1;
+    for (const [key, col] of map) {
+      if (dto[key] !== undefined) {
+        fields.push(`${col} = $${i++}`);
+        values.push(dto[key]);
+      }
+    }
+    if (fields.length === 0) throw new NotFoundException('Nothing to update');
+    values.push(id);
+    const res = await this.db.query(
+      `UPDATE question_bank SET ${fields.join(', ')} WHERE id = $${i} RETURNING id`,
+      values,
+    );
+    if (res.rowCount === 0) throw new NotFoundException('Question not found');
+    return { id, updated: true };
+  }
+
+  // --- Recommendation library management ---
+
+  async listRecommendations() {
+    const result = await this.db.query<RecLibRow>(
+      `SELECT * FROM recommendation_library ORDER BY domain_id ASC, id ASC`,
+    );
+    return result.rows.map((r) => this.mapRec(r));
+  }
+
+  async updateRecommendation(id: string, dto: Record<string, unknown>) {
+    const map: Array<[string, string]> = [
+      ['triggerMaxScore', 'trigger_max_score'],
+      ['immediateActionAr', 'immediate_action_ar'],
+      ['immediateActionEn', 'immediate_action_en'],
+      ['shortTermActionAr', 'short_term_action_ar'],
+      ['shortTermActionEn', 'short_term_action_en'],
+      ['mediumTermActionAr', 'medium_term_action_ar'],
+      ['mediumTermActionEn', 'medium_term_action_en'],
+      ['costEstimate', 'cost_estimate'],
+      ['effortLevel', 'effort_level'],
+      ['scoreImpactPoints', 'score_impact_points'],
+      ['timelineWeeks', 'timeline_weeks'],
+      ['legalReference', 'legal_reference'],
+      ['active', 'active'],
+    ];
+    const fields: string[] = [];
+    const values: unknown[] = [];
+    let i = 1;
+    for (const [key, col] of map) {
+      if (dto[key] !== undefined) {
+        fields.push(`${col} = $${i++}`);
+        values.push(dto[key]);
+      }
+    }
+    if (fields.length === 0) throw new NotFoundException('Nothing to update');
+    values.push(id);
+    const res = await this.db.query<RecLibRow>(
+      `UPDATE recommendation_library SET ${fields.join(', ')} WHERE id = $${i} RETURNING *`,
+      values,
+    );
+    if (!res.rows[0]) throw new NotFoundException('Recommendation not found');
+    return this.mapRec(res.rows[0]);
+  }
+
+  // --- Regulatory mapping viewer ---
+
+  async listRegulatoryMappings() {
+    const result = await this.db.query<RegMapRow>(`
+      SELECT rm.id, rm.bank_question_id, qb.text_en AS question_text_en,
+             rm.regulation, rm.clause, rm.authority, rm.url
+      FROM regulatory_mappings rm
+      LEFT JOIN question_bank qb ON qb.id = rm.bank_question_id
+      ORDER BY rm.authority ASC, rm.bank_question_id ASC
+    `);
+    return result.rows.map((m) => ({
+      id: m.id,
+      bankQuestionId: m.bank_question_id,
+      questionTextEn: m.question_text_en,
+      regulation: m.regulation,
+      clause: m.clause,
+      authority: m.authority,
+      url: m.url,
+    }));
+  }
+
+  private mapRec(r: RecLibRow) {
+    return {
+      id: r.id,
+      materialityTopicId: r.materiality_topic_id,
+      domainId: r.domain_id,
+      triggerMaxScore: r.trigger_max_score,
+      immediateActionAr: r.immediate_action_ar,
+      immediateActionEn: r.immediate_action_en,
+      shortTermActionAr: r.short_term_action_ar,
+      shortTermActionEn: r.short_term_action_en,
+      mediumTermActionAr: r.medium_term_action_ar,
+      mediumTermActionEn: r.medium_term_action_en,
+      costEstimate: r.cost_estimate,
+      effortLevel: r.effort_level,
+      scoreImpactPoints: r.score_impact_points,
+      timelineWeeks: r.timeline_weeks,
+      legalReference: r.legal_reference,
+      active: r.active,
     };
   }
 

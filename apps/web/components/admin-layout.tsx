@@ -17,6 +17,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     { href: '/admin', label: isArabic ? 'لوحة التحكم' : 'Dashboard', exact: true },
     { href: '/admin/entities', label: isArabic ? 'المنشآت' : 'Entities', exact: false },
     { href: '/admin/assessments', label: isArabic ? 'التقييمات' : 'Assessments', exact: false },
+    { href: '/admin/questions', label: isArabic ? 'بنك الأسئلة' : 'Question Bank', exact: false },
+    { href: '/admin/recommendations', label: isArabic ? 'مكتبة التوصيات' : 'Recommendations', exact: false },
+    { href: '/admin/regulatory', label: isArabic ? 'الربط التنظيمي' : 'Regulatory', exact: false },
   ];
 
   return (

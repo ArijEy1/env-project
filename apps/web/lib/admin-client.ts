@@ -1,11 +1,63 @@
 import { apiBaseUrl, authStorage } from './auth-client';
 
+export interface AdminSectorStat {
+  sector: string;
+  entityCount: number;
+  completed: number;
+  averageMaturity: number | null;
+}
+
 export interface AdminStats {
   totalEntities: number;
   totalUsers: number;
   totalAssessments: number;
   submittedAssessments: number;
   averageScore: number | null;
+  averageMaturity: number | null;
+  bySector: AdminSectorStat[];
+}
+
+export interface AdminQuestion {
+  id: string;
+  domainId: string;
+  domainNameEn: string;
+  textAr: string;
+  textEn: string;
+  helpTextAr: string | null;
+  helpTextEn: string | null;
+  materialityTopicId: string | null;
+  baseWeight: number;
+  calculatorType: string | null;
+  active: boolean;
+}
+
+export interface AdminRecommendation {
+  id: string;
+  materialityTopicId: string | null;
+  domainId: string;
+  triggerMaxScore: number;
+  immediateActionAr: string;
+  immediateActionEn: string;
+  shortTermActionAr: string;
+  shortTermActionEn: string;
+  mediumTermActionAr: string;
+  mediumTermActionEn: string;
+  costEstimate: string | null;
+  effortLevel: string;
+  scoreImpactPoints: number;
+  timelineWeeks: number;
+  legalReference: string | null;
+  active: boolean;
+}
+
+export interface AdminRegMapping {
+  id: string;
+  bankQuestionId: string;
+  questionTextEn: string | null;
+  regulation: string;
+  clause: string | null;
+  authority: string | null;
+  url: string | null;
 }
 
 export interface AdminEntity {
@@ -75,8 +127,42 @@ async function request<T>(path: string): Promise<T> {
   return (await response.json()) as T;
 }
 
+async function mutate<T>(path: string, method: 'PATCH' | 'PUT', body: unknown): Promise<T> {
+  const token = getToken();
+  const response = await fetch(`${apiBaseUrl}${path}`, {
+    method,
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    const b = await response.json().catch(() => ({}));
+    throw new Error((b as { message?: string }).message ?? 'Request failed');
+  }
+  return (await response.json()) as T;
+}
+
 export function fetchAdminStats() {
   return request<AdminStats>('/admin/stats');
+}
+
+export function fetchAdminQuestions() {
+  return request<AdminQuestion[]>('/admin/questions');
+}
+
+export function updateAdminQuestion(id: string, patch: Partial<AdminQuestion>) {
+  return mutate<{ id: string; updated: boolean }>(`/admin/questions/${id}`, 'PATCH', patch);
+}
+
+export function fetchAdminRecommendations() {
+  return request<AdminRecommendation[]>('/admin/recommendations');
+}
+
+export function updateAdminRecommendation(id: string, patch: Partial<AdminRecommendation>) {
+  return mutate<AdminRecommendation>(`/admin/recommendations/${id}`, 'PUT', patch);
+}
+
+export function fetchAdminRegulatoryMappings() {
+  return request<AdminRegMapping[]>('/admin/regulatory-mappings');
 }
 
 export function fetchAdminEntities() {
