@@ -1642,6 +1642,218 @@ body[data-language='en'] .session-badge {
   font: inherit;
 }
 
+/* --- Pre-assessment profile confirmation --- */
+.profile-confirm-card {
+  max-width: 560px;
+}
+
+.profile-confirm-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 8px 0 4px;
+  border: 1px solid #e2ece7;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.profile-confirm-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 18px;
+  background: #f7fbf9;
+}
+
+.profile-confirm-row:nth-child(even) {
+  background: #ffffff;
+}
+
+.profile-confirm-row span {
+  color: #4d6761;
+}
+
+.profile-confirm-row strong {
+  color: #17302c;
+  text-align: end;
+}
+
+.wizard-help {
+  margin-top: 12px;
+}
+
+.wizard-help-toggle {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: #0f6b5b;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.wizard-help-text {
+  margin: 8px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(15, 107, 91, 0.08);
+  color: #2c4a44;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* --- Recommendations roadmap (Phase E) --- */
+.roadmap-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 4px 0 16px;
+  flex-wrap: wrap;
+}
+
+.roadmap-tab {
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid #d8e3df;
+  background: #ffffff;
+  color: #4d6761;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.roadmap-tab-active {
+  background: #0f6b5b;
+  border-color: #0f6b5b;
+  color: #ffffff;
+}
+
+.rec-priority-badge {
+  display: inline-block;
+  margin-inline-start: 8px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #fdecec;
+  color: #c0392b;
+  font-size: 12px;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+.rec-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.rec-meta-chip {
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: #f1f6f4;
+  border: 1px solid #e0ebe7;
+  color: #2c4a44;
+  font-size: 13px;
+}
+
+.rec-meta-legal {
+  background: #eef4fb;
+  border-color: #d8e6f3;
+  color: #2c5070;
+}
+
+/* --- Results: radar + profile (Phase F) --- */
+.results-radar-row {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 760px) {
+  .results-radar-row { grid-template-columns: 1fr; }
+}
+
+.results-radar-card,
+.results-profile-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 20px;
+}
+
+.results-radar-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.results-radar-card .radar-chart {
+  max-width: 100%;
+  height: auto;
+}
+
+.radar-label {
+  fill: rgba(245, 240, 230, 0.75);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.radar-hover-value {
+  fill: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.results-profile-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 12px;
+}
+
+.results-profile-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.results-profile-row span {
+  color: rgba(245, 240, 230, 0.65);
+}
+
+.results-profile-row strong {
+  color: #f5f0e6;
+  text-align: end;
+}
+
+.results-domain-maturity {
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.results-domain-gap {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: rgba(245, 240, 230, 0.7);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-exposure-note {
+  background: #fff7e6;
+  border: 1px solid #f0dcae;
+  color: #7a5a17;
+  border-radius: 12px;
+  margin-top: 14px;
+}
+
 .password-reset-shell {
   display: flex;
   justify-content: center;

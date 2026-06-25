@@ -48,8 +48,44 @@ export default function AdminDashboardPage() {
               <span className="admin-stat-value">{stats.averageScore?.toFixed(1) ?? '—'}</span>
               <span className="admin-stat-label">{isArabic ? 'متوسط الدرجات' : 'Average Score'}</span>
             </div>
+            <div className="admin-stat-card">
+              <span className="admin-stat-value">{stats.averageMaturity?.toFixed(2) ?? '—'}</span>
+              <span className="admin-stat-label">{isArabic ? 'متوسط النضج' : 'Average Maturity'}</span>
+            </div>
           </div>
         )}
+
+        {stats && stats.bySector.length > 0 && (
+          <div className="admin-sector-section">
+            <h2 className="admin-section-title">{isArabic ? 'حسب القطاع' : 'By Sector'}</h2>
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>{isArabic ? 'القطاع' : 'Sector'}</th>
+                    <th>{isArabic ? 'المنشآت' : 'Entities'}</th>
+                    <th>{isArabic ? 'تقييمات مكتملة' : 'Completed'}</th>
+                    <th>{isArabic ? 'متوسط النضج' : 'Avg Maturity'}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {stats.bySector.map((s) => (
+                    <tr key={s.sector}>
+                      <td>{s.sector}</td>
+                      <td>{s.entityCount}</td>
+                      <td>{s.completed}</td>
+                      <td>{s.averageMaturity?.toFixed(2) ?? '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        <p className="admin-page-sub" style={{ marginTop: 16 }}>
+          {isArabic ? 'ملاحظة: تتبّع تنزيلات التقارير غير مُفعّل بعد.' : 'Note: report-download tracking is not enabled yet.'}
+        </p>
       </AdminLayout>
     </main>
   );

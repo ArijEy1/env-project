@@ -197,7 +197,10 @@ interface AnswerInput {
 }
 
 export function generateRecommendations(answers: AnswerInput[]): Recommendation[] {
-  const sorted = [...answers].sort((a, b) => {
+  // Only questions with an authored rule are eligible (until the Phase E
+  // recommendation-library engine replaces this static map).
+  const eligible = answers.filter((a) => RULES_MAP.has(a.questionId));
+  const sorted = [...eligible].sort((a, b) => {
     if (a.score !== b.score) return a.score - b.score;
     // On tie, prefer compliance (higher weight) over governance
     const aIsCompliance = a.questionId.startsWith('COM') ? 0 : 1;

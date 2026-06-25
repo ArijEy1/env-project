@@ -17,7 +17,36 @@ export interface Assessment {
   governanceScore: number | null;
   complianceScore: number | null;
   maturityLevel: number | null;
+  domainScores: Record<string, number> | null;
   answers: AssessmentAnswer[];
+}
+
+export interface GeneratedQuestion {
+  questionId: string;
+  domainId: string;
+  materialityTopicId: string | null;
+  effectiveWeight: number;
+  displayOrder: number;
+  textAr: string;
+  textEn: string;
+  helpTextAr: string | null;
+  helpTextEn: string | null;
+  calculatorType: string | null;
+}
+
+export interface GeneratedDomain {
+  id: string;
+  nameAr: string;
+  nameEn: string;
+}
+
+export interface GeneratedQuestionsData {
+  assessmentId: string;
+  profileSnapshot: unknown;
+  totalQuestions: number;
+  answerOptions: AnswerOptionDef[];
+  domains: GeneratedDomain[];
+  questions: GeneratedQuestion[];
 }
 
 export interface AssessmentListItem {
@@ -100,6 +129,40 @@ export function fetchQuestions() {
   return request<QuestionsData>('/assessments/questions');
 }
 
+export function fetchGeneratedQuestions(assessmentId: string) {
+  return request<GeneratedQuestionsData>(`/assessments/${assessmentId}/generated`);
+}
+
+export interface DomainResult {
+  id: string;
+  nameAr: string;
+  nameEn: string;
+  score: number;
+  maturity: number;
+  topGapAr: string | null;
+  topGapEn: string | null;
+}
+
+export interface ResultsProfile {
+  sector: string | null;
+  entityType: string | null;
+  environmentalExposure: string | null;
+  employeeCountBracket: string | null;
+}
+
+export interface ResultsData {
+  assessmentId: string;
+  totalScore: number;
+  maturityLevel: number;
+  submittedAt: string | null;
+  domains: DomainResult[];
+  profile: ResultsProfile;
+}
+
+export function fetchResults(assessmentId: string) {
+  return request<ResultsData>(`/assessments/${assessmentId}/results`);
+}
+
 export function createAssessment() {
   return request<Assessment>('/assessments', { method: 'POST' });
 }
@@ -132,16 +195,25 @@ export function submitAssessment(assessmentId: string) {
 
 export interface Recommendation {
   rank: number;
+  recommendationId: string;
   questionId: string;
-  score: number;
+  domainId: string;
+  materialityTopicId: string | null;
+  currentScore: number;
+  isCompliance: boolean;
   questionTextAr: string;
   questionTextEn: string;
-  actionAr: string;
-  actionEn: string;
-  impactAr: string;
-  impactEn: string;
-  referenceAr: string;
-  referenceEn: string;
+  immediateActionAr: string;
+  immediateActionEn: string;
+  shortTermActionAr: string;
+  shortTermActionEn: string;
+  mediumTermActionAr: string;
+  mediumTermActionEn: string;
+  costEstimate: string | null;
+  effortLevel: string;
+  scoreImpactPoints: number;
+  timelineWeeks: number;
+  legalReference: string | null;
 }
 
 export function fetchRecommendations(assessmentId: string) {

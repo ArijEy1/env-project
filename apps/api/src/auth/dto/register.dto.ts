@@ -8,12 +8,14 @@ import {
   MinLength,
   ValidateNested,
 } from 'class-validator';
+import { ENTITY_TYPES, EXPOSURE_LEVELS } from '../profile-options';
 
 const SECTORS = [
   'industrial',
   'oil_and_gas',
   'manufacturing',
   'construction',
+  'mining',
   'services',
   'government',
   'healthcare',
@@ -46,6 +48,14 @@ export class RegisterEntityDto {
   @IsString()
   @IsIn(SECTORS)
   sector!: string;
+
+  @IsString()
+  @IsIn([...ENTITY_TYPES])
+  entityType!: string;
+
+  @IsString()
+  @IsIn([...EXPOSURE_LEVELS])
+  environmentalExposure!: string;
 
   @IsString()
   @MinLength(1)

@@ -1,9 +1,11 @@
-import { IsIn, IsInt, IsString } from 'class-validator';
-import { QUESTION_IDS, VALID_SCORES } from '../questions';
+import { IsIn, IsInt, IsString, MaxLength } from 'class-validator';
+import { VALID_SCORES } from '../questions';
 
 export class SaveAnswerDto {
+  // Validated against the assessment's frozen question snapshot in the service,
+  // not a static list, so it works with profile-generated question sets.
   @IsString()
-  @IsIn(QUESTION_IDS)
+  @MaxLength(40)
   questionId!: string;
 
   @IsInt()

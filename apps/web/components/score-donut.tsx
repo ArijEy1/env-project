@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+
 interface ScoreDonutProps {
   score: number;
   maturityLevel: number;
@@ -15,10 +17,17 @@ const LEVEL_COLORS: Record<number, string> = {
 };
 
 export function ScoreDonut({ score, maturityLevel, size = 180 }: ScoreDonutProps) {
+  // Animate the ring from 0 to the score on mount.
+  const [animated, setAnimated] = useState(0);
+  useEffect(() => {
+    const t = setTimeout(() => setAnimated(score), 60);
+    return () => clearTimeout(t);
+  }, [score]);
+
   const strokeWidth = 14;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
-  const offset = circumference * (1 - score / 100);
+  const offset = circumference * (1 - animated / 100);
   const color = LEVEL_COLORS[maturityLevel] ?? LEVEL_COLORS[1];
   const center = size / 2;
 

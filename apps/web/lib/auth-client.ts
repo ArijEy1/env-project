@@ -7,12 +7,16 @@ export interface EntityInfo {
   nameEn: string | null;
   crNumber: string;
   sector: string;
+  entityType: string | null;
+  environmentalExposure: string | null;
+  submittedExposure: string | null;
   city: string;
   region: string | null;
   employeeCountBracket: string | null;
   contactEmail: string | null;
   contactPhone: string | null;
   unifiedNationalNumber: string | null;
+  profileLockedAt: string | null;
   createdAt: string;
 }
 
@@ -41,6 +45,8 @@ export interface RegisterPayload {
     nameEn?: string;
     crNumber: string;
     sector: string;
+    entityType: string;
+    environmentalExposure: string;
     city: string;
     region?: string;
     employeeCountBracket?: string;
@@ -98,6 +104,8 @@ export interface UpdateEntityPayload {
   nameAr?: string;
   nameEn?: string;
   sector?: string;
+  entityType?: string;
+  environmentalExposure?: string;
   city?: string;
   region?: string;
   employeeCountBracket?: string;

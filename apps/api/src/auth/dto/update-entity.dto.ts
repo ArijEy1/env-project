@@ -1,10 +1,12 @@
 import { IsEmail, IsIn, IsOptional, IsString, MinLength } from 'class-validator';
+import { ENTITY_TYPES, EXPOSURE_LEVELS } from '../profile-options';
 
 const SECTORS = [
   'industrial',
   'oil_and_gas',
   'manufacturing',
   'construction',
+  'mining',
   'services',
   'government',
   'healthcare',
@@ -35,6 +37,16 @@ export class UpdateEntityDto {
   @IsString()
   @IsIn(SECTORS)
   sector?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsIn([...ENTITY_TYPES])
+  entityType?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsIn([...EXPOSURE_LEVELS])
+  environmentalExposure?: string;
 
   @IsOptional()
   @IsString()

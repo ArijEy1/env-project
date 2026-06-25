@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Put, Res, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { generatePdfReport, generateReferenceNumber } from '../assessment/pdf-report';
@@ -23,6 +23,31 @@ export class AdminController {
   @Get('entities/:id')
   getEntity(@Param('id') id: string) {
     return this.adminService.getEntity(id);
+  }
+
+  @Get('questions')
+  listQuestions() {
+    return this.adminService.listQuestions();
+  }
+
+  @Patch('questions/:id')
+  updateQuestion(@Param('id') id: string, @Body() dto: Record<string, unknown>) {
+    return this.adminService.updateQuestion(id, dto);
+  }
+
+  @Get('recommendations')
+  listRecommendations() {
+    return this.adminService.listRecommendations();
+  }
+
+  @Put('recommendations/:id')
+  updateRecommendation(@Param('id') id: string, @Body() dto: Record<string, unknown>) {
+    return this.adminService.updateRecommendation(id, dto);
+  }
+
+  @Get('regulatory-mappings')
+  listRegulatoryMappings() {
+    return this.adminService.listRegulatoryMappings();
   }
 
   @Get('assessments')
