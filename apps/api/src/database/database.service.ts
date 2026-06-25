@@ -8,6 +8,7 @@ import { Client, Pool, QueryResult, QueryResultRow } from 'pg';
 import { v4 as uuidv4 } from 'uuid';
 import {
   DRAFT_DOMAINS,
+  DRAFT_GLOSSARY,
   DRAFT_MATERIALITY_TOPICS,
   DRAFT_MATERIALITY_WEIGHTS,
   DRAFT_QUESTION_BANK,
@@ -88,6 +89,7 @@ export class DatabaseService implements OnModuleInit, OnApplicationShutdown {
       await this.ensureScoringConfigurationsTable();
       await this.ensureRecommendationLibraryTable();
       await this.ensureRegulatoryMappingsTable();
+      await this.ensureGlossaryTermsTable();
       await this.ensureAssessmentEngineColumns();
       await this.ensureAssessmentQuestionsTable();
       await this.ensureAssessmentAnswerEngineColumns();
@@ -427,6 +429,23 @@ export class DatabaseService implements OnModuleInit, OnApplicationShutdown {
     `);
   }
 
+  private async ensureGlossaryTermsTable() {
+    // Section 8: the approved terminology glossary (50+ Academy-standardised
+    // terms). Managed via the admin backoffice; seeded with a few placeholders.
+    await this.pool.query(`
+      CREATE TABLE IF NOT EXISTS glossary_terms (
+        id UUID PRIMARY KEY,
+        term_ar VARCHAR(255) NOT NULL,
+        term_en VARCHAR(255),
+        definition_ar TEXT NOT NULL,
+        definition_en TEXT,
+        category VARCHAR(80),
+        active BOOLEAN NOT NULL DEFAULT TRUE,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+  }
+
   private async ensureAssessmentEngineColumns() {
     await this.pool.query(
       `ALTER TABLE assessments ADD COLUMN IF NOT EXISTS profile_snapshot JSONB`,
@@ -439,6 +458,10 @@ export class DatabaseService implements OnModuleInit, OnApplicationShutdown {
     );
     await this.pool.query(
       `ALTER TABLE assessments ADD COLUMN IF NOT EXISTS calculation_audit JSONB`,
+    );
+    // Report-download counter (Section 9 platform statistics).
+    await this.pool.query(
+      `ALTER TABLE assessments ADD COLUMN IF NOT EXISTS download_count INT NOT NULL DEFAULT 0`,
     );
     // Draft retention + reminder tracking (Section 4).
     await this.pool.query(
@@ -582,6 +605,16 @@ export class DatabaseService implements OnModuleInit, OnApplicationShutdown {
           `INSERT INTO regulatory_mappings (id, bank_question_id, regulation, clause, authority, url)
            VALUES ($1,$2,$3,$4,$5,$6)`,
           [uuidv4(), m.bankQuestionId, m.regulation, m.clause, m.authority, m.url],
+        );
+      }
+    }
+
+    if (await isEmpty('glossary_terms')) {
+      for (const g of DRAFT_GLOSSARY) {
+        await this.pool.query(
+          `INSERT INTO glossary_terms (id, term_ar, term_en, definition_ar, definition_en, category)
+           VALUES ($1,$2,$3,$4,$5,$6)`,
+          [uuidv4(), g.termAr, g.termEn, g.definitionAr, g.definitionEn, g.category],
         );
       }
     }

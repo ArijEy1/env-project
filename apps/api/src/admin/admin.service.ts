@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { v4 as uuidv4 } from 'uuid';
 import { DatabaseService } from '../database/database.service';
 import { RecommendationEngineService } from '../assessment/recommendation-engine.service';
 import { buildReportData } from '../assessment/pdf-report';
@@ -62,6 +63,7 @@ interface StatsRow {
   submitted_assessments: string;
   average_score: string | null;
   average_maturity: string | null;
+  report_downloads: string;
 }
 
 interface SectorStatRow {
@@ -114,6 +116,16 @@ interface RegMapRow {
   url: string | null;
 }
 
+interface GlossaryRow {
+  id: string;
+  term_ar: string;
+  term_en: string | null;
+  definition_ar: string;
+  definition_en: string | null;
+  category: string | null;
+  active: boolean;
+}
+
 @Injectable()
 export class AdminService {
   constructor(
@@ -129,7 +141,8 @@ export class AdminService {
         (SELECT COUNT(*) FROM assessments) as total_assessments,
         (SELECT COUNT(*) FROM assessments WHERE status = 'submitted') as submitted_assessments,
         (SELECT ROUND(AVG(total_score)::numeric, 2) FROM assessments WHERE status = 'submitted') as average_score,
-        (SELECT ROUND(AVG(maturity_level)::numeric, 2) FROM assessments WHERE status = 'submitted') as average_maturity
+        (SELECT ROUND(AVG(maturity_level)::numeric, 2) FROM assessments WHERE status = 'submitted') as average_maturity,
+        (SELECT COALESCE(SUM(download_count), 0) FROM assessments) as report_downloads
     `);
 
     const bySector = await this.db.query<SectorStatRow>(`
@@ -152,6 +165,7 @@ export class AdminService {
       submittedAssessments: Number(row.submitted_assessments),
       averageScore: row.average_score ? Number(row.average_score) : null,
       averageMaturity: row.average_maturity ? Number(row.average_maturity) : null,
+      reportDownloads: Number(row.report_downloads),
       bySector: bySector.rows.map((s) => ({
         sector: s.sector,
         entityCount: Number(s.entity_count),
@@ -278,6 +292,84 @@ export class AdminService {
       authority: m.authority,
       url: m.url,
     }));
+  }
+
+  // --- Terminology glossary (Section 8) ---
+
+  async listGlossary() {
+    const result = await this.db.query<GlossaryRow>(
+      'SELECT id, term_ar, term_en, definition_ar, definition_en, category, active FROM glossary_terms ORDER BY term_ar ASC',
+    );
+    return result.rows.map((g) => this.mapGlossary(g));
+  }
+
+  async createGlossaryTerm(dto: Record<string, unknown>) {
+    const termAr = typeof dto.termAr === 'string' ? dto.termAr.trim() : '';
+    const definitionAr = typeof dto.definitionAr === 'string' ? dto.definitionAr.trim() : '';
+    if (!termAr || !definitionAr) {
+      throw new NotFoundException('termAr and definitionAr are required');
+    }
+    const id = uuidv4();
+    const res = await this.db.query<GlossaryRow>(
+      `INSERT INTO glossary_terms (id, term_ar, term_en, definition_ar, definition_en, category)
+       VALUES ($1,$2,$3,$4,$5,$6) RETURNING id, term_ar, term_en, definition_ar, definition_en, category, active`,
+      [
+        id,
+        termAr,
+        (dto.termEn as string) || null,
+        definitionAr,
+        (dto.definitionEn as string) || null,
+        (dto.category as string) || null,
+      ],
+    );
+    return this.mapGlossary(res.rows[0]);
+  }
+
+  async updateGlossaryTerm(id: string, dto: Record<string, unknown>) {
+    const map: Array<[string, string]> = [
+      ['termAr', 'term_ar'],
+      ['termEn', 'term_en'],
+      ['definitionAr', 'definition_ar'],
+      ['definitionEn', 'definition_en'],
+      ['category', 'category'],
+      ['active', 'active'],
+    ];
+    const fields: string[] = [];
+    const values: unknown[] = [];
+    let i = 1;
+    for (const [key, col] of map) {
+      if (dto[key] !== undefined) {
+        fields.push(`${col} = $${i++}`);
+        values.push(dto[key]);
+      }
+    }
+    if (fields.length === 0) throw new NotFoundException('Nothing to update');
+    values.push(id);
+    const res = await this.db.query<GlossaryRow>(
+      `UPDATE glossary_terms SET ${fields.join(', ')} WHERE id = $${i}
+       RETURNING id, term_ar, term_en, definition_ar, definition_en, category, active`,
+      values,
+    );
+    if (!res.rows[0]) throw new NotFoundException('Term not found');
+    return this.mapGlossary(res.rows[0]);
+  }
+
+  async deleteGlossaryTerm(id: string) {
+    const res = await this.db.query('DELETE FROM glossary_terms WHERE id = $1', [id]);
+    if (res.rowCount === 0) throw new NotFoundException('Term not found');
+    return { id, deleted: true };
+  }
+
+  private mapGlossary(g: GlossaryRow) {
+    return {
+      id: g.id,
+      termAr: g.term_ar,
+      termEn: g.term_en,
+      definitionAr: g.definition_ar,
+      definitionEn: g.definition_en,
+      category: g.category,
+      active: g.active,
+    };
   }
 
   private mapRec(r: RecLibRow) {
@@ -501,6 +593,12 @@ export class AdminService {
     );
     const e = entity.rows[0];
     const recommendations = await this.recommendationEngine.build(assessmentId);
+
+    // Count this report download (Section 9 platform statistics).
+    await this.db.query(
+      'UPDATE assessments SET download_count = download_count + 1 WHERE id = $1',
+      [assessmentId],
+    );
 
     return buildReportData(
       e?.name_ar ?? '',

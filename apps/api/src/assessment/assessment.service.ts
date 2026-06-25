@@ -394,6 +394,12 @@ export class AssessmentService {
     const results = await this.getResults(assessmentId, userId);
     const recommendations = await this.recommendationEngine.build(assessmentId);
 
+    // Count this report download (Section 9 platform statistics).
+    await this.db.query(
+      'UPDATE assessments SET download_count = download_count + 1 WHERE id = $1',
+      [assessmentId],
+    );
+
     return buildReportData(entity?.name_ar ?? '', results, recommendations);
   }
 

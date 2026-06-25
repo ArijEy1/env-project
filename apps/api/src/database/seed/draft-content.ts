@@ -79,6 +79,14 @@ export interface DraftRegulatoryMapping {
   url: string | null;
 }
 
+export interface DraftGlossaryTerm {
+  termAr: string;
+  termEn: string | null;
+  definitionAr: string;
+  definitionEn: string | null;
+  category: string | null;
+}
+
 export const DRAFT_DOMAINS: DraftDomain[] = [
   { id: 'D1', nameAr: 'الحوكمة والاستراتيجية البيئية', nameEn: 'Environmental Governance & Strategy', displayOrder: 1 },
   { id: 'D2', nameAr: 'الامتثال التنظيمي', nameEn: 'Regulatory Compliance', displayOrder: 2 },
@@ -222,6 +230,15 @@ export const DRAFT_RECOMMENDATIONS: DraftRecommendation[] = [
     mediumTermActionAr: 'اعتماد إطار إفصاح معترف به دوليًا مع تحقق مستقل.', mediumTermActionEn: 'Adopt a recognized disclosure framework (GRI) with independent assurance.',
     costEstimate: 'SAR 30,000 – 100,000', effortLevel: 'low', scoreImpactPoints: 5, timelineWeeks: 12, legalReference: 'GRI Standards',
   },
+];
+
+// Placeholder terms — replace with the Academy's approved 50+ term glossary.
+export const DRAFT_GLOSSARY: DraftGlossaryTerm[] = [
+  { termAr: 'النضج البيئي', termEn: 'Environmental Maturity', definitionAr: 'مستوى تطور ممارسات المنشأة البيئية وقدرتها على إدارة أثرها البيئي.', definitionEn: 'The level of development of an organization’s environmental practices.', category: 'عام' },
+  { termAr: 'الحوكمة البيئية', termEn: 'Environmental Governance', definitionAr: 'الأطر والسياسات والمسؤوليات التي توجه إدارة الشؤون البيئية في المنشأة.', definitionEn: 'The frameworks and policies guiding environmental management.', category: 'الحوكمة' },
+  { termAr: 'الانبعاثات النطاق 1', termEn: 'Scope 1 Emissions', definitionAr: 'الانبعاثات المباشرة من المصادر المملوكة أو الخاضعة لسيطرة المنشأة.', definitionEn: 'Direct emissions from owned or controlled sources.', category: 'الانبعاثات' },
+  { termAr: 'الانبعاثات النطاق 2', termEn: 'Scope 2 Emissions', definitionAr: 'الانبعاثات غير المباشرة الناتجة عن الطاقة المشتراة والمستهلكة.', definitionEn: 'Indirect emissions from purchased energy.', category: 'الانبعاثات' },
+  { termAr: 'الأهمية النسبية', termEn: 'Materiality', definitionAr: 'مدى أهمية موضوع بيئي معيّن لقطاع المنشأة ومستوى تعرضها البيئي.', definitionEn: 'The relevance of an environmental topic to a sector and exposure level.', category: 'المنهجية' },
 ];
 
 export const DRAFT_REGULATORY_MAPPINGS: DraftRegulatoryMapping[] = [
