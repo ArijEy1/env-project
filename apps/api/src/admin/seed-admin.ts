@@ -13,12 +13,26 @@ function hashPassword(password: string): string {
 
 async function main() {
   const args = process.argv.slice(2);
-  let email = 'admin@env-project.sa';
-  let password = 'AdminPass1';
+  let email = process.env.SEED_ADMIN_EMAIL || 'admin@env-project.sa';
+  let password = process.env.SEED_ADMIN_PASSWORD || '';
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--email' && args[i + 1]) email = args[i + 1];
     if (args[i] === '--password' && args[i + 1]) password = args[i + 1];
+  }
+
+  // Never seed a superadmin with a default/weak password.
+  if (!password) {
+    console.error(
+      'Refusing to seed: provide a password via --password <value> or SEED_ADMIN_PASSWORD env var.',
+    );
+    process.exit(1);
+  }
+  if (password.length < 8 || !/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
+    console.error(
+      'Password must be at least 8 characters and include an uppercase letter, a lowercase letter, and a digit.',
+    );
+    process.exit(1);
   }
 
   const client = new Client({

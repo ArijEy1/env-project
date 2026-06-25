@@ -43,12 +43,14 @@ export class AuthController {
   }
 
   @Post('login')
-  login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto);
+  login(@Ip() ip: string, @Body() loginDto: LoginDto) {
+    return this.authService.login(loginDto, ip);
   }
 
   @Post('forgot-password')
-  forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
+  forgotPassword(@Ip() ip: string, @Body() forgotPasswordDto: ForgotPasswordDto) {
+    // Throttle to prevent reset-email flooding / token generation abuse.
+    this.registerRateLimiter.assertWithinLimit(ip);
     return this.authService.requestPasswordReset(forgotPasswordDto);
   }
 

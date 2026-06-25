@@ -219,7 +219,7 @@ export function AccountPanel() {
                   </p>
                   <div className="account-assessment-progress">
                     <div className="account-assessment-progress-bar">
-                      <div className="account-assessment-progress-fill" style={{ width: `${(draft.answeredCount / draft.totalQuestions) * 100}%` }} />
+                      <div className="account-assessment-progress-fill" style={{ width: `${Math.min(100, (draft.answeredCount / Math.max(1, draft.totalQuestions)) * 100)}%` }} />
                     </div>
                     <span className="account-assessment-progress-text">
                       {draft.answeredCount} / {draft.totalQuestions}

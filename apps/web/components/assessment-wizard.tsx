@@ -92,6 +92,12 @@ export function AssessmentWizard({ assessmentId }: AssessmentWizardProps) {
           answerMap[a.questionId] = a.score;
           if (a.calculatorInputs) calcMap[a.questionId] = a.calculatorInputs;
         }
+        try {
+          const pendingCalc = localStorage.getItem(`env-pending-calc-${assessmentId}`);
+          if (pendingCalc) Object.assign(calcMap, JSON.parse(pendingCalc));
+        } catch {
+          /* ignore */
+        }
         setAnswers(answerMap);
         setCalcInputs(calcMap);
         const pending = getPendingAnswers();
@@ -189,20 +195,37 @@ export function AssessmentWizard({ assessmentId }: AssessmentWizardProps) {
     }
   }
 
+  function writePendingCalc(questionId: string, inputs: Record<string, unknown> | null) {
+    try {
+      const key = `env-pending-calc-${assessmentId}`;
+      const pending = JSON.parse(localStorage.getItem(key) ?? '{}');
+      if (inputs) pending[questionId] = inputs;
+      else delete pending[questionId];
+      if (Object.keys(pending).length === 0) localStorage.removeItem(key);
+      else localStorage.setItem(key, JSON.stringify(pending));
+    } catch {
+      /* ignore storage errors */
+    }
+  }
+
   async function handleCalculatorSave(inputs: Record<string, unknown>) {
     setSaving(true);
     setSaveStatus('saving');
     setError('');
+    // Keep the inputs in state so they survive in-wizard navigation regardless.
+    setCalcInputs((prev) => ({ ...prev, [question.questionId]: inputs }));
     try {
       const res = await saveCalculatorAnswer(assessmentId, question.questionId, inputs);
       setAnswers((prev) => ({ ...prev, [question.questionId]: res.score }));
-      setCalcInputs((prev) => ({ ...prev, [question.questionId]: inputs }));
+      writePendingCalc(question.questionId, null);
       setSaveStatus('saved');
       if (saveStatusTimer.current) clearTimeout(saveStatusTimer.current);
       saveStatusTimer.current = setTimeout(() => setSaveStatus('idle'), 2000);
     } catch {
+      // Persist locally so the figures survive reload/navigation.
+      writePendingCalc(question.questionId, inputs);
       setSaveStatus('failed');
-      showToast(isArabic ? 'فشل الحفظ' : 'Save failed', 'error');
+      showToast(isArabic ? 'فشل الحفظ — محفوظ محليًا' : 'Save failed — saved locally', 'error');
     } finally {
       setSaving(false);
     }

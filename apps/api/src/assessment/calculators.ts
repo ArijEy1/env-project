@@ -35,10 +35,12 @@ function scoreScope12(inputs: Record<string, unknown>): number {
   const baseline = num(inputs.baseline);
   const hasTarget = bool(inputs.hasReductionTarget);
 
+  const current = scope1 + scope2;
   let points = 0;
-  if (scope1 > 0 || scope2 > 0) points += 25;
+  if (current > 0) points += 25;
   if (baseline > 0) points += 25;
-  if (baseline > 0 && scope1 + scope2 < baseline) points += 25;
+  // Only credit a reduction when current emissions are actually measured.
+  if (current > 0 && baseline > 0 && current < baseline) points += 25;
   if (hasTarget) points += 25;
   return toScale(points);
 }

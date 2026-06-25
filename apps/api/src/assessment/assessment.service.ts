@@ -224,16 +224,20 @@ export class AssessmentService {
       );
     }
 
-    // Calculator questions derive their score server-side from raw inputs.
+    // Calculator questions ALWAYS derive their score server-side from inputs —
+    // a client-supplied raw score is ignored, so it can't be spoofed.
     let score: number;
     let calculatorInputs: Record<string, unknown> | null = null;
-    if (sq.calculator_type && dto.calculatorInputs) {
+    if (sq.calculator_type) {
+      if (!dto.calculatorInputs) {
+        throw new BadRequestException('This question requires calculator inputs');
+      }
       calculatorInputs = dto.calculatorInputs;
       score = computeCalculatorScore(sq.calculator_type, dto.calculatorInputs);
     } else if (dto.score !== undefined) {
       score = dto.score;
     } else {
-      throw new BadRequestException('A score or calculator inputs are required');
+      throw new BadRequestException('A score is required');
     }
 
     await this.db.query(
@@ -333,7 +337,13 @@ export class AssessmentService {
       effectiveWeight: Number(q.effective_weight),
     }));
 
-    const domainWeights = await this.loadDomainWeights(row.scoring_config_id);
+    let domainWeights = await this.loadDomainWeights(row.scoring_config_id);
+    if (Object.keys(domainWeights).length === 0) {
+      // No active/valid scoring config — fall back to equal domain weights so a
+      // submission still scores correctly instead of silently producing 0.
+      const domainsInSnapshot = [...new Set(questions.map((q) => q.domainId))];
+      domainWeights = Object.fromEntries(domainsInSnapshot.map((d) => [d, 1]));
+    }
     const result = computeEngineScore(
       questions,
       answerMap,
