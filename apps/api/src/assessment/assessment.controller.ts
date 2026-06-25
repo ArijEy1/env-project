@@ -35,6 +35,11 @@ export class AssessmentController {
     return this.assessmentService.getGeneratedQuestions(id, req.user.sub);
   }
 
+  @Get(':id/results')
+  getResults(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
+    return this.assessmentService.getResults(id, req.user.sub);
+  }
+
   @Get(':id/recommendations')
   getRecommendations(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
     return this.assessmentService.getRecommendations(id, req.user.sub);

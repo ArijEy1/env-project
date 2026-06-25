@@ -133,6 +133,36 @@ export function fetchGeneratedQuestions(assessmentId: string) {
   return request<GeneratedQuestionsData>(`/assessments/${assessmentId}/generated`);
 }
 
+export interface DomainResult {
+  id: string;
+  nameAr: string;
+  nameEn: string;
+  score: number;
+  maturity: number;
+  topGapAr: string | null;
+  topGapEn: string | null;
+}
+
+export interface ResultsProfile {
+  sector: string | null;
+  entityType: string | null;
+  environmentalExposure: string | null;
+  employeeCountBracket: string | null;
+}
+
+export interface ResultsData {
+  assessmentId: string;
+  totalScore: number;
+  maturityLevel: number;
+  submittedAt: string | null;
+  domains: DomainResult[];
+  profile: ResultsProfile;
+}
+
+export function fetchResults(assessmentId: string) {
+  return request<ResultsData>(`/assessments/${assessmentId}/results`);
+}
+
 export function createAssessment() {
   return request<Assessment>('/assessments', { method: 'POST' });
 }

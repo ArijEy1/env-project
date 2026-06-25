@@ -393,6 +393,103 @@ export class AssessmentService {
     return this.recommendationEngine.build(assessmentId);
   }
 
+  /**
+   * Rich results payload for the Section 7 dashboard: per-domain scores +
+   * maturity + top gap, the profile used, and overall score/maturity. Domain
+   * names come from the DB so they track the (swappable) content.
+   */
+  async getResults(assessmentId: string, userId: string) {
+    const entityId = await this.getEntityId(userId);
+    const row = await this.findAssessment(assessmentId);
+
+    if (!row) {
+      throw new NotFoundException('Assessment not found');
+    }
+    if (row.entity_id !== entityId) {
+      throw new ForbiddenException('You do not have access to this assessment');
+    }
+    if (row.status !== 'submitted') {
+      throw new BadRequestException('Results are only available for submitted assessments');
+    }
+
+    const domainScores = row.domain_scores ?? {};
+
+    const domainRows = await this.db.query<{
+      id: string;
+      name_ar: string;
+      name_en: string;
+      display_order: number;
+    }>(
+      'SELECT id, name_ar, name_en, display_order FROM domains WHERE active = TRUE ORDER BY display_order ASC',
+    );
+
+    // Top gap per domain = lowest-scoring question (tie broken by highest weight).
+    const gapRows = await this.db.query<{
+      domain_id: string;
+      text_ar: string;
+      text_en: string;
+      effective_weight: string;
+      score: number;
+    }>(
+      `SELECT aq.domain_id, aq.text_ar, aq.text_en, aq.effective_weight,
+              COALESCE(aa.score, 0) AS score
+       FROM assessment_questions aq
+       LEFT JOIN assessment_answers aa
+         ON aa.assessment_id = aq.assessment_id
+        AND aa.question_id = aq.bank_question_id
+       WHERE aq.assessment_id = $1`,
+      [assessmentId],
+    );
+    const topGap = new Map<string, { text_ar: string; text_en: string; score: number; weight: number }>();
+    for (const g of gapRows.rows) {
+      const weight = Number(g.effective_weight);
+      const cur = topGap.get(g.domain_id);
+      if (!cur || g.score < cur.score || (g.score === cur.score && weight > cur.weight)) {
+        topGap.set(g.domain_id, { text_ar: g.text_ar, text_en: g.text_en, score: g.score, weight });
+      }
+    }
+
+    const profile = await this.db.query<{
+      sector: string;
+      entity_type: string | null;
+      environmental_exposure: string | null;
+      employee_count_bracket: string | null;
+    }>(
+      'SELECT sector, entity_type, environmental_exposure, employee_count_bracket FROM entities WHERE id = $1',
+      [entityId],
+    );
+
+    const domains = domainRows.rows
+      .filter((d) => domainScores[d.id] !== undefined)
+      .map((d) => {
+        const score = domainScores[d.id] ?? 0;
+        const gap = topGap.get(d.id);
+        return {
+          id: d.id,
+          nameAr: d.name_ar,
+          nameEn: d.name_en,
+          score,
+          maturity: score <= 0 ? 1 : Math.min(5, Math.ceil(score / 20)),
+          topGapAr: gap?.text_ar ?? null,
+          topGapEn: gap?.text_en ?? null,
+        };
+      });
+
+    return {
+      assessmentId,
+      totalScore: row.total_score ? Number(row.total_score) : 0,
+      maturityLevel: row.maturity_level ?? 1,
+      submittedAt: row.submitted_at ? this.toIso(row.submitted_at) : null,
+      domains,
+      profile: {
+        sector: profile.rows[0]?.sector ?? null,
+        entityType: profile.rows[0]?.entity_type ?? null,
+        environmentalExposure: profile.rows[0]?.environmental_exposure ?? null,
+        employeeCountBracket: profile.rows[0]?.employee_count_bracket ?? null,
+      },
+    };
+  }
+
   private async findEntityById(entityId: string) {
     const result = await this.db.query<{ name_ar: string; name_en: string | null }>(
       'SELECT name_ar, name_en FROM entities WHERE id = $1',

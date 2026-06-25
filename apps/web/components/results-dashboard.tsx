@@ -1,12 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getAssessment, fetchRecommendations, downloadReport, type Assessment, type Recommendation } from '../lib/assessment-client';
+import { getAssessment, fetchRecommendations, fetchResults, downloadReport, type Assessment, type Recommendation, type ResultsData } from '../lib/assessment-client';
 import { fetchProfile, authStorage, type AuthUser } from '../lib/auth-client';
+import { ENTITY_TYPE_OPTIONS, EXPOSURE_OPTIONS, SECTOR_OPTIONS, optionLabel } from '../lib/profile-options';
 import { translateError } from '../lib/error-messages';
 import { useLanguage } from './language-provider';
 import { useToast } from './toast-provider';
 import { ScoreDonut } from './score-donut';
+import { RadarChart, type RadarDatum } from './radar-chart';
 
 interface ResultsDashboardProps {
   assessmentId: string;
@@ -28,11 +30,6 @@ const MATURITY_LABELS: Record<number, { ar: string; en: string }> = {
   5: { ar: 'رائد', en: 'Leading' },
 };
 
-const DOMAIN_INFO: Record<string, { ar: string; en: string; weight: number }> = {
-  governance: { ar: 'الحوكمة البيئية', en: 'Environmental Governance', weight: 45 },
-  compliance: { ar: 'الامتثال التنظيمي', en: 'Regulatory Compliance', weight: 55 },
-};
-
 const EFFORT_LABELS: Record<string, { ar: string; en: string }> = {
   low: { ar: 'منخفض', en: 'Low' },
   medium: { ar: 'متوسط', en: 'Medium' },
@@ -45,6 +42,7 @@ export function ResultsDashboard({ assessmentId }: ResultsDashboardProps) {
   const isArabic = language === 'ar';
 
   const [assessment, setAssessment] = useState<Assessment | null>(null);
+  const [results, setResults] = useState<ResultsData | null>(null);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [roadmapTab, setRoadmapTab] = useState<'immediate' | 'short' | 'medium'>('immediate');
@@ -75,8 +73,12 @@ export function ResultsDashboard({ assessmentId }: ResultsDashboardProps) {
         setAssessment(assessmentData);
         setUser(profile);
         if (assessmentData.status === 'submitted') {
-          const recs = await fetchRecommendations(assessmentId);
+          const [recs, resultsData] = await Promise.all([
+            fetchRecommendations(assessmentId),
+            fetchResults(assessmentId),
+          ]);
           setRecommendations(recs);
+          setResults(resultsData);
         }
       } catch (err) {
         const errorMessage = err instanceof Error ? translateError(err.message, isArabic) : isArabic ? 'فشل تحميل النتائج' : 'Failed to load results';
@@ -113,10 +115,12 @@ export function ResultsDashboard({ assessmentId }: ResultsDashboardProps) {
     ? new Date(assessment.submittedAt).toLocaleDateString(isArabic ? 'ar-SA' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' })
     : '';
 
-  const domains = [
-    { key: 'governance', score: assessment.governanceScore ?? 0 },
-    { key: 'compliance', score: assessment.complianceScore ?? 0 },
-  ];
+  const domainResults = results?.domains ?? [];
+  const radarData: RadarDatum[] = domainResults.map((d) => ({
+    label: d.id,
+    fullLabel: isArabic ? d.nameAr : d.nameEn,
+    score: d.score,
+  }));
 
   async function handleDownloadPdf() {
     setDownloading(true);
@@ -161,22 +165,51 @@ export function ResultsDashboard({ assessmentId }: ResultsDashboardProps) {
         </div>
       </div>
 
-      {/* Domain cards */}
+      {/* Radar + profile summary */}
+      {domainResults.length > 0 && (
+        <div className="results-radar-row">
+          <div className="results-radar-card">
+            <h2 className="results-section-title">{isArabic ? 'الأداء حسب المجال' : 'Performance by domain'}</h2>
+            <RadarChart data={radarData} />
+          </div>
+          {results?.profile && (
+            <div className="results-profile-card">
+              <h2 className="results-section-title">{isArabic ? 'ملف المنشأة' : 'Organization profile'}</h2>
+              <div className="results-profile-list">
+                <div className="results-profile-row"><span>{isArabic ? 'نوع المنشأة' : 'Entity type'}</span><strong>{optionLabel(ENTITY_TYPE_OPTIONS, results.profile.entityType, isArabic)}</strong></div>
+                <div className="results-profile-row"><span>{isArabic ? 'القطاع' : 'Sector'}</span><strong>{optionLabel(SECTOR_OPTIONS, results.profile.sector, isArabic)}</strong></div>
+                <div className="results-profile-row"><span>{isArabic ? 'الحجم' : 'Size'}</span><strong>{results.profile.employeeCountBracket || (isArabic ? 'غير محدد' : 'Not set')}</strong></div>
+                <div className="results-profile-row"><span>{isArabic ? 'التعرض البيئي' : 'Exposure'}</span><strong>{optionLabel(EXPOSURE_OPTIONS, results.profile.environmentalExposure, isArabic)}</strong></div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Six domain cards */}
       <div className="results-domains">
-        {domains.map((d) => {
-          const info = DOMAIN_INFO[d.key];
+        {domainResults.map((d) => {
+          const color = LEVEL_COLORS[d.maturity] ?? LEVEL_COLORS[1];
+          const topGap = isArabic ? d.topGapAr : d.topGapEn;
           return (
-            <div key={d.key} className="results-domain-card">
+            <div key={d.id} className="results-domain-card">
               <div className="results-domain-header">
-                <span className="results-domain-name">{isArabic ? info.ar : info.en}</span>
-                <span className="results-domain-weight">{isArabic ? `الوزن: ${info.weight}%` : `Weight: ${info.weight}%`}</span>
+                <span className="results-domain-name">{isArabic ? d.nameAr : d.nameEn}</span>
+                <span className="results-domain-maturity" style={{ background: `${color}22`, color }}>
+                  {isArabic ? 'مستوى' : 'L'} {d.maturity}
+                </span>
               </div>
               <div className="results-domain-score">
-                <strong>{d.score.toFixed(2)}</strong> / 100
+                <strong>{d.score.toFixed(1)}</strong> / 100
               </div>
               <div className="results-domain-bar">
-                <div className="results-domain-bar-fill" style={{ width: `${d.score}%` }} />
+                <div className="results-domain-bar-fill" style={{ width: `${d.score}%`, background: color }} />
               </div>
+              {topGap ? (
+                <p className="results-domain-gap" title={topGap}>
+                  {isArabic ? 'أبرز فجوة: ' : 'Top gap: '}{topGap}
+                </p>
+              ) : null}
             </div>
           );
         })}
