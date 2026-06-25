@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
-import { generateRecommendations } from '../assessment/recommendations';
+import { RecommendationEngineService } from '../assessment/recommendation-engine.service';
+import { buildReportData } from '../assessment/pdf-report';
 
 interface EntityRow {
   id: string;
@@ -115,7 +116,10 @@ interface RegMapRow {
 
 @Injectable()
 export class AdminService {
-  constructor(private readonly db: DatabaseService) {}
+  constructor(
+    private readonly db: DatabaseService,
+    private readonly recommendationEngine: RecommendationEngineService,
+  ) {}
 
   async getStats() {
     const result = await this.db.query<StatsRow>(`
@@ -456,36 +460,64 @@ export class AdminService {
   }
 
   async getReportData(assessmentId: string) {
-    const detail = await this.getAssessmentDetail(assessmentId);
-
-    if (detail.status !== 'submitted') {
+    const a = await this.db.query<{
+      entity_id: string;
+      status: string;
+      total_score: string | null;
+      maturity_level: number | null;
+      domain_scores: Record<string, number> | null;
+      submitted_at: Date | string | null;
+    }>(
+      `SELECT entity_id, status, total_score, maturity_level, domain_scores, submitted_at
+       FROM assessments WHERE id = $1`,
+      [assessmentId],
+    );
+    if (!a.rows[0]) throw new NotFoundException('Assessment not found');
+    const row = a.rows[0];
+    if (row.status !== 'submitted') {
       throw new NotFoundException('Report only available for submitted assessments');
     }
 
-    const entity = await this.db.query<{ name_ar: string; name_en: string | null }>(
-      'SELECT name_ar, name_en FROM entities WHERE id = $1',
-      [detail.entityId],
+    const domainScores = row.domain_scores ?? {};
+    const domainRows = await this.db.query<{ id: string; name_ar: string; display_order: number }>(
+      'SELECT id, name_ar, display_order FROM domains WHERE active = TRUE ORDER BY display_order ASC',
     );
+    const domains = domainRows.rows
+      .filter((d) => domainScores[d.id] !== undefined)
+      .map((d) => {
+        const score = domainScores[d.id] ?? 0;
+        return { nameAr: d.name_ar, score, maturity: score <= 0 ? 1 : Math.min(5, Math.ceil(score / 20)) };
+      });
 
-    const recommendations = generateRecommendations(detail.answers);
+    const entity = await this.db.query<{
+      name_ar: string;
+      sector: string;
+      entity_type: string | null;
+      environmental_exposure: string | null;
+      employee_count_bracket: string | null;
+    }>(
+      'SELECT name_ar, sector, entity_type, environmental_exposure, employee_count_bracket FROM entities WHERE id = $1',
+      [row.entity_id],
+    );
+    const e = entity.rows[0];
+    const recommendations = await this.recommendationEngine.build(assessmentId);
 
-    return {
-      entityNameAr: entity.rows[0]?.name_ar ?? '',
-      entityNameEn: entity.rows[0]?.name_en ?? null,
-      submittedAt: detail.submittedAt ?? new Date().toISOString(),
-      totalScore: detail.totalScore ?? 0,
-      governanceScore: detail.governanceScore ?? 0,
-      complianceScore: detail.complianceScore ?? 0,
-      maturityLevel: detail.maturityLevel ?? 1,
-      recommendations: recommendations.map((r) => ({
-        rank: r.rank,
-        questionTextAr: r.questionTextAr,
-        score: r.score,
-        actionAr: r.actionAr,
-        impactAr: r.impactAr,
-        referenceAr: r.referenceAr,
-      })),
-    };
+    return buildReportData(
+      e?.name_ar ?? '',
+      {
+        totalScore: row.total_score ? Number(row.total_score) : 0,
+        maturityLevel: row.maturity_level ?? 1,
+        submittedAt: row.submitted_at ? this.toIso(row.submitted_at) : null,
+        domains,
+        profile: {
+          sector: e?.sector ?? null,
+          entityType: e?.entity_type ?? null,
+          environmentalExposure: e?.environmental_exposure ?? null,
+          employeeCountBracket: e?.employee_count_bracket ?? null,
+        },
+      },
+      recommendations,
+    );
   }
 
   private toIso(date: Date | string): string {

@@ -129,7 +129,7 @@ export const DRAFT_QUESTION_BANK: DraftQuestion[] = [
   { id: 'COM_09', domainId: 'D2', textAr: 'هل توجد إجراءات موثقة للإبلاغ عن الحوادث البيئية؟', textEn: 'Are there documented procedures for reporting environmental incidents?', helpTextAr: null, helpTextEn: null, materialityTopicId: 'regulatory_reporting', baseWeight: 1.0, calculatorType: null, applicability: all },
 
   // D3 — Emissions & Climate
-  { id: 'EMI_01', domainId: 'D3', textAr: 'هل تحتفظ المنشأة بجرد موثق لانبعاثات الغازات الدفيئة (النطاق 1 و2)؟', textEn: 'Does the organization maintain a documented GHG inventory (Scope 1 & 2)?', helpTextAr: 'النطاق 1: انبعاثات مباشرة. النطاق 2: انبعاثات غير مباشرة من الطاقة المشتراة.', helpTextEn: 'Scope 1: direct emissions. Scope 2: indirect emissions from purchased energy.', materialityTopicId: 'ghg_emissions', baseWeight: 1.3, calculatorType: 'scope12', applicability: all },
+  { id: 'EMI_01', domainId: 'D3', textAr: 'هل تحتفظ المنشأة بجرد موثق لانبعاثات الغازات الدفيئة للنطاقين 1 و2؟', textEn: 'Does the organization maintain a documented GHG inventory (Scope 1 & 2)?', helpTextAr: 'النطاق 1: انبعاثات مباشرة. النطاق 2: انبعاثات غير مباشرة من الطاقة المشتراة.', helpTextEn: 'Scope 1: direct emissions. Scope 2: indirect emissions from purchased energy.', materialityTopicId: 'ghg_emissions', baseWeight: 1.3, calculatorType: 'scope12', applicability: all },
   { id: 'EMI_02', domainId: 'D3', textAr: 'هل وضعت المنشأة أهدافًا لخفض انبعاثات الكربون؟', textEn: 'Has the organization set carbon emission reduction targets?', helpTextAr: null, helpTextEn: null, materialityTopicId: 'ghg_emissions', baseWeight: 1.1, calculatorType: null, applicability: all },
   { id: 'EMI_03', domainId: 'D3', textAr: 'هل تراقب المنشأة جودة الهواء والانبعاثات وتبلغ عنها دوريًا؟', textEn: 'Does the organization monitor and periodically report air quality and emissions?', helpTextAr: null, helpTextEn: null, materialityTopicId: 'air_quality', baseWeight: 1.1, calculatorType: null, applicability: all },
   { id: 'EMI_04', domainId: 'D3', textAr: 'هل أجرت المنشأة تقييمًا لمخاطر تغير المناخ على عملياتها؟', textEn: 'Has the organization assessed climate-change risks to its operations?', helpTextAr: null, helpTextEn: null, materialityTopicId: 'ghg_emissions', baseWeight: 0.9, calculatorType: null, applicability: all },
@@ -219,7 +219,7 @@ export const DRAFT_RECOMMENDATIONS: DraftRecommendation[] = [
     id: 'REC_DISCLOSURE', materialityTopicId: 'disclosure_reporting', domainId: 'D6', triggerMaxScore: 50,
     immediateActionAr: 'تجميع بيانات الأداء البيئي الأساسية.', immediateActionEn: 'Compile core environmental performance data.',
     shortTermActionAr: 'إصدار تقرير استدامة سنوي مبسّط.', shortTermActionEn: 'Publish a simplified annual sustainability report.',
-    mediumTermActionAr: 'اعتماد إطار إفصاح معترف به (GRI) مع تحقق مستقل.', mediumTermActionEn: 'Adopt a recognized disclosure framework (GRI) with independent assurance.',
+    mediumTermActionAr: 'اعتماد إطار إفصاح معترف به دوليًا مع تحقق مستقل.', mediumTermActionEn: 'Adopt a recognized disclosure framework (GRI) with independent assurance.',
     costEstimate: 'SAR 30,000 – 100,000', effortLevel: 'low', scoreImpactPoints: 5, timelineWeeks: 12, legalReference: 'GRI Standards',
   },
 ];
