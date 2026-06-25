@@ -3,12 +3,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   getAssessment,
-  fetchQuestions,
+  fetchGeneratedQuestions,
   saveAnswer,
   updateProgress,
   submitAssessment,
   type Assessment,
-  type QuestionsData,
+  type GeneratedQuestionsData,
 } from '../lib/assessment-client';
 import { translateError } from '../lib/error-messages';
 import { useLanguage } from './language-provider';
@@ -23,7 +23,7 @@ export function AssessmentWizard({ assessmentId }: AssessmentWizardProps) {
   const { showToast } = useToast();
   const isArabic = language === 'ar';
 
-  const [questionsData, setQuestionsData] = useState<QuestionsData | null>(null);
+  const [questionsData, setQuestionsData] = useState<GeneratedQuestionsData | null>(null);
   const [assessment, setAssessment] = useState<Assessment | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
@@ -32,6 +32,7 @@ export function AssessmentWizard({ assessmentId }: AssessmentWizardProps) {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [showTransition, setShowTransition] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const progressSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -76,22 +77,20 @@ export function AssessmentWizard({ assessmentId }: AssessmentWizardProps) {
     async function load() {
       try {
         const [qData, aData] = await Promise.all([
-          fetchQuestions(),
+          fetchGeneratedQuestions(assessmentId),
           getAssessment(assessmentId),
         ]);
         setQuestionsData(qData);
         setAssessment(aData);
-        setCurrentIndex(aData.currentQuestionIndex);
+        setCurrentIndex(Math.min(aData.currentQuestionIndex, Math.max(0, qData.questions.length - 1)));
         const answerMap: Record<string, number> = {};
         for (const a of aData.answers) {
           answerMap[a.questionId] = a.score;
         }
         setAnswers(answerMap);
-        // Merge pending localStorage answers
         const pending = getPendingAnswers();
         if (Object.keys(pending).length > 0) {
           setAnswers((prev) => ({ ...prev, ...pending }));
-          // Attempt to sync pending answers in background
           void syncPendingAnswers();
         }
       } catch (err) {
@@ -139,31 +138,39 @@ export function AssessmentWizard({ assessmentId }: AssessmentWizardProps) {
   }
 
   const { questions, domains, answerOptions, totalQuestions } = questionsData;
+
+  if (questions.length === 0) {
+    return (
+      <div className="wizard-error">
+        <p className="auth-feedback auth-feedback-error">{isArabic ? 'لا توجد أسئلة لهذا التقييم.' : 'No questions for this assessment.'}</p>
+      </div>
+    );
+  }
+
   const question = questions[currentIndex];
-  const domain = domains.find((d) => d.id === question.domain)!;
-  const selectedScore = answers[question.id];
-  const governanceCount = questions.filter((q) => q.domain === 'governance').length;
-  const isLastGovernance = currentIndex === governanceCount - 1;
+  const domain = domains.find((d) => d.id === question.domainId) ?? { id: question.domainId, nameAr: question.domainId, nameEn: question.domainId };
+  const selectedScore = answers[question.questionId];
+  const nextQuestion = questions[currentIndex + 1];
+  const crossesDomain = !!nextQuestion && nextQuestion.domainId !== question.domainId;
   const isLast = currentIndex === totalQuestions - 1;
   const answeredCount = Object.keys(answers).length;
+  const helpText = isArabic ? question.helpTextAr : question.helpTextEn;
+  const domainIndex = domains.findIndex((d) => d.id === question.domainId);
 
   async function handleSelectAnswer(score: number) {
     setSaving(true);
     setSaveStatus('saving');
     setError('');
-
-    // Update local state immediately
-    setAnswers((prev) => ({ ...prev, [question.id]: score }));
+    setAnswers((prev) => ({ ...prev, [question.questionId]: score }));
 
     try {
-      await saveAnswer(assessmentId, question.id, score);
-      removePendingAnswer(question.id);
+      await saveAnswer(assessmentId, question.questionId, score);
+      removePendingAnswer(question.questionId);
       setSaveStatus('saved');
       if (saveStatusTimer.current) clearTimeout(saveStatusTimer.current);
       saveStatusTimer.current = setTimeout(() => setSaveStatus('idle'), 2000);
     } catch {
-      // Save to localStorage as fallback
-      setPendingAnswer(question.id, score);
+      setPendingAnswer(question.questionId, score);
       setSaveStatus('failed');
       showToast(isArabic ? 'فشل الحفظ — محفوظ محلياً' : 'Save failed — saved locally', 'error');
     } finally {
@@ -171,8 +178,15 @@ export function AssessmentWizard({ assessmentId }: AssessmentWizardProps) {
     }
   }
 
+  function goToIndex(index: number) {
+    setCurrentIndex(index);
+    setShowTransition(false);
+    setShowHelp(false);
+    debouncedProgressSave(index);
+  }
+
   function handleNext() {
-    if (isLastGovernance && !showTransition) {
+    if (crossesDomain && !showTransition) {
       setShowTransition(true);
       return;
     }
@@ -180,10 +194,7 @@ export function AssessmentWizard({ assessmentId }: AssessmentWizardProps) {
       setShowConfirm(true);
       return;
     }
-    const next = currentIndex + 1;
-    setCurrentIndex(next);
-    setShowTransition(false);
-    debouncedProgressSave(next);
+    goToIndex(currentIndex + 1);
   }
 
   function handleBack() {
@@ -192,9 +203,7 @@ export function AssessmentWizard({ assessmentId }: AssessmentWizardProps) {
       return;
     }
     if (currentIndex > 0) {
-      const prev = currentIndex - 1;
-      setCurrentIndex(prev);
-      debouncedProgressSave(prev);
+      goToIndex(currentIndex - 1);
     }
   }
 
@@ -215,24 +224,24 @@ export function AssessmentWizard({ assessmentId }: AssessmentWizardProps) {
     }
   }
 
-  // Domain transition screen
-  if (showTransition) {
-    const nextDomain = domains.find((d) => d.id === 'compliance')!;
+  // Domain transition screen (generic, fires whenever the domain changes)
+  if (showTransition && nextQuestion) {
+    const nextDomain = domains.find((d) => d.id === nextQuestion.domainId)!;
     return (
       <div className="wizard-shell">
         <div className="wizard-progress">
           <div className="wizard-progress-bar">
-            <div className="wizard-progress-fill" style={{ width: `${((governanceCount) / totalQuestions) * 100}%` }} />
+            <div className="wizard-progress-fill" style={{ width: `${((currentIndex + 1) / totalQuestions) * 100}%` }} />
           </div>
-          <span className="wizard-progress-text">{governanceCount} / {totalQuestions}</span>
+          <span className="wizard-progress-text">{currentIndex + 1} / {totalQuestions}</span>
         </div>
         <div className="wizard-transition-card">
           <div className="wizard-transition-check">&#10003;</div>
           <h2>{isArabic ? `تم الانتهاء من ${domain.nameAr}` : `${domain.nameEn} complete`}</h2>
-          <p>{isArabic ? `الآن ننتقل إلى المجال الثاني: ${nextDomain.nameAr}` : `Now starting Domain 2: ${nextDomain.nameEn}`}</p>
+          <p>{isArabic ? `الآن ننتقل إلى: ${nextDomain.nameAr}` : `Now starting: ${nextDomain.nameEn}`}</p>
           <div className="wizard-nav">
             <button className="secondary-btn" onClick={handleBack} type="button">{isArabic ? '→ رجوع' : '← Back'}</button>
-            <button className="primary-btn" onClick={() => { setShowTransition(false); setCurrentIndex(governanceCount); debouncedProgressSave(governanceCount); }} type="button">{isArabic ? 'متابعة ←' : 'Continue →'}</button>
+            <button className="primary-btn" onClick={() => goToIndex(currentIndex + 1)} type="button">{isArabic ? 'متابعة ←' : 'Continue →'}</button>
           </div>
         </div>
       </div>
@@ -274,10 +283,21 @@ export function AssessmentWizard({ assessmentId }: AssessmentWizardProps) {
           {saveStatus === 'failed' && (isArabic ? 'فشل الحفظ — محفوظ محلياً' : 'Save failed — saved locally')}
         </div>
       )}
-      <div className="wizard-domain-badge">{isArabic ? domain.nameAr : domain.nameEn}</div>
+      <div className="wizard-domain-badge">
+        {isArabic ? domain.nameAr : domain.nameEn}
+        {domains.length > 1 ? ` · ${domainIndex + 1}/${domains.length}` : ''}
+      </div>
       <div className="wizard-question-card">
         <span className="wizard-question-number">{isArabic ? `س${currentIndex + 1}` : `Q${currentIndex + 1}`}</span>
         <h2 className="wizard-question-text">{isArabic ? question.textAr : question.textEn}</h2>
+        {helpText ? (
+          <div className="wizard-help">
+            <button type="button" className="wizard-help-toggle" onClick={() => setShowHelp((v) => !v)}>
+              {showHelp ? (isArabic ? 'إخفاء المساعدة' : 'Hide help') : (isArabic ? 'ما المقصود؟' : "What's this?")}
+            </button>
+            {showHelp ? <p className="wizard-help-text">{helpText}</p> : null}
+          </div>
+        ) : null}
       </div>
       <div className="wizard-options">
         {answerOptions.map((option) => (

@@ -17,7 +17,36 @@ export interface Assessment {
   governanceScore: number | null;
   complianceScore: number | null;
   maturityLevel: number | null;
+  domainScores: Record<string, number> | null;
   answers: AssessmentAnswer[];
+}
+
+export interface GeneratedQuestion {
+  questionId: string;
+  domainId: string;
+  materialityTopicId: string | null;
+  effectiveWeight: number;
+  displayOrder: number;
+  textAr: string;
+  textEn: string;
+  helpTextAr: string | null;
+  helpTextEn: string | null;
+  calculatorType: string | null;
+}
+
+export interface GeneratedDomain {
+  id: string;
+  nameAr: string;
+  nameEn: string;
+}
+
+export interface GeneratedQuestionsData {
+  assessmentId: string;
+  profileSnapshot: unknown;
+  totalQuestions: number;
+  answerOptions: AnswerOptionDef[];
+  domains: GeneratedDomain[];
+  questions: GeneratedQuestion[];
 }
 
 export interface AssessmentListItem {
@@ -98,6 +127,10 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export function fetchQuestions() {
   return request<QuestionsData>('/assessments/questions');
+}
+
+export function fetchGeneratedQuestions(assessmentId: string) {
+  return request<GeneratedQuestionsData>(`/assessments/${assessmentId}/generated`);
 }
 
 export function createAssessment() {
