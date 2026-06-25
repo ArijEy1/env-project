@@ -3,6 +3,7 @@ import { apiBaseUrl, authStorage } from './auth-client';
 export interface AssessmentAnswer {
   questionId: string;
   score: number;
+  calculatorInputs?: Record<string, unknown> | null;
 }
 
 export interface Assessment {
@@ -179,6 +180,17 @@ export function saveAnswer(assessmentId: string, questionId: string, score: numb
   return request<AssessmentAnswer>(`/assessments/${assessmentId}/answer`, {
     method: 'PUT',
     body: JSON.stringify({ questionId, score }),
+  });
+}
+
+export function saveCalculatorAnswer(
+  assessmentId: string,
+  questionId: string,
+  calculatorInputs: Record<string, unknown>,
+) {
+  return request<AssessmentAnswer>(`/assessments/${assessmentId}/answer`, {
+    method: 'PUT',
+    body: JSON.stringify({ questionId, calculatorInputs }),
   });
 }
 

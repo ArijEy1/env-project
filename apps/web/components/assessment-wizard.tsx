@@ -5,6 +5,7 @@ import {
   getAssessment,
   fetchGeneratedQuestions,
   saveAnswer,
+  saveCalculatorAnswer,
   updateProgress,
   submitAssessment,
   type Assessment,
@@ -13,6 +14,7 @@ import {
 import { translateError } from '../lib/error-messages';
 import { useLanguage } from './language-provider';
 import { useToast } from './toast-provider';
+import { AssessmentCalculator } from './assessment-calculator';
 
 interface AssessmentWizardProps {
   assessmentId: string;
@@ -27,6 +29,7 @@ export function AssessmentWizard({ assessmentId }: AssessmentWizardProps) {
   const [assessment, setAssessment] = useState<Assessment | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [calcInputs, setCalcInputs] = useState<Record<string, Record<string, unknown>>>({});
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'failed'>('idle');
   const [error, setError] = useState('');
@@ -84,10 +87,13 @@ export function AssessmentWizard({ assessmentId }: AssessmentWizardProps) {
         setAssessment(aData);
         setCurrentIndex(Math.min(aData.currentQuestionIndex, Math.max(0, qData.questions.length - 1)));
         const answerMap: Record<string, number> = {};
+        const calcMap: Record<string, Record<string, unknown>> = {};
         for (const a of aData.answers) {
           answerMap[a.questionId] = a.score;
+          if (a.calculatorInputs) calcMap[a.questionId] = a.calculatorInputs;
         }
         setAnswers(answerMap);
+        setCalcInputs(calcMap);
         const pending = getPendingAnswers();
         if (Object.keys(pending).length > 0) {
           setAnswers((prev) => ({ ...prev, ...pending }));
@@ -156,6 +162,11 @@ export function AssessmentWizard({ assessmentId }: AssessmentWizardProps) {
   const answeredCount = Object.keys(answers).length;
   const helpText = isArabic ? question.helpTextAr : question.helpTextEn;
   const domainIndex = domains.findIndex((d) => d.id === question.domainId);
+  const domainProgress = domains.map((d) => {
+    const qs = questions.filter((q) => q.domainId === d.id);
+    const answered = qs.filter((q) => answers[q.questionId] !== undefined).length;
+    return { id: d.id, name: isArabic ? d.nameAr : d.nameEn, answered, total: qs.length };
+  });
 
   async function handleSelectAnswer(score: number) {
     setSaving(true);
@@ -173,6 +184,25 @@ export function AssessmentWizard({ assessmentId }: AssessmentWizardProps) {
       setPendingAnswer(question.questionId, score);
       setSaveStatus('failed');
       showToast(isArabic ? 'فشل الحفظ — محفوظ محلياً' : 'Save failed — saved locally', 'error');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleCalculatorSave(inputs: Record<string, unknown>) {
+    setSaving(true);
+    setSaveStatus('saving');
+    setError('');
+    try {
+      const res = await saveCalculatorAnswer(assessmentId, question.questionId, inputs);
+      setAnswers((prev) => ({ ...prev, [question.questionId]: res.score }));
+      setCalcInputs((prev) => ({ ...prev, [question.questionId]: inputs }));
+      setSaveStatus('saved');
+      if (saveStatusTimer.current) clearTimeout(saveStatusTimer.current);
+      saveStatusTimer.current = setTimeout(() => setSaveStatus('idle'), 2000);
+    } catch {
+      setSaveStatus('failed');
+      showToast(isArabic ? 'فشل الحفظ' : 'Save failed', 'error');
     } finally {
       setSaving(false);
     }
@@ -276,6 +306,18 @@ export function AssessmentWizard({ assessmentId }: AssessmentWizardProps) {
         </div>
         <span className="wizard-progress-text">{currentIndex + 1} / {totalQuestions}</span>
       </div>
+      <div className="wizard-domain-progress">
+        {domainProgress.map((dp) => (
+          <div
+            key={dp.id}
+            className={`wizard-dp-chip${dp.total > 0 && dp.answered === dp.total ? ' wizard-dp-done' : ''}${dp.id === question.domainId ? ' wizard-dp-current' : ''}`}
+            title={`${dp.name}: ${dp.answered}/${dp.total}`}
+          >
+            <span className="wizard-dp-name">{dp.name}</span>
+            <span className="wizard-dp-count">{dp.answered}/{dp.total}</span>
+          </div>
+        ))}
+      </div>
       {saveStatus !== 'idle' && (
         <div className={`wizard-save-indicator wizard-save-${saveStatus}`}>
           {saveStatus === 'saving' && (isArabic ? 'جاري الحفظ...' : 'Saving...')}
@@ -299,21 +341,32 @@ export function AssessmentWizard({ assessmentId }: AssessmentWizardProps) {
           </div>
         ) : null}
       </div>
-      <div className="wizard-options">
-        {answerOptions.map((option) => (
-          <button
-            key={option.score}
-            className={`wizard-option ${selectedScore === option.score ? 'wizard-option-selected' : ''}`}
-            onClick={() => handleSelectAnswer(option.score)}
-            disabled={saving}
-            type="button"
-          >
-            <span className="wizard-option-radio">{selectedScore === option.score ? '●' : '○'}</span>
-            <span className="wizard-option-label">{isArabic ? option.labelAr : option.labelEn}</span>
-            <span className="wizard-option-score">{option.score}</span>
-          </button>
-        ))}
-      </div>
+      {question.calculatorType ? (
+        <AssessmentCalculator
+          type={question.calculatorType}
+          isArabic={isArabic}
+          initialInputs={calcInputs[question.questionId] ?? null}
+          currentScore={selectedScore}
+          saving={saving}
+          onSave={handleCalculatorSave}
+        />
+      ) : (
+        <div className="wizard-options">
+          {answerOptions.map((option) => (
+            <button
+              key={option.score}
+              className={`wizard-option ${selectedScore === option.score ? 'wizard-option-selected' : ''}`}
+              onClick={() => handleSelectAnswer(option.score)}
+              disabled={saving}
+              type="button"
+            >
+              <span className="wizard-option-radio">{selectedScore === option.score ? '●' : '○'}</span>
+              <span className="wizard-option-label">{isArabic ? option.labelAr : option.labelEn}</span>
+              <span className="wizard-option-score">{option.score}</span>
+            </button>
+          ))}
+        </div>
+      )}
       {error && <p className="auth-feedback auth-feedback-error">{error}</p>}
       <div className="wizard-nav">
         <button className="secondary-btn" onClick={handleBack} disabled={currentIndex === 0} type="button">{isArabic ? '→ السابق' : '← Previous'}</button>

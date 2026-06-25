@@ -1,4 +1,4 @@
-import { IsIn, IsInt, IsString, MaxLength } from 'class-validator';
+import { IsIn, IsInt, IsObject, IsOptional, IsString, MaxLength } from 'class-validator';
 import { VALID_SCORES } from '../questions';
 
 export class SaveAnswerDto {
@@ -8,7 +8,14 @@ export class SaveAnswerDto {
   @MaxLength(40)
   questionId!: string;
 
+  // Provided for normal questions. Calculator questions instead send
+  // calculatorInputs and the server derives the score.
+  @IsOptional()
   @IsInt()
   @IsIn(VALID_SCORES)
-  score!: number;
+  score?: number;
+
+  @IsOptional()
+  @IsObject()
+  calculatorInputs?: Record<string, unknown>;
 }

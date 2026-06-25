@@ -2852,6 +2852,115 @@ body[data-language='en'] .wizard-domain-badge {
   color: var(--white);
 }
 
+/* --- Per-domain progress (Section 4) --- */
+.wizard-domain-progress {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: -6px 0 14px;
+}
+
+.wizard-dp-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(245, 240, 230, 0.6);
+}
+
+.wizard-dp-chip.wizard-dp-current {
+  border-color: var(--sand, #d8b16c);
+  color: #f5f0e6;
+}
+
+.wizard-dp-chip.wizard-dp-done {
+  background: rgba(45, 138, 110, 0.18);
+  border-color: rgba(93, 202, 165, 0.4);
+  color: #bfe9d6;
+}
+
+.wizard-dp-count {
+  font-weight: 700;
+  opacity: 0.9;
+}
+
+/* --- Calculator (Section 4) --- */
+.calc-card {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 16px;
+  padding: 18px;
+}
+
+.calc-hint {
+  margin: 0 0 14px;
+  color: rgba(245, 240, 230, 0.7);
+  font-size: 14px;
+}
+
+.calc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 560px) {
+  .calc-grid { grid-template-columns: 1fr; }
+}
+
+.calc-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: rgba(245, 240, 230, 0.75);
+}
+
+.calc-field input {
+  padding: 9px 11px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.2);
+  color: #f5f0e6;
+  font: inherit;
+}
+
+.calc-check {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(245, 240, 230, 0.85);
+  font-size: 14px;
+}
+
+.calc-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.calc-score {
+  color: rgba(245, 240, 230, 0.85);
+}
+
+.calc-score strong {
+  color: #5dcaa5;
+  font-size: 18px;
+}
+
+.calc-score-empty {
+  color: rgba(245, 240, 230, 0.45);
+  font-size: 13px;
+}
+
 .wizard-options {
   display: flex;
   flex-direction: column;
