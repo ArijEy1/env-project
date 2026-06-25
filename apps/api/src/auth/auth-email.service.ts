@@ -166,6 +166,51 @@ export class AuthEmailService {
     });
   }
 
+  async sendDraftReminderEmail(params: { email: string; fullName: string }) {
+    const resumeUrl = new URL('/account', this.appWebUrl).toString();
+    const escapedName = this.escapeHtml(params.fullName);
+    const escapedUrl = this.escapeHtml(resumeUrl);
+
+    const subject = 'Reminder: complete your environmental assessment • Env Project';
+    const text = [
+      'ENV PROJECT',
+      '',
+      `Hello ${params.fullName},`,
+      '',
+      'You have an environmental assessment in progress that has not been completed.',
+      'Drafts are kept for 30 days — resume any time before then:',
+      resumeUrl,
+      '',
+      'Env Project',
+      this.appWebUrl,
+    ].join('\n');
+
+    const html = `
+      <div style="margin:0;padding:24px 12px;background:#f3f5f4;font-family:Arial,Helvetica,sans-serif;color:#17302c;">
+        <div style="max-width:620px;margin:0 auto;background:#fff;border-radius:20px;overflow:hidden;border:1px solid #dfe8e4;">
+          <div style="padding:26px 30px;background:linear-gradient(135deg,#0f3d48 0%,#0f6b5b 70%);color:#fff;">
+            <h1 style="margin:0;font-size:22px;">أكمل تقييمك البيئي</h1>
+          </div>
+          <div style="padding:26px 30px;">
+            <p style="margin:0 0 14px;font-size:15px;line-height:1.7;">مرحبًا ${escapedName}،</p>
+            <p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:#49635d;">لديك تقييم بيئي قيد الإنجاز لم يكتمل بعد. تُحفظ المسودات لمدة 30 يومًا — يمكنك استئناف التقييم في أي وقت قبل ذلك.</p>
+            <a href="${resumeUrl}" style="display:inline-block;padding:12px 20px;border-radius:12px;background:#1a6a58;color:#fff;text-decoration:none;font-weight:700;">استئناف التقييم</a>
+            <p style="margin:18px 0 0;font-size:13px;color:#647a75;">${escapedUrl}</p>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const transport = this.createTransport();
+    if (!transport) {
+      this.logger.warn(
+        `SMTP is not configured. Draft reminder for ${params.email} (resume: ${resumeUrl})`,
+      );
+      return;
+    }
+    await transport.sendMail({ from: this.smtpFrom, to: params.email, subject, text, html });
+  }
+
   private createTransport() {
     if (!this.smtpHost) {
       return null;

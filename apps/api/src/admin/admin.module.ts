@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../database/database.module';
+import { AssessmentModule } from '../assessment/assessment.module';
 import { RecommendationEngineService } from '../assessment/recommendation-engine.service';
 import { AdminController } from './admin.controller';
 import { AdminService } from './admin.service';
 
 @Module({
-  imports: [DatabaseModule],
+  imports: [DatabaseModule, AssessmentModule],
   controllers: [AdminController],
   providers: [AdminService, RecommendationEngineService],
 })

@@ -251,6 +251,7 @@ export class AssessmentService {
       ],
     );
 
+    await this.touchActivity(assessmentId);
     return { questionId: dto.questionId, score, calculatorInputs };
   }
 
@@ -273,6 +274,7 @@ export class AssessmentService {
       [dto.currentQuestionIndex, assessmentId],
     );
 
+    await this.touchActivity(assessmentId);
     return { currentQuestionIndex: dto.currentQuestionIndex };
   }
 
@@ -669,6 +671,14 @@ export class AssessmentService {
         calculatorType: q.calculator_type,
       })),
     };
+  }
+
+  /** Marks a draft active (resets the inactivity reminder window). */
+  private async touchActivity(assessmentId: string) {
+    await this.db.query(
+      'UPDATE assessments SET last_activity_at = NOW(), reminder_sent_at = NULL WHERE id = $1',
+      [assessmentId],
+    );
   }
 
   private toIso(date: Date | string): string {

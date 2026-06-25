@@ -1,14 +1,23 @@
-import { Body, Controller, Get, Param, Patch, Put, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Put, Res, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { generatePdfReport, generateReferenceNumber } from '../assessment/pdf-report';
+import { DraftMaintenanceService } from '../assessment/draft-maintenance.service';
 import { AdminService } from './admin.service';
 import { SuperAdminGuard } from './superadmin.guard';
 
 @Controller('admin')
 @UseGuards(JwtAuthGuard, SuperAdminGuard)
 export class AdminController {
-  constructor(private readonly adminService: AdminService) {}
+  constructor(
+    private readonly adminService: AdminService,
+    private readonly draftMaintenance: DraftMaintenanceService,
+  ) {}
+
+  @Post('maintenance/run')
+  runMaintenance() {
+    return this.draftMaintenance.runNow();
+  }
 
   @Get('stats')
   getStats() {
