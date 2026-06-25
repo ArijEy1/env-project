@@ -28,9 +28,12 @@ export default function RootLayout({
       <body className={notoSansArabic.variable}>
         <LanguageProvider>
           <ToastProvider>
+            <a className="skip-link" href="#main-content">تخطّي إلى المحتوى</a>
             <SessionRefresher />
             <Navbar />
-            {children}
+            <div id="main-content" tabIndex={-1}>
+              {children}
+            </div>
           </ToastProvider>
         </LanguageProvider>
       </body>
