@@ -1,11 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import {
   authStorage,
   loginUser,
   registerUser,
+  resendOtp,
+  verifyOtp,
   type AuthResponse,
 } from '../lib/auth-client';
 import { translateError } from '../lib/error-messages';
@@ -74,6 +76,27 @@ export function AuthForm({ mode }: AuthFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
+  // OTP step (register only)
+  const [otpStep, setOtpStep] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState('');
+  const [otpCode, setOtpCode] = useState('');
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setInterval(() => setResendCooldown((s) => Math.max(0, s - 1)), 1000);
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
+
+  function completeSession(response: AuthResponse, successText: string, toastText: string) {
+    localStorage.setItem(authStorage.tokenKey, response.accessToken);
+    localStorage.setItem(authStorage.userKey, JSON.stringify(response.user));
+    localStorage.setItem(authStorage.refreshedAtKey, String(Date.now()));
+    setSuccessMessage(successText);
+    showToast(toastText, 'success');
+    window.location.replace('/account');
+  }
+
   const content = useMemo(
     () =>
       isRegister
@@ -134,45 +157,49 @@ export function AuthForm({ mode }: AuthFormProps) {
         }
       }
 
-      const response: AuthResponse = isRegister
-        ? await registerUser({
-            entity: {
-              nameAr: nameAr.trim(),
-              nameEn: nameEn.trim() || undefined,
-              crNumber: crNumber.trim(),
-              sector,
-              city: city.trim(),
-              region: region.trim() || undefined,
-              employeeCountBracket: employeeBracket || undefined,
-              contactEmail: contactEmail.trim() || undefined,
-              contactPhone: contactPhone.trim() || undefined,
-              unifiedNationalNumber: unifiedNumber.trim() || undefined,
-            },
-            user: {
-              firstName: firstName.trim(),
-              lastName: lastName.trim() || undefined,
-              email: email.trim(),
-              phone: phone.trim() || undefined,
-              jobRole: jobRole.trim() || undefined,
-              password,
-            },
-          })
-        : await loginUser({ email, password });
+      if (isRegister) {
+        const pending = await registerUser({
+          entity: {
+            nameAr: nameAr.trim(),
+            nameEn: nameEn.trim() || undefined,
+            crNumber: crNumber.trim(),
+            sector,
+            city: city.trim(),
+            region: region.trim() || undefined,
+            employeeCountBracket: employeeBracket || undefined,
+            contactEmail: contactEmail.trim() || undefined,
+            contactPhone: contactPhone.trim() || undefined,
+            unifiedNationalNumber: unifiedNumber.trim() || undefined,
+          },
+          user: {
+            firstName: firstName.trim(),
+            lastName: lastName.trim() || undefined,
+            email: email.trim(),
+            phone: phone.trim() || undefined,
+            jobRole: jobRole.trim() || undefined,
+            password,
+          },
+        });
 
-      localStorage.setItem(authStorage.tokenKey, response.accessToken);
-      localStorage.setItem(authStorage.userKey, JSON.stringify(response.user));
-      setSuccessMessage(
-        isRegister
-          ? isArabic ? 'تم إنشاء الحساب بنجاح. يتم تحويلك...' : 'Account created. Redirecting...'
-          : isArabic ? 'تم تسجيل الدخول بنجاح. يتم تحويلك...' : 'Login successful. Redirecting...',
+        // Move to the OTP verification step instead of logging in immediately.
+        setPendingEmail(pending.email);
+        setOtpStep(true);
+        setResendCooldown(60);
+        setSuccessMessage(
+          isArabic
+            ? 'تم إرسال رمز تحقق مكوّن من 6 أرقام إلى بريدك الإلكتروني.'
+            : 'A 6-digit verification code has been sent to your email.',
+        );
+        showToast(isArabic ? 'تم إرسال رمز التحقق' : 'Verification code sent', 'success');
+        return;
+      }
+
+      const response = await loginUser({ email, password });
+      completeSession(
+        response,
+        isArabic ? 'تم تسجيل الدخول بنجاح. يتم تحويلك...' : 'Login successful. Redirecting...',
+        isArabic ? 'تم تسجيل الدخول بنجاح' : 'Login successful',
       );
-      showToast(
-        isRegister
-          ? (isArabic ? 'تم إنشاء الحساب بنجاح' : 'Account created successfully')
-          : (isArabic ? 'تم تسجيل الدخول بنجاح' : 'Login successful'),
-        'success',
-      );
-      window.location.replace('/account');
       return;
     } catch (submissionError) {
       const translatedError = submissionError instanceof Error
@@ -182,6 +209,52 @@ export function AuthForm({ mode }: AuthFormProps) {
       showToast(translatedError, 'error');
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  async function handleVerifyOtp(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError('');
+    setSuccessMessage('');
+
+    if (!/^\d{6}$/.test(otpCode)) {
+      setError(isArabic ? 'أدخل رمزًا صحيحًا مكوّنًا من 6 أرقام.' : 'Enter a valid 6-digit code.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const response = await verifyOtp({ email: pendingEmail, code: otpCode });
+      completeSession(
+        response,
+        isArabic ? 'تم تأكيد بريدك وإنشاء الحساب. يتم تحويلك...' : 'Email verified and account created. Redirecting...',
+        isArabic ? 'تم إنشاء الحساب بنجاح' : 'Account created successfully',
+      );
+    } catch (verifyError) {
+      const translated = verifyError instanceof Error
+        ? translateError(verifyError.message, isArabic)
+        : isArabic ? 'تعذر التحقق من الرمز.' : 'Unable to verify the code.';
+      setError(translated);
+      showToast(translated, 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function handleResendOtp() {
+    if (resendCooldown > 0 || isSubmitting) return;
+    setError('');
+    try {
+      await resendOtp({ email: pendingEmail });
+      setResendCooldown(60);
+      setOtpCode('');
+      showToast(isArabic ? 'تم إرسال رمز جديد' : 'A new code has been sent', 'success');
+    } catch (resendError) {
+      const translated = resendError instanceof Error
+        ? translateError(resendError.message, isArabic)
+        : isArabic ? 'تعذر إرسال رمز جديد.' : 'Unable to resend the code.';
+      setError(translated);
+      showToast(translated, 'error');
     }
   }
 
@@ -296,6 +369,76 @@ export function AuthForm({ mode }: AuthFormProps) {
           <p className="auth-switch-link login-switch-link">
             {content.alternateText} <Link href={content.alternateHref}>{content.alternateLabel}</Link>
           </p>
+        </div>
+      </section>
+    );
+  }
+
+  // --- OTP VERIFICATION STEP (register) ---
+  if (otpStep) {
+    return (
+      <section className="register-shell">
+        <div className="register-card otp-card">
+          <div className="register-card-header">
+            <h1>{isArabic ? 'تأكيد البريد الإلكتروني' : 'Verify your email'}</h1>
+            <p>
+              {isArabic
+                ? `أدخل الرمز المكوّن من 6 أرقام الذي أرسلناه إلى ${pendingEmail}.`
+                : `Enter the 6-digit code we sent to ${pendingEmail}.`}
+            </p>
+          </div>
+
+          <form className="otp-form" onSubmit={handleVerifyOtp}>
+            <label className="register-field otp-field">
+              <span>{isArabic ? 'رمز التحقق' : 'Verification code'}</span>
+              <input
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                maxLength={6}
+                value={otpCode}
+                onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                placeholder="••••••"
+                className="otp-input"
+                autoFocus
+              />
+            </label>
+
+            {error ? <p className="auth-feedback auth-feedback-error register-feedback">{error}</p> : null}
+            {successMessage ? <p className="auth-feedback auth-feedback-success register-feedback">{successMessage}</p> : null}
+
+            <div className="register-actions">
+              <button
+                type="button"
+                className="secondary-btn"
+                onClick={handleResendOtp}
+                disabled={resendCooldown > 0 || isSubmitting}
+              >
+                {resendCooldown > 0
+                  ? (isArabic ? `إعادة الإرسال خلال ${resendCooldown} ثانية` : `Resend in ${resendCooldown}s`)
+                  : (isArabic ? 'إعادة إرسال الرمز' : 'Resend code')}
+              </button>
+              <button
+                type="submit"
+                className="primary-btn register-submit-button"
+                disabled={isSubmitting || otpCode.length !== 6}
+              >
+                {isSubmitting ? (isArabic ? 'جارٍ التحقق...' : 'Verifying...') : (isArabic ? 'تأكيد' : 'Verify')}
+              </button>
+            </div>
+          </form>
+
+          <button
+            type="button"
+            className="register-switch-link otp-back-link"
+            onClick={() => {
+              setOtpStep(false);
+              setOtpCode('');
+              setError('');
+              setSuccessMessage('');
+            }}
+          >
+            {isArabic ? '← العودة لتعديل البيانات' : '← Back to edit details'}
+          </button>
         </div>
       </section>
     );

@@ -20,6 +20,7 @@ export class DatabaseService implements OnModuleInit, OnApplicationShutdown {
     await this.ensureEntitiesTable();
     await this.ensureUsersTable();
     await this.ensurePasswordResetTokensTable();
+    await this.ensurePendingRegistrationsTable();
     await this.ensureAssessmentsTable();
     await this.ensureAssessmentAnswersTable();
     this.logger.log(`PostgreSQL ready on database "${this.databaseName}"`);
@@ -141,6 +142,28 @@ export class DatabaseService implements OnModuleInit, OnApplicationShutdown {
     );
     await this.pool.query(
       'CREATE INDEX IF NOT EXISTS password_reset_tokens_expires_at_idx ON password_reset_tokens (expires_at)',
+    );
+  }
+
+  private async ensurePendingRegistrationsTable() {
+    // Holds not-yet-verified sign-ups until the emailed OTP is confirmed. The
+    // full sign-up payload (with an already-bcrypt-hashed password) lives here;
+    // the real entity/user rows are only created on successful verification.
+    await this.pool.query(`
+      CREATE TABLE IF NOT EXISTS pending_registrations (
+        id UUID PRIMARY KEY,
+        email VARCHAR(255) NOT NULL UNIQUE,
+        otp_hash TEXT NOT NULL,
+        payload JSONB NOT NULL,
+        expires_at TIMESTAMPTZ NOT NULL,
+        attempts INT NOT NULL DEFAULT 0,
+        last_sent_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+
+    await this.pool.query(
+      'CREATE INDEX IF NOT EXISTS pending_registrations_expires_at_idx ON pending_registrations (expires_at)',
     );
   }
 

@@ -64,6 +64,7 @@ export function Navbar() {
   function handleLogout() {
     localStorage.removeItem(authStorage.tokenKey);
     localStorage.removeItem(authStorage.userKey);
+    localStorage.removeItem(authStorage.refreshedAtKey);
     sessionStorage.removeItem(authStorage.tokenKey);
     sessionStorage.removeItem(authStorage.userKey);
     setHasSession(false);

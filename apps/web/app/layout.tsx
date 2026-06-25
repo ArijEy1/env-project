@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Noto_Sans_Arabic } from 'next/font/google';
 import { LanguageProvider } from '../components/language-provider';
 import { Navbar } from '../components/navbar';
+import { SessionRefresher } from '../components/session-refresher';
 import { ToastProvider } from '../components/toast-provider';
 import './globals.css';
 
@@ -27,6 +28,7 @@ export default function RootLayout({
       <body className={notoSansArabic.variable}>
         <LanguageProvider>
           <ToastProvider>
+            <SessionRefresher />
             <Navbar />
             {children}
           </ToastProvider>

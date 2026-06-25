@@ -66,6 +66,7 @@ export function AccountPanel() {
         );
         localStorage.removeItem(authStorage.tokenKey);
         localStorage.removeItem(authStorage.userKey);
+        localStorage.removeItem(authStorage.refreshedAtKey);
       } finally {
         setIsLoading(false);
       }
@@ -77,6 +78,7 @@ export function AccountPanel() {
   function logout() {
     localStorage.removeItem(authStorage.tokenKey);
     localStorage.removeItem(authStorage.userKey);
+    localStorage.removeItem(authStorage.refreshedAtKey);
     setUser(null);
     setError(isArabic ? 'تم إنهاء الجلسة.' : 'Session cleared.');
     showToast(isArabic ? 'تم تسجيل الخروج' : 'Logged out', 'info');
