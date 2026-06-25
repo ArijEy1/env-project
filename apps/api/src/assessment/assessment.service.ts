@@ -18,6 +18,7 @@ import {
   RecommendationEngineService,
   type EngineRecommendation,
 } from './recommendation-engine.service';
+import { buildReportData } from './pdf-report';
 
 interface AssessmentRow {
   id: string;
@@ -349,28 +350,13 @@ export class AssessmentService {
       throw new BadRequestException('Report is only available for submitted assessments');
     }
 
+    // Reuse the results computation (domains + profile + totals) and the
+    // recommendation engine, then shape it for the Arabic PDF.
     const entity = await this.findEntityById(entityId);
+    const results = await this.getResults(assessmentId, userId);
     const recommendations = await this.recommendationEngine.build(assessmentId);
 
-    return {
-      entityNameAr: entity?.name_ar ?? '',
-      entityNameEn: entity?.name_en ?? null,
-      submittedAt: row.submitted_at ? this.toIso(row.submitted_at) : new Date().toISOString(),
-      totalScore: row.total_score ? Number(row.total_score) : 0,
-      governanceScore: row.governance_score ? Number(row.governance_score) : 0,
-      complianceScore: row.compliance_score ? Number(row.compliance_score) : 0,
-      maturityLevel: row.maturity_level ?? 1,
-      // Map the engine recommendation to the PDF's fields (immediate action +
-      // a compact impact line + the legal reference).
-      recommendations: recommendations.map((r) => ({
-        rank: r.rank,
-        questionTextAr: r.questionTextAr,
-        score: r.currentScore,
-        actionAr: r.immediateActionAr,
-        impactAr: `أثر متوقع: +${r.scoreImpactPoints} نقطة · الجدول الزمني: ${r.timelineWeeks} أسبوع`,
-        referenceAr: r.legalReference ?? '',
-      })),
-    };
+    return buildReportData(entity?.name_ar ?? '', results, recommendations);
   }
 
   async getRecommendations(
