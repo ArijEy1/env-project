@@ -5,7 +5,14 @@ import {
   Logger,
   UnauthorizedException,
 } from '@nestjs/common';
-import { createHash, randomBytes, scryptSync, timingSafeEqual } from 'crypto';
+import {
+  createHash,
+  randomBytes,
+  randomInt,
+  scryptSync,
+  timingSafeEqual,
+} from 'crypto';
+import bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { v4 as uuidv4 } from 'uuid';
 import { DatabaseService } from '../database/database.service';
@@ -15,12 +22,54 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { ResendOtpDto } from './dto/resend-otp.dto';
 import { UpdateEntityDto } from './dto/update-entity.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { EntityRecord } from './entities/entity.entity';
 import { SafeUser, UserEntity } from './entities/user.entity';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { LoginRateLimiter } from './login-rate-limiter';
+
+const BCRYPT_SALT_ROUNDS = 12;
+const OTP_TTL_MINUTES = 10;
+const OTP_MAX_ATTEMPTS = 5;
+const OTP_RESEND_COOLDOWN_SECONDS = 60;
+
+interface PendingRegistrationPayload {
+  entity: {
+    nameAr: string;
+    nameEn: string | null;
+    crNumber: string;
+    sector: string;
+    city: string;
+    region: string | null;
+    employeeCountBracket: string | null;
+    contactEmail: string | null;
+    contactPhone: string | null;
+    unifiedNationalNumber: string | null;
+  };
+  user: {
+    firstName: string;
+    lastName: string | null;
+    fullName: string;
+    email: string;
+    phone: string | null;
+    jobRole: string | null;
+    passwordHash: string;
+  };
+}
+
+interface PendingRegistrationRow {
+  id: string;
+  email: string;
+  otp_hash: string;
+  payload: PendingRegistrationPayload;
+  expires_at: Date | string;
+  attempts: number;
+  last_sent_at: Date | string;
+  created_at: Date | string;
+}
 
 interface UserRow {
   id: string;
@@ -64,7 +113,7 @@ interface PasswordResetTokenRow {
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
   private readonly passwordResetTtlMinutes = Number(
-    process.env.PASSWORD_RESET_TTL_MINUTES ?? 60,
+    process.env.PASSWORD_RESET_TTL_MINUTES ?? 30,
   );
 
   constructor(
@@ -74,6 +123,11 @@ export class AuthService {
     private readonly loginRateLimiter: LoginRateLimiter,
   ) {}
 
+  /**
+   * Step 1 of sign-up: validates the payload, stashes it (with an already
+   * bcrypt-hashed password) in pending_registrations, and emails a 6-digit OTP.
+   * No entity/user rows are created until the OTP is verified.
+   */
   async register(registerDto: RegisterDto) {
     const entityDto = registerDto.entity;
     const userDto = registerDto.user;
@@ -89,6 +143,172 @@ export class AuthService {
       throw new BadRequestException('An organization with this CR number already exists');
     }
 
+    const firstName = userDto.firstName.trim();
+    const lastName = userDto.lastName?.trim() || null;
+    const fullName = [firstName, lastName].filter(Boolean).join(' ');
+
+    const payload: PendingRegistrationPayload = {
+      entity: {
+        nameAr: entityDto.nameAr.trim(),
+        nameEn: entityDto.nameEn?.trim() || null,
+        crNumber: entityDto.crNumber.trim(),
+        sector: entityDto.sector,
+        city: entityDto.city.trim(),
+        region: entityDto.region?.trim() || null,
+        employeeCountBracket: entityDto.employeeCountBracket || null,
+        contactEmail: entityDto.contactEmail?.trim() || null,
+        contactPhone: entityDto.contactPhone?.trim() || null,
+        unifiedNationalNumber: entityDto.unifiedNationalNumber?.trim() || null,
+      },
+      user: {
+        firstName,
+        lastName,
+        fullName,
+        email: normalizedEmail,
+        phone: userDto.phone?.trim() || null,
+        jobRole: userDto.jobRole?.trim() || null,
+        // Hash now so the plaintext password is never persisted, even transiently.
+        passwordHash: this.hashPassword(userDto.password),
+      },
+    };
+
+    const code = this.generateOtp();
+    const expiresAt = new Date(
+      Date.now() + OTP_TTL_MINUTES * 60 * 1000,
+    ).toISOString();
+
+    // Upsert: re-registering with the same email replaces the pending entry and
+    // resets the attempt counter.
+    await this.databaseService.query(
+      `INSERT INTO pending_registrations (id, email, otp_hash, payload, expires_at, attempts, last_sent_at)
+       VALUES ($1, $2, $3, $4, $5, 0, NOW())
+       ON CONFLICT (email) DO UPDATE
+         SET otp_hash = EXCLUDED.otp_hash,
+             payload = EXCLUDED.payload,
+             expires_at = EXCLUDED.expires_at,
+             attempts = 0,
+             last_sent_at = NOW()`,
+      [uuidv4(), normalizedEmail, this.hashOtp(code), JSON.stringify(payload), expiresAt],
+    );
+
+    await this.authEmailService.sendOtpEmail({
+      email: normalizedEmail,
+      fullName,
+      code,
+      expiresInMinutes: OTP_TTL_MINUTES,
+    });
+
+    this.logger.log(`OTP issued for pending registration ${normalizedEmail}`);
+
+    return {
+      message: 'A 6-digit verification code has been sent to your email address.',
+      email: normalizedEmail,
+      expiresInMinutes: OTP_TTL_MINUTES,
+    };
+  }
+
+  /**
+   * Step 2 of sign-up: verifies the OTP and, on success, atomically creates the
+   * entity + admin user and returns an authenticated session.
+   */
+  async verifyOtp(dto: VerifyOtpDto) {
+    const normalizedEmail = dto.email.toLowerCase().trim();
+    const pending = await this.findPendingRegistration(normalizedEmail);
+
+    if (!pending) {
+      throw new BadRequestException('The verification code is invalid or has expired');
+    }
+
+    if (new Date(pending.expires_at).getTime() <= Date.now()) {
+      await this.deletePendingRegistration(normalizedEmail);
+      throw new BadRequestException('The verification code is invalid or has expired');
+    }
+
+    if (pending.attempts >= OTP_MAX_ATTEMPTS) {
+      await this.deletePendingRegistration(normalizedEmail);
+      throw new BadRequestException(
+        'Too many incorrect attempts. Please start the registration again.',
+      );
+    }
+
+    if (!this.otpMatches(pending.otp_hash, dto.code)) {
+      await this.databaseService.query(
+        'UPDATE pending_registrations SET attempts = attempts + 1 WHERE email = $1',
+        [normalizedEmail],
+      );
+      throw new BadRequestException('The verification code is incorrect');
+    }
+
+    // Re-check uniqueness in case someone registered the same email/CR while
+    // this OTP was outstanding.
+    const existingUser = await this.findUserByEmail(normalizedEmail);
+    if (existingUser) {
+      await this.deletePendingRegistration(normalizedEmail);
+      throw new BadRequestException('Email already exists');
+    }
+    const existingEntity = await this.findEntityByCrNumber(
+      pending.payload.entity.crNumber,
+    );
+    if (existingEntity) {
+      await this.deletePendingRegistration(normalizedEmail);
+      throw new BadRequestException(
+        'An organization with this CR number already exists',
+      );
+    }
+
+    const authResponse = await this.createAccountFromPayload(pending.payload);
+    await this.deletePendingRegistration(normalizedEmail);
+    this.logger.log(`Registration completed via OTP for ${normalizedEmail}`);
+    return authResponse;
+  }
+
+  /** Re-sends a fresh OTP for a pending registration, subject to a cooldown. */
+  async resendOtp(dto: ResendOtpDto) {
+    const normalizedEmail = dto.email.toLowerCase().trim();
+    const genericMessage = {
+      message:
+        'If a registration is pending for that email, a new code has been sent.',
+    };
+
+    const pending = await this.findPendingRegistration(normalizedEmail);
+    if (!pending) {
+      // Don't reveal whether a pending registration exists.
+      return genericMessage;
+    }
+
+    const sinceLastMs = Date.now() - new Date(pending.last_sent_at).getTime();
+    if (sinceLastMs < OTP_RESEND_COOLDOWN_SECONDS * 1000) {
+      const waitSeconds = Math.ceil(
+        (OTP_RESEND_COOLDOWN_SECONDS * 1000 - sinceLastMs) / 1000,
+      );
+      throw new BadRequestException(
+        `Please wait ${waitSeconds} seconds before requesting another code.`,
+      );
+    }
+
+    const code = this.generateOtp();
+    const expiresAt = new Date(
+      Date.now() + OTP_TTL_MINUTES * 60 * 1000,
+    ).toISOString();
+
+    await this.databaseService.query(
+      `UPDATE pending_registrations
+       SET otp_hash = $1, expires_at = $2, attempts = 0, last_sent_at = NOW()
+       WHERE email = $3`,
+      [this.hashOtp(code), expiresAt, normalizedEmail],
+    );
+
+    await this.authEmailService.sendOtpEmail({
+      email: normalizedEmail,
+      fullName: pending.payload.user.fullName,
+      code,
+      expiresInMinutes: OTP_TTL_MINUTES,
+    });
+
+    return genericMessage;
+  }
+
+  private async createAccountFromPayload(payload: PendingRegistrationPayload) {
     const entityId = uuidv4();
     await this.databaseService.query(
       `INSERT INTO entities (
@@ -98,24 +318,20 @@ export class AuthService {
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
       [
         entityId,
-        entityDto.nameAr.trim(),
-        entityDto.nameEn?.trim() || null,
-        entityDto.crNumber.trim(),
-        entityDto.sector,
-        entityDto.city.trim(),
-        entityDto.region?.trim() || null,
-        entityDto.employeeCountBracket || null,
-        entityDto.contactEmail?.trim() || null,
-        entityDto.contactPhone?.trim() || null,
-        entityDto.unifiedNationalNumber?.trim() || null,
+        payload.entity.nameAr,
+        payload.entity.nameEn,
+        payload.entity.crNumber,
+        payload.entity.sector,
+        payload.entity.city,
+        payload.entity.region,
+        payload.entity.employeeCountBracket,
+        payload.entity.contactEmail,
+        payload.entity.contactPhone,
+        payload.entity.unifiedNationalNumber,
       ],
     );
 
     const userId = uuidv4();
-    const firstName = userDto.firstName.trim();
-    const lastName = userDto.lastName?.trim() || null;
-    const fullName = [firstName, lastName].filter(Boolean).join(' ');
-
     await this.databaseService.query(
       `INSERT INTO users (
         id, entity_id, first_name, last_name, full_name, email,
@@ -124,20 +340,19 @@ export class AuthService {
       [
         userId,
         entityId,
-        firstName,
-        lastName,
-        fullName,
-        normalizedEmail,
-        this.hashPassword(userDto.password),
-        userDto.phone?.trim() || null,
-        userDto.jobRole?.trim() || null,
+        payload.user.firstName,
+        payload.user.lastName,
+        payload.user.fullName,
+        payload.user.email,
+        payload.user.passwordHash,
+        payload.user.phone,
+        payload.user.jobRole,
         'admin',
       ],
     );
 
     const user = (await this.findUserById(userId))!;
     const entity = (await this.findEntityById(entityId))!;
-
     return this.buildAuthResponse(user, entity);
   }
 
@@ -156,6 +371,18 @@ export class AuthService {
     }
 
     this.loginRateLimiter.recordSuccess(normalizedEmail);
+
+    // Transparent upgrade: re-hash legacy scrypt passwords to bcrypt on a
+    // successful login so the store migrates without forcing a reset.
+    if (this.isLegacyHash(user.password)) {
+      const rehashed = this.hashPassword(loginDto.password);
+      await this.databaseService.query(
+        'UPDATE users SET password_hash = $1 WHERE id = $2',
+        [rehashed, user.id],
+      );
+      user.password = rehashed;
+    }
+
     const entity = (await this.findEntityById(user.entityId))!;
 
     return this.buildAuthResponse(user, entity);
@@ -230,6 +457,23 @@ export class AuthService {
 
   async validateUser(userId: string) {
     return this.findUserById(userId);
+  }
+
+  /**
+   * Issues a fresh access token for an already-authenticated user. The frontend
+   * calls this on activity so active sessions never expire mid-use (8h window),
+   * while idle sessions still lapse. Re-reads the user so role/profile changes
+   * propagate into the new token.
+   */
+  async refreshSession(userId: string) {
+    const user = await this.findUserById(userId);
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const entity = (await this.findEntityById(user.entityId))!;
+    return this.buildAuthResponse(user, entity);
   }
 
   async getProfile(userId: string): Promise<SafeUser> {
@@ -468,16 +712,60 @@ export class AuthService {
   }
 
   private hashPassword(password: string) {
-    const salt = randomBytes(16).toString('hex');
-    const derivedKey = scryptSync(password, salt, 64).toString('hex');
-    return `${salt}:${derivedKey}`;
+    // bcrypt with salt factor 12 (per spec). bcrypt embeds the salt + cost in
+    // the output string, e.g. "$2a$12$...".
+    return bcrypt.hashSync(password, BCRYPT_SALT_ROUNDS);
   }
 
   private hashResetToken(token: string) {
     return createHash('sha256').update(token).digest('hex');
   }
 
+  /** Cryptographically-random, uniform 6-digit code (e.g. "048213"). */
+  private generateOtp(): string {
+    return randomInt(0, 1_000_000).toString().padStart(6, '0');
+  }
+
+  private hashOtp(code: string): string {
+    return createHash('sha256').update(code).digest('hex');
+  }
+
+  private otpMatches(storedHash: string, code: string): boolean {
+    const expected = Buffer.from(storedHash, 'hex');
+    const actual = Buffer.from(this.hashOtp(code), 'hex');
+    return expected.length === actual.length && timingSafeEqual(expected, actual);
+  }
+
+  private async findPendingRegistration(
+    email: string,
+  ): Promise<PendingRegistrationRow | null> {
+    const result = await this.databaseService.query<PendingRegistrationRow>(
+      `SELECT id, email, otp_hash, payload, expires_at, attempts, last_sent_at, created_at
+       FROM pending_registrations WHERE email = $1`,
+      [email],
+    );
+    return result.rows[0] ?? null;
+  }
+
+  private async deletePendingRegistration(email: string) {
+    await this.databaseService.query(
+      'DELETE FROM pending_registrations WHERE email = $1',
+      [email],
+    );
+  }
+
+  /** A bcrypt hash starts with "$2"; anything else is a legacy scrypt value. */
+  private isLegacyHash(storedPassword: string) {
+    return !storedPassword.startsWith('$2');
+  }
+
   private verifyPassword(password: string, storedPassword: string) {
+    if (!this.isLegacyHash(storedPassword)) {
+      return bcrypt.compareSync(password, storedPassword);
+    }
+
+    // Legacy scrypt "salt:hash" verification, kept so accounts created before
+    // the bcrypt migration can still sign in (and get re-hashed on login).
     const [salt, hash] = storedPassword.split(':');
 
     if (!salt || !hash) {

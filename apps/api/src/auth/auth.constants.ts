@@ -13,5 +13,6 @@ if (!secret || secret.length < 32) {
 
 export const jwtConstants: { secret: string; expiresIn: JwtSignOptions['expiresIn'] } = {
   secret,
-  expiresIn: (process.env.JWT_EXPIRES_IN ?? '1d') as JwtSignOptions['expiresIn'],
+  // 8-hour sessions per spec; the frontend silently refreshes on activity.
+  expiresIn: (process.env.JWT_EXPIRES_IN ?? '8h') as JwtSignOptions['expiresIn'],
 };

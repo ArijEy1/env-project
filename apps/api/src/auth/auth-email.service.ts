@@ -8,6 +8,13 @@ interface PasswordResetEmailParams {
   expiresInMinutes: number;
 }
 
+interface OtpEmailParams {
+  email: string;
+  fullName: string;
+  code: string;
+  expiresInMinutes: number;
+}
+
 @Injectable()
 export class AuthEmailService {
   private readonly logger = new Logger(AuthEmailService.name);
@@ -86,6 +93,66 @@ export class AuthEmailService {
     if (!transport) {
       this.logger.warn(
         `SMTP is not configured. Password reset link for ${params.email}: ${resetUrl.toString()}`,
+      );
+      return;
+    }
+
+    await transport.sendMail({
+      from: this.smtpFrom,
+      to: params.email,
+      subject,
+      text,
+      html,
+    });
+  }
+
+  async sendOtpEmail(params: OtpEmailParams) {
+    const escapedFullName = this.escapeHtml(params.fullName);
+    const escapedCode = this.escapeHtml(params.code);
+
+    const subject = 'Your verification code • Env Project';
+    const text = [
+      'ENV PROJECT',
+      'Email verification',
+      '',
+      `Hello ${params.fullName},`,
+      '',
+      'Use the code below to verify your email and finish creating your account:',
+      '',
+      params.code,
+      '',
+      `This code is valid for ${params.expiresInMinutes} minutes.`,
+      'If you did not request this, you can safely ignore this email.',
+      '',
+      'Env Project',
+      this.appWebUrl,
+    ].join('\n');
+
+    const html = `
+      <div style="margin: 0; padding: 24px 12px; background: #f3f5f4; font-family: Arial, Helvetica, sans-serif; color: #17302c;">
+        <div style="max-width: 620px; margin: 0 auto; background: #ffffff; border-radius: 20px; overflow: hidden; border: 1px solid #dfe8e4; box-shadow: 0 18px 48px rgba(15, 49, 45, 0.08);">
+          <div style="padding: 28px 32px; background: linear-gradient(135deg, #0f3d48 0%, #0f6b5b 65%, #d8b16c 140%); color: #ffffff;">
+            <div style="display: inline-block; padding: 6px 10px; border-radius: 999px; background: rgba(255,255,255,0.14); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;">Env Project</div>
+            <h1 style="margin: 18px 0 10px; font-size: 28px; line-height: 1.2;">Verify your email</h1>
+            <p style="margin: 0; max-width: 40ch; color: rgba(255,255,255,0.92); font-size: 15px; line-height: 1.7;">Enter the code below to finish creating your account.</p>
+          </div>
+
+          <div style="padding: 30px 32px 24px;">
+            <p style="margin: 0 0 14px; font-size: 15px; line-height: 1.7;">Hello ${escapedFullName},</p>
+            <div style="margin: 18px 0 22px; padding: 20px; border-radius: 16px; background: #f7fbf9; border: 1px solid #dbe7e2; text-align: center;">
+              <div style="font-size: 34px; font-weight: 700; letter-spacing: 0.32em; color: #0f6b5b;">${escapedCode}</div>
+            </div>
+            <p style="margin: 0 0 10px; font-size: 14px; color: #4d6761;">This code expires in <strong style="color: #17302c;">${params.expiresInMinutes} minutes</strong>. If you did not request it, you can ignore this email.</p>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const transport = this.createTransport();
+
+    if (!transport) {
+      this.logger.warn(
+        `SMTP is not configured. Verification code for ${params.email}: ${params.code}`,
       );
       return;
     }

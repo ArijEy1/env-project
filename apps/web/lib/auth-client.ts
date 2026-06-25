@@ -63,6 +63,21 @@ export interface LoginPayload {
   password: string;
 }
 
+export interface PendingRegistrationResponse {
+  message: string;
+  email: string;
+  expiresInMinutes: number;
+}
+
+export interface VerifyOtpPayload {
+  email: string;
+  code: string;
+}
+
+export interface ResendOtpPayload {
+  email: string;
+}
+
 export interface ForgotPasswordPayload {
   email: string;
 }
@@ -136,7 +151,21 @@ function authHeaders(token: string) {
 }
 
 export function registerUser(payload: RegisterPayload) {
-  return request<AuthResponse>('/auth/register', {
+  return request<PendingRegistrationResponse>('/auth/register', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export function verifyOtp(payload: VerifyOtpPayload) {
+  return request<AuthResponse>('/auth/verify-otp', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export function resendOtp(payload: ResendOtpPayload) {
+  return request<ApiMessageResponse>('/auth/resend-otp', {
     method: 'POST',
     body: JSON.stringify(payload),
   });
@@ -169,6 +198,13 @@ export function fetchProfile(token: string) {
   });
 }
 
+export function refreshSession(token: string) {
+  return request<AuthResponse>('/auth/refresh', {
+    method: 'POST',
+    headers: authHeaders(token),
+  });
+}
+
 export function updateProfile(token: string, payload: UpdateProfilePayload) {
   return request<AuthUser>('/auth/profile', {
     method: 'PUT',
@@ -188,4 +224,5 @@ export function updateEntity(token: string, payload: UpdateEntityPayload) {
 export const authStorage = {
   tokenKey: 'env-project-token',
   userKey: 'env-project-user',
+  refreshedAtKey: 'env-project-token-refreshed-at',
 };
