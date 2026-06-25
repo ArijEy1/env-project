@@ -1,4 +1,4 @@
-import { apiBaseUrl, authStorage } from './auth-client';
+import { apiBaseUrl, authStorage, clearAuthAndRedirect } from './auth-client';
 
 export interface AssessmentAnswer {
   questionId: string;
@@ -115,6 +115,10 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   });
 
   if (!response.ok) {
+    // All assessment calls are authenticated; a 401 means the session expired.
+    if (response.status === 401) {
+      clearAuthAndRedirect();
+    }
     let msg = 'Request failed';
     try {
       const payload = (await response.json()) as ErrorPayload;

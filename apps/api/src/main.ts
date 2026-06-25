@@ -52,4 +52,15 @@ async function bootstrap() {
   console.log(`API listening on http://localhost:${port}/api`);
 }
 
-bootstrap();
+// Don't let a stray rejection/exception silently take down the process.
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled promise rejection:', reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught exception:', err);
+});
+
+bootstrap().catch((err) => {
+  console.error('Failed to start application:', err);
+  process.exit(1);
+});

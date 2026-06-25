@@ -18,8 +18,13 @@ export class DraftMaintenanceService {
 
   @Cron(CronExpression.EVERY_HOUR)
   async runScheduled() {
-    await this.sendInactivityReminders();
-    await this.purgeExpiredDrafts();
+    // A failure here must never crash the process (it runs detached on a timer).
+    try {
+      await this.sendInactivityReminders();
+      await this.purgeExpiredDrafts();
+    } catch (e) {
+      this.logger.error(`Draft maintenance run failed: ${String(e)}`);
+    }
   }
 
   /**

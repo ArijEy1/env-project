@@ -40,7 +40,24 @@ const PATTERN_TRANSLATIONS: Array<[RegExp, string]> = [
   [/Only organization admins can update entity details/, 'فقط مسؤولو المنشأة يمكنهم تحديث بيانات المنشأة'],
 ];
 
+const GENERIC = {
+  ar: 'حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.',
+  en: 'Something went wrong. Please try again.',
+};
+
+// Technical/transport strings (e.g. NestJS "Cannot GET /api/...", network errors,
+// HTML error pages) must never reach the user verbatim.
+function isTechnical(message: string): boolean {
+  return (
+    /Cannot (GET|POST|PUT|PATCH|DELETE)/i.test(message) ||
+    message.includes('/api/') ||
+    message.includes('statusCode') ||
+    /ECONNREFUSED|Failed to fetch|NetworkError|<!DOCTYPE|<html/i.test(message)
+  );
+}
+
 export function translateError(message: string, isArabic: boolean): string {
+  if (!message || isTechnical(message)) return isArabic ? GENERIC.ar : GENERIC.en;
   if (!isArabic) return message;
 
   // Try exact match

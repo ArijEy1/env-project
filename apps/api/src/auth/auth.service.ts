@@ -378,10 +378,13 @@ export class AuthService {
     return this.buildAuthResponse(user, entity);
   }
 
-  async login(loginDto: LoginDto) {
+  async login(loginDto: LoginDto, ip?: string) {
     const normalizedEmail = loginDto.email.toLowerCase().trim();
 
-    if (this.loginRateLimiter.isLocked(normalizedEmail)) {
+    if (
+      this.loginRateLimiter.isLocked(normalizedEmail) ||
+      (ip ? this.loginRateLimiter.isIpThrottled(ip) : false)
+    ) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
@@ -389,6 +392,7 @@ export class AuthService {
 
     if (!user || !this.verifyPassword(loginDto.password, user.password)) {
       this.loginRateLimiter.recordFailure(normalizedEmail);
+      if (ip) this.loginRateLimiter.recordIpFailure(ip);
       throw new UnauthorizedException('Invalid credentials');
     }
 

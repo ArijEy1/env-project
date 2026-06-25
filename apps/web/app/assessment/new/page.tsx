@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { createAssessment, listAssessments } from '../../../lib/assessment-client';
 import { authStorage, fetchProfile, type AuthUser } from '../../../lib/auth-client';
+import { translateError } from '../../../lib/error-messages';
 import {
   ENTITY_TYPE_OPTIONS,
   EXPOSURE_OPTIONS,
@@ -36,7 +37,7 @@ export default function NewAssessmentPage() {
         }
         setProfile(await fetchProfile(token));
       } catch (err) {
-        setError(err instanceof Error ? err.message : isArabic ? 'تعذر تحميل البيانات' : 'Failed to load data');
+        setError(err instanceof Error ? translateError(err.message, isArabic) : isArabic ? 'تعذر تحميل البيانات' : 'Failed to load data');
       } finally {
         setIsLoading(false);
       }
@@ -51,7 +52,7 @@ export default function NewAssessmentPage() {
       const assessment = await createAssessment();
       window.location.replace(`/assessment/${assessment.id}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : isArabic ? 'تعذر بدء التقييم' : 'Failed to start assessment');
+      setError(err instanceof Error ? translateError(err.message, isArabic) : isArabic ? 'تعذر بدء التقييم' : 'Failed to start assessment');
       setIsStarting(false);
     }
   }

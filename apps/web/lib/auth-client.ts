@@ -138,6 +138,16 @@ async function parseError(response: Response) {
   }
 }
 
+export function clearAuthAndRedirect() {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem(authStorage.tokenKey);
+  localStorage.removeItem(authStorage.userKey);
+  localStorage.removeItem(authStorage.refreshedAtKey);
+  if (window.location.pathname !== '/login') {
+    window.location.replace('/login');
+  }
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${apiBaseUrl}${path}`, {
     ...init,
@@ -148,6 +158,12 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   });
 
   if (!response.ok) {
+    // Expired/invalid token on an authenticated request -> clear + go to login.
+    const headers = (init?.headers ?? {}) as Record<string, string>;
+    const hadAuth = 'Authorization' in headers || 'authorization' in headers;
+    if (response.status === 401 && hadAuth) {
+      clearAuthAndRedirect();
+    }
     throw new Error(await parseError(response));
   }
 
