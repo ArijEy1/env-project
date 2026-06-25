@@ -11,6 +11,7 @@ import {
   type AuthResponse,
 } from '../lib/auth-client';
 import { translateError } from '../lib/error-messages';
+import { ENTITY_TYPE_OPTIONS, EXPOSURE_OPTIONS, SECTOR_OPTIONS } from '../lib/profile-options';
 import { useLanguage } from './language-provider';
 import { useToast } from './toast-provider';
 
@@ -20,17 +21,7 @@ interface AuthFormProps {
   mode: AuthMode;
 }
 
-const SECTORS = [
-  { value: 'industrial', ar: 'صناعي', en: 'Industrial' },
-  { value: 'oil_and_gas', ar: 'نفط وغاز', en: 'Oil & Gas' },
-  { value: 'manufacturing', ar: 'تصنيع', en: 'Manufacturing' },
-  { value: 'construction', ar: 'إنشاءات', en: 'Construction' },
-  { value: 'services', ar: 'خدمات', en: 'Services' },
-  { value: 'government', ar: 'حكومي', en: 'Government' },
-  { value: 'healthcare', ar: 'رعاية صحية', en: 'Healthcare' },
-  { value: 'education', ar: 'تعليم', en: 'Education' },
-  { value: 'other', ar: 'أخرى', en: 'Other' },
-];
+const SECTORS = SECTOR_OPTIONS;
 
 const EMPLOYEE_BRACKETS = [
   { value: '1-10', label: '1 – 10' },
@@ -52,6 +43,8 @@ export function AuthForm({ mode }: AuthFormProps) {
   const [nameEn, setNameEn] = useState('');
   const [crNumber, setCrNumber] = useState('');
   const [sector, setSector] = useState('');
+  const [entityType, setEntityType] = useState('');
+  const [environmentalExposure, setEnvironmentalExposure] = useState('');
   const [city, setCity] = useState('');
   const [region, setRegion] = useState('');
   const [employeeBracket, setEmployeeBracket] = useState('');
@@ -134,6 +127,12 @@ export function AuthForm({ mode }: AuthFormProps) {
         if (!sector) {
           throw new Error(isArabic ? 'القطاع مطلوب.' : 'Sector is required.');
         }
+        if (!entityType) {
+          throw new Error(isArabic ? 'نوع المنشأة مطلوب.' : 'Entity type is required.');
+        }
+        if (!environmentalExposure) {
+          throw new Error(isArabic ? 'مستوى التعرض البيئي مطلوب.' : 'Environmental exposure is required.');
+        }
         if (!city.trim()) {
           throw new Error(isArabic ? 'المدينة مطلوبة.' : 'City is required.');
         }
@@ -164,6 +163,8 @@ export function AuthForm({ mode }: AuthFormProps) {
             nameEn: nameEn.trim() || undefined,
             crNumber: crNumber.trim(),
             sector,
+            entityType,
+            environmentalExposure,
             city: city.trim(),
             region: region.trim() || undefined,
             employeeCountBracket: employeeBracket || undefined,
@@ -483,6 +484,27 @@ export function AuthForm({ mode }: AuthFormProps) {
                   <option key={s.value} value={s.value}>{isArabic ? s.ar : s.en}</option>
                 ))}
               </select>
+            </label>
+
+            <label className="register-field">
+              <span>{isArabic ? 'نوع المنشأة' : 'Entity type'} <em>*</em></span>
+              <select value={entityType} onChange={(e) => setEntityType(e.target.value)} required>
+                <option value="">{isArabic ? 'اختر نوع المنشأة' : 'Select entity type'}</option>
+                {ENTITY_TYPE_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>{isArabic ? o.ar : o.en}</option>
+                ))}
+              </select>
+            </label>
+
+            <label className="register-field">
+              <span>{isArabic ? 'مستوى التعرض البيئي' : 'Environmental exposure'} <em>*</em></span>
+              <select value={environmentalExposure} onChange={(e) => setEnvironmentalExposure(e.target.value)} required>
+                <option value="">{isArabic ? 'اختر المستوى' : 'Select level'}</option>
+                {EXPOSURE_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>{isArabic ? o.ar : o.en}</option>
+                ))}
+              </select>
+              <small className="register-password-hint">{isArabic ? 'قد يُعدّل المستوى تلقائيًا حسب القطاع والحجم.' : 'May be auto-adjusted based on sector and size.'}</small>
             </label>
 
             <label className="register-field">

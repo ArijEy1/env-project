@@ -1642,6 +1642,50 @@ body[data-language='en'] .session-badge {
   font: inherit;
 }
 
+/* --- Pre-assessment profile confirmation --- */
+.profile-confirm-card {
+  max-width: 560px;
+}
+
+.profile-confirm-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 8px 0 4px;
+  border: 1px solid #e2ece7;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.profile-confirm-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 18px;
+  background: #f7fbf9;
+}
+
+.profile-confirm-row:nth-child(even) {
+  background: #ffffff;
+}
+
+.profile-confirm-row span {
+  color: #4d6761;
+}
+
+.profile-confirm-row strong {
+  color: #17302c;
+  text-align: end;
+}
+
+.profile-exposure-note {
+  background: #fff7e6;
+  border: 1px solid #f0dcae;
+  color: #7a5a17;
+  border-radius: 12px;
+  margin-top: 14px;
+}
+
 .password-reset-shell {
   display: flex;
   justify-content: center;

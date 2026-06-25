@@ -62,6 +62,13 @@ export class AssessmentService {
       [id, entityId, userId],
     );
 
+    // Lock the organization profile once the first assessment starts (Section 2).
+    await this.db.query(
+      `UPDATE entities SET profile_locked_at = NOW()
+       WHERE id = $1 AND profile_locked_at IS NULL`,
+      [entityId],
+    );
+
     return this.getById(id, userId);
   }
 

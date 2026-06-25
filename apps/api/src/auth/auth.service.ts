@@ -30,6 +30,8 @@ import { EntityRecord } from './entities/entity.entity';
 import { SafeUser, UserEntity } from './entities/user.entity';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { LoginRateLimiter } from './login-rate-limiter';
+import { applyExposureOverride } from './exposure-override';
+import { ExposureLevel } from './profile-options';
 
 const BCRYPT_SALT_ROUNDS = 12;
 const OTP_TTL_MINUTES = 10;
@@ -42,6 +44,8 @@ interface PendingRegistrationPayload {
     nameEn: string | null;
     crNumber: string;
     sector: string;
+    entityType: string;
+    environmentalExposure: string;
     city: string;
     region: string | null;
     employeeCountBracket: string | null;
@@ -91,12 +95,16 @@ interface EntityRow {
   name_en: string | null;
   cr_number: string;
   sector: string;
+  entity_type: string | null;
+  environmental_exposure: string | null;
+  submitted_exposure: string | null;
   city: string;
   region: string | null;
   employee_count_bracket: string | null;
   contact_email: string | null;
   contact_phone: string | null;
   unified_national_number: string | null;
+  profile_locked_at: Date | string | null;
   created_at: Date | string;
 }
 
@@ -153,6 +161,8 @@ export class AuthService {
         nameEn: entityDto.nameEn?.trim() || null,
         crNumber: entityDto.crNumber.trim(),
         sector: entityDto.sector,
+        entityType: entityDto.entityType,
+        environmentalExposure: entityDto.environmentalExposure,
         city: entityDto.city.trim(),
         region: entityDto.region?.trim() || null,
         employeeCountBracket: entityDto.employeeCountBracket || null,
@@ -310,18 +320,30 @@ export class AuthService {
 
   private async createAccountFromPayload(payload: PendingRegistrationPayload) {
     const entityId = uuidv4();
+
+    // Apply the exposure override rules at account creation (Section 2).
+    const exposure = applyExposureOverride(
+      payload.entity.sector,
+      payload.entity.employeeCountBracket,
+      payload.entity.environmentalExposure as ExposureLevel,
+    );
+
     await this.databaseService.query(
       `INSERT INTO entities (
-        id, name_ar, name_en, cr_number, sector, city, region,
+        id, name_ar, name_en, cr_number, sector, entity_type,
+        environmental_exposure, submitted_exposure, city, region,
         employee_count_bracket, contact_email, contact_phone,
         unified_national_number
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`,
       [
         entityId,
         payload.entity.nameAr,
         payload.entity.nameEn,
         payload.entity.crNumber,
         payload.entity.sector,
+        payload.entity.entityType,
+        exposure.effective,
+        exposure.submitted,
         payload.entity.city,
         payload.entity.region,
         payload.entity.employeeCountBracket,
@@ -553,6 +575,19 @@ export class AuthService {
       throw new ForbiddenException('Only organization admins can update entity details');
     }
 
+    const current = await this.findEntityById(user.entityId);
+    if (!current) {
+      throw new UnauthorizedException('Organization not found');
+    }
+
+    // Profile is locked once an assessment has started (Section 2): changes
+    // require a new assessment.
+    if (current.profileLockedAt) {
+      throw new ForbiddenException(
+        'The organization profile is locked after an assessment has started. Start a new assessment to change it.',
+      );
+    }
+
     const fields: string[] = [];
     const values: unknown[] = [];
     let paramIndex = 1;
@@ -561,6 +596,7 @@ export class AuthService {
       ['nameAr', 'name_ar'],
       ['nameEn', 'name_en'],
       ['sector', 'sector'],
+      ['entityType', 'entity_type'],
       ['city', 'city'],
       ['region', 'region'],
       ['employeeCountBracket', 'employee_count_bracket'],
@@ -577,8 +613,30 @@ export class AuthService {
       }
     }
 
+    // Re-apply the exposure override whenever exposure, sector, or size changes.
+    if (
+      dto.environmentalExposure !== undefined ||
+      dto.sector !== undefined ||
+      dto.employeeCountBracket !== undefined
+    ) {
+      const sector = dto.sector ?? current.sector;
+      const size =
+        dto.employeeCountBracket !== undefined
+          ? dto.employeeCountBracket || null
+          : current.employeeCountBracket;
+      const submitted = (dto.environmentalExposure ??
+        current.submittedExposure ??
+        current.environmentalExposure ??
+        'low') as ExposureLevel;
+      const exposure = applyExposureOverride(sector, size, submitted);
+      fields.push(`environmental_exposure = $${paramIndex++}`);
+      values.push(exposure.effective);
+      fields.push(`submitted_exposure = $${paramIndex++}`);
+      values.push(exposure.submitted);
+    }
+
     if (fields.length === 0) {
-      return (await this.findEntityById(user.entityId))!;
+      return current;
     }
 
     values.push(user.entityId);
@@ -636,9 +694,10 @@ export class AuthService {
 
   private async findEntityById(entityId: string) {
     const result = await this.databaseService.query<EntityRow>(
-      `SELECT id, name_ar, name_en, cr_number, sector, city, region,
+      `SELECT id, name_ar, name_en, cr_number, sector, entity_type,
+              environmental_exposure, submitted_exposure, city, region,
               employee_count_bracket, contact_email, contact_phone,
-              unified_national_number, created_at
+              unified_national_number, profile_locked_at, created_at
        FROM entities WHERE id = $1`,
       [entityId],
     );
@@ -698,12 +757,21 @@ export class AuthService {
       nameEn: row.name_en,
       crNumber: row.cr_number,
       sector: row.sector,
+      entityType: row.entity_type,
+      environmentalExposure: row.environmental_exposure,
+      submittedExposure: row.submitted_exposure,
       city: row.city,
       region: row.region,
       employeeCountBracket: row.employee_count_bracket,
       contactEmail: row.contact_email,
       contactPhone: row.contact_phone,
       unifiedNationalNumber: row.unified_national_number,
+      profileLockedAt:
+        row.profile_locked_at == null
+          ? null
+          : row.profile_locked_at instanceof Date
+            ? row.profile_locked_at.toISOString()
+            : new Date(row.profile_locked_at).toISOString(),
       createdAt:
         row.created_at instanceof Date
           ? row.created_at.toISOString()
