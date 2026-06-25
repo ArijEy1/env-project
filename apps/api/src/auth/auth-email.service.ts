@@ -26,6 +26,17 @@ export class AuthEmailService {
   private readonly smtpPassword = process.env.SMTP_PASSWORD;
   private readonly smtpFrom = process.env.SMTP_FROM ?? 'no-reply@env-project.local';
 
+  constructor() {
+    // In production, email is mandatory — OTP and password-reset codes are only
+    // delivered by email. Fail fast at boot instead of silently logging secrets.
+    if (process.env.NODE_ENV === 'production' && !this.smtpHost) {
+      throw new Error(
+        'SMTP_HOST (and credentials) must be configured in production: OTP and ' +
+          'password-reset codes are delivered by email.',
+      );
+    }
+  }
+
   async sendPasswordResetEmail(params: PasswordResetEmailParams) {
     const resetUrl = new URL('/reset-password', this.appWebUrl);
     resetUrl.searchParams.set('token', params.resetToken);

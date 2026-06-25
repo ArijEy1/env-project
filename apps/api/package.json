@@ -5,7 +5,9 @@
   "scripts": {
     "start": "node dist/main.js",
     "start:dev": "ts-node-dev --respawn --transpile-only src/main.ts",
-    "build": "tsc -p tsconfig.build.json"
+    "build": "tsc -p tsconfig.build.json",
+    "migrate": "ts-node --transpile-only -P tsconfig.build.json src/database/migrate.ts",
+    "migrate:prod": "node dist/database/migrate.js"
   },
   "dependencies": {
     "@nestjs/common": "^11.1.27",
