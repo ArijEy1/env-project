@@ -16,6 +16,9 @@ import {
   DRAFT_SCORING_CONFIG,
 } from './seed/draft-content';
 
+// Arbitrary fixed key so all instances contend on the same advisory lock.
+const MIGRATION_LOCK_KEY = 472948572;
+
 @Injectable()
 export class DatabaseService implements OnModuleInit, OnApplicationShutdown {
   private readonly logger = new Logger(DatabaseService.name);
@@ -25,30 +28,76 @@ export class DatabaseService implements OnModuleInit, OnApplicationShutdown {
   private pool!: Pool;
 
   async onModuleInit() {
+    // Whether to apply schema/seed when the app boots. Default: yes in dev for
+    // convenience, NO in production (run `npm run migrate` as a deploy step).
+    // Either way it's safe — runMigrations() holds an advisory lock so concurrent
+    // instances serialize, and all DDL is idempotent.
+    const migrateOnBoot =
+      process.env.MIGRATE_ON_BOOT !== undefined
+        ? process.env.MIGRATE_ON_BOOT === 'true'
+        : process.env.NODE_ENV !== 'production';
+
+    if (migrateOnBoot) {
+      await this.ensureDatabaseExists();
+    }
+    this.pool = this.createPool(this.databaseName);
+
+    if (migrateOnBoot) {
+      await this.runMigrations();
+      this.logger.log(`PostgreSQL ready on database "${this.databaseName}"`);
+    } else {
+      await this.pool.query('SELECT 1'); // verify connectivity, fail fast
+      this.logger.log(
+        `PostgreSQL connected to "${this.databaseName}" (migrations not run on boot; run "npm run migrate")`,
+      );
+    }
+  }
+
+  /** Standalone entrypoint used by the `migrate` CLI script. */
+  async migrate() {
     await this.ensureDatabaseExists();
     this.pool = this.createPool(this.databaseName);
-    await this.ensureEntitiesTable();
-    await this.ensureUsersTable();
-    await this.ensurePasswordResetTokensTable();
-    await this.ensurePendingRegistrationsTable();
-    await this.ensureAssessmentsTable();
-    await this.ensureAssessmentAnswersTable();
+    await this.runMigrations();
+    await this.pool.end();
+  }
 
-    // --- Assessment engine (Phase A) ---
-    await this.ensureEntityProfileColumns();
-    await this.ensureDomainsTable();
-    await this.ensureMaterialityTopicsTable();
-    await this.ensureQuestionBankTable();
-    await this.ensureMaterialityWeightsTable();
-    await this.ensureScoringConfigurationsTable();
-    await this.ensureRecommendationLibraryTable();
-    await this.ensureRegulatoryMappingsTable();
-    await this.ensureAssessmentEngineColumns();
-    await this.ensureAssessmentQuestionsTable();
-    await this.ensureAssessmentAnswerEngineColumns();
-    await this.seedDraftContent();
+  /**
+   * Applies all schema + seed under a Postgres advisory lock so that multiple
+   * instances starting together (or a deploy migrate step + a booting app) can
+   * never race on DDL. All statements are idempotent (CREATE/ADD … IF NOT EXISTS,
+   * seed-if-empty), so a second runner is a no-op.
+   */
+  private async runMigrations() {
+    const client = await this.pool.connect();
+    try {
+      await client.query('SELECT pg_advisory_lock($1)', [MIGRATION_LOCK_KEY]);
 
-    this.logger.log(`PostgreSQL ready on database "${this.databaseName}"`);
+      await this.ensureEntitiesTable();
+      await this.ensureUsersTable();
+      await this.ensurePasswordResetTokensTable();
+      await this.ensurePendingRegistrationsTable();
+      await this.ensureAssessmentsTable();
+      await this.ensureAssessmentAnswersTable();
+
+      // --- Assessment engine ---
+      await this.ensureEntityProfileColumns();
+      await this.ensureDomainsTable();
+      await this.ensureMaterialityTopicsTable();
+      await this.ensureQuestionBankTable();
+      await this.ensureMaterialityWeightsTable();
+      await this.ensureScoringConfigurationsTable();
+      await this.ensureRecommendationLibraryTable();
+      await this.ensureRegulatoryMappingsTable();
+      await this.ensureAssessmentEngineColumns();
+      await this.ensureAssessmentQuestionsTable();
+      await this.ensureAssessmentAnswerEngineColumns();
+      await this.seedDraftContent();
+    } finally {
+      await client
+        .query('SELECT pg_advisory_unlock($1)', [MIGRATION_LOCK_KEY])
+        .catch(() => undefined);
+      client.release();
+    }
   }
 
   async onApplicationShutdown() {
@@ -79,6 +128,13 @@ export class DatabaseService implements OnModuleInit, OnApplicationShutdown {
   }
 
   private async ensureDatabaseExists() {
+    // Managed Postgres (RDS/Cloud SQL/Azure) pre-creates the DB and the app role
+    // usually can't CREATE DATABASE or reach the admin DB. Skip explicitly via
+    // SKIP_DB_CREATE=true, and treat any failure as "DB already exists".
+    if (process.env.SKIP_DB_CREATE === 'true') {
+      return;
+    }
+
     const safeDatabaseName = this.escapeIdentifier(this.databaseName);
     const adminClient = new Client({
       host: process.env.POSTGRES_HOST ?? '127.0.0.1',
@@ -92,9 +148,8 @@ export class DatabaseService implements OnModuleInit, OnApplicationShutdown {
           : undefined,
     });
 
-    await adminClient.connect();
-
     try {
+      await adminClient.connect();
       const existingDatabase = await adminClient.query(
         'SELECT 1 FROM pg_database WHERE datname = $1',
         [this.databaseName],
@@ -104,8 +159,12 @@ export class DatabaseService implements OnModuleInit, OnApplicationShutdown {
         await adminClient.query(`CREATE DATABASE ${safeDatabaseName}`);
         this.logger.log(`Created PostgreSQL database "${this.databaseName}"`);
       }
+    } catch (e) {
+      this.logger.warn(
+        `Skipping database auto-create (${String(e)}); assuming "${this.databaseName}" already exists.`,
+      );
     } finally {
-      await adminClient.end();
+      await adminClient.end().catch(() => undefined);
     }
   }
 
@@ -209,16 +268,11 @@ export class DatabaseService implements OnModuleInit, OnApplicationShutdown {
       )
     `);
 
-    // Add score columns if they don't exist (for existing tables)
-    const columns = await this.pool.query(
-      "SELECT column_name FROM information_schema.columns WHERE table_name = 'assessments' AND column_name = 'total_score'",
-    );
-    if (columns.rows.length === 0) {
-      await this.pool.query('ALTER TABLE assessments ADD COLUMN total_score DECIMAL(5,2)');
-      await this.pool.query('ALTER TABLE assessments ADD COLUMN governance_score DECIMAL(5,2)');
-      await this.pool.query('ALTER TABLE assessments ADD COLUMN compliance_score DECIMAL(5,2)');
-      await this.pool.query('ALTER TABLE assessments ADD COLUMN maturity_level INT');
-    }
+    // Score columns for older tables — idempotent (no TOCTOU on concurrent runs).
+    await this.pool.query('ALTER TABLE assessments ADD COLUMN IF NOT EXISTS total_score DECIMAL(5,2)');
+    await this.pool.query('ALTER TABLE assessments ADD COLUMN IF NOT EXISTS governance_score DECIMAL(5,2)');
+    await this.pool.query('ALTER TABLE assessments ADD COLUMN IF NOT EXISTS compliance_score DECIMAL(5,2)');
+    await this.pool.query('ALTER TABLE assessments ADD COLUMN IF NOT EXISTS maturity_level INT');
 
     await this.pool.query(
       'CREATE INDEX IF NOT EXISTS assessments_entity_id_idx ON assessments (entity_id)',
