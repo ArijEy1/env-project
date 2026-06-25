@@ -2,21 +2,35 @@ import 'dotenv/config';
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import type { Request, Response, NextFunction } from 'express';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  // Security headers (HSTS, no-sniff, frameguard, hides x-powered-by, etc.).
+  // Security headers including HSTS (max-age 1y, includeSubDomains). HSTS only
+  // takes effect over HTTPS, so it's safe to always send.
   app.use(helmet());
 
-  // Trust the reverse proxy so `req.ip` (used for rate limiting) is the real
-  // client address rather than the proxy's. Set TRUST_PROXY=1 (hop count) or
-  // TRUST_PROXY=true in deployment; leave unset for direct/local access.
+  // Trust the reverse proxy so `req.ip` (used for rate limiting) and
+  // `req.secure` / x-forwarded-proto (used for HTTPS enforcement) reflect the
+  // real client. Set TRUST_PROXY=1 (hop count) or TRUST_PROXY=true in
+  // deployment; leave unset for direct/local access.
   const trustProxy = process.env.TRUST_PROXY;
   if (trustProxy) {
     app.set('trust proxy', /^\d+$/.test(trustProxy) ? Number(trustProxy) : true);
+  }
+
+  // Enforce HTTPS in production: redirect any plain-HTTP request to https.
+  // Gated by FORCE_HTTPS so local/dev over http still works.
+  if (process.env.FORCE_HTTPS === 'true') {
+    app.use((req: Request, res: Response, next: NextFunction) => {
+      if (req.secure || req.headers['x-forwarded-proto'] === 'https') {
+        return next();
+      }
+      return res.redirect(308, `https://${req.headers.host}${req.originalUrl}`);
+    });
   }
 
   app.enableCors({

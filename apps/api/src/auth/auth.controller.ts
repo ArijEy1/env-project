@@ -5,7 +5,9 @@ import { RegisterRateLimiter } from './register-rate-limiter';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { ResendOtpDto } from './dto/resend-otp.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { UpdateEntityDto } from './dto/update-entity.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
@@ -28,6 +30,18 @@ export class AuthController {
     return this.authService.register(registerDto);
   }
 
+  @Post('verify-otp')
+  verifyOtp(@Body() dto: VerifyOtpDto) {
+    return this.authService.verifyOtp(dto);
+  }
+
+  @Post('resend-otp')
+  resendOtp(@Ip() ip: string, @Body() dto: ResendOtpDto) {
+    // Rate-limited like register since it triggers an outbound email.
+    this.registerRateLimiter.assertWithinLimit(ip);
+    return this.authService.resendOtp(dto);
+  }
+
   @Post('login')
   login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
@@ -41,6 +55,12 @@ export class AuthController {
   @Post('reset-password')
   resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
     return this.authService.resetPassword(resetPasswordDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('refresh')
+  refresh(@Req() req: AuthenticatedRequest) {
+    return this.authService.refreshSession(req.user.sub);
   }
 
   @UseGuards(JwtAuthGuard)

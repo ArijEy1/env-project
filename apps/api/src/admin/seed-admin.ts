@@ -1,14 +1,14 @@
 import 'dotenv/config';
 import { Client } from 'pg';
-import { randomBytes, scryptSync } from 'crypto';
+import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 
 const SYSTEM_ENTITY_CR = 'SYSTEM-000001';
+const BCRYPT_SALT_ROUNDS = 12;
 
 function hashPassword(password: string): string {
-  const salt = randomBytes(16).toString('hex');
-  const derivedKey = scryptSync(password, salt, 64).toString('hex');
-  return `${salt}:${derivedKey}`;
+  // bcrypt salt factor 12 — matches AuthService so seeded admins verify cleanly.
+  return bcrypt.hashSync(password, BCRYPT_SALT_ROUNDS);
 }
 
 async function main() {
