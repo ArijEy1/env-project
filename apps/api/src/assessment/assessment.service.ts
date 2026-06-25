@@ -11,6 +11,10 @@ import { UpdateProgressDto } from './dto/update-progress.dto';
 import { getQuestionById, TOTAL_QUESTIONS } from './questions';
 import { calculateScore } from './scoring';
 import { generateRecommendations, type Recommendation } from './recommendations';
+import {
+  QuestionGenerationService,
+  type AssessmentProfile,
+} from './question-generation.service';
 
 interface AssessmentRow {
   id: string;
@@ -41,10 +45,14 @@ interface UserEntityRow {
 
 @Injectable()
 export class AssessmentService {
-  constructor(private readonly db: DatabaseService) {}
+  constructor(
+    private readonly db: DatabaseService,
+    private readonly questionGeneration: QuestionGenerationService,
+  ) {}
 
   async create(userId: string) {
-    const entityId = await this.getEntityId(userId);
+    const profile = await this.getEntityProfile(userId);
+    const entityId = profile.entityId;
 
     const existing = await this.db.query<AssessmentRow>(
       "SELECT id FROM assessments WHERE entity_id = $1 AND status = 'draft' LIMIT 1",
@@ -60,6 +68,34 @@ export class AssessmentService {
       `INSERT INTO assessments (id, entity_id, user_id, status, current_question_index)
        VALUES ($1, $2, $3, 'draft', 0)`,
       [id, entityId, userId],
+    );
+
+    // Phase C: generate + freeze the personalised question snapshot for the
+    // exact profile, and record the profile + scoring config used.
+    const assessmentProfile: AssessmentProfile = {
+      sector: profile.sector,
+      entityType: profile.entityType,
+      size: profile.employeeCountBracket,
+      exposure: profile.environmentalExposure,
+    };
+    const generated = await this.questionGeneration.generateSnapshot(
+      id,
+      assessmentProfile,
+    );
+    const scoringConfigId = await this.questionGeneration.getActiveScoringConfigId();
+    await this.db.query(
+      `UPDATE assessments
+       SET profile_snapshot = $1, scoring_config_id = $2
+       WHERE id = $3`,
+      [
+        JSON.stringify({
+          ...assessmentProfile,
+          questionCount: generated.length,
+          scoringConfigId,
+        }),
+        scoringConfigId,
+        id,
+      ],
     );
 
     // Lock the organization profile once the first assessment starts (Section 2).
@@ -335,6 +371,110 @@ export class AssessmentService {
       throw new NotFoundException('User not found');
     }
     return result.rows[0].entity_id;
+  }
+
+  private async getEntityProfile(userId: string): Promise<{
+    entityId: string;
+    sector: string;
+    entityType: string | null;
+    environmentalExposure: string | null;
+    employeeCountBracket: string | null;
+  }> {
+    const result = await this.db.query<{
+      entity_id: string;
+      sector: string;
+      entity_type: string | null;
+      environmental_exposure: string | null;
+      employee_count_bracket: string | null;
+    }>(
+      `SELECT e.id AS entity_id, e.sector, e.entity_type,
+              e.environmental_exposure, e.employee_count_bracket
+       FROM users u JOIN entities e ON e.id = u.entity_id
+       WHERE u.id = $1`,
+      [userId],
+    );
+    if (!result.rows[0]) {
+      throw new NotFoundException('User not found');
+    }
+    const r = result.rows[0];
+    return {
+      entityId: r.entity_id,
+      sector: r.sector,
+      entityType: r.entity_type,
+      environmentalExposure: r.environmental_exposure,
+      employeeCountBracket: r.employee_count_bracket,
+    };
+  }
+
+  /**
+   * Returns the frozen, personalised question set for an assessment (Phase C),
+   * grouped-ready with the domains used. Read-only; reflects the snapshot taken
+   * at create time, not the current bank.
+   */
+  async getGeneratedQuestions(assessmentId: string, userId: string) {
+    const entityId = await this.getEntityId(userId);
+    const row = await this.findAssessment(assessmentId);
+    if (!row) {
+      throw new NotFoundException('Assessment not found');
+    }
+    if (row.entity_id !== entityId) {
+      throw new ForbiddenException('You do not have access to this assessment');
+    }
+
+    const questions = await this.db.query<{
+      bank_question_id: string;
+      domain_id: string;
+      materiality_topic_id: string | null;
+      effective_weight: string;
+      display_order: number;
+      text_ar: string;
+      text_en: string;
+      help_text_ar: string | null;
+      help_text_en: string | null;
+      calculator_type: string | null;
+    }>(
+      `SELECT bank_question_id, domain_id, materiality_topic_id, effective_weight,
+              display_order, text_ar, text_en, help_text_ar, help_text_en, calculator_type
+       FROM assessment_questions WHERE assessment_id = $1 ORDER BY display_order ASC`,
+      [assessmentId],
+    );
+
+    const usedDomainIds = new Set(questions.rows.map((q) => q.domain_id));
+    const domains = await this.db.query<{
+      id: string;
+      name_ar: string;
+      name_en: string;
+      display_order: number;
+    }>(
+      `SELECT id, name_ar, name_en, display_order FROM domains
+       WHERE active = TRUE ORDER BY display_order ASC`,
+    );
+
+    const profileSnapshot = await this.db.query<{ profile_snapshot: unknown }>(
+      'SELECT profile_snapshot FROM assessments WHERE id = $1',
+      [assessmentId],
+    );
+
+    return {
+      assessmentId,
+      profileSnapshot: profileSnapshot.rows[0]?.profile_snapshot ?? null,
+      totalQuestions: questions.rows.length,
+      domains: domains.rows
+        .filter((d) => usedDomainIds.has(d.id))
+        .map((d) => ({ id: d.id, nameAr: d.name_ar, nameEn: d.name_en })),
+      questions: questions.rows.map((q) => ({
+        questionId: q.bank_question_id,
+        domainId: q.domain_id,
+        materialityTopicId: q.materiality_topic_id,
+        effectiveWeight: Number(q.effective_weight),
+        displayOrder: q.display_order,
+        textAr: q.text_ar,
+        textEn: q.text_en,
+        helpTextAr: q.help_text_ar,
+        helpTextEn: q.help_text_en,
+        calculatorType: q.calculator_type,
+      })),
+    };
   }
 
   private toIso(date: Date | string): string {
