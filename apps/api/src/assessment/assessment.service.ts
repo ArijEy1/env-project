@@ -10,6 +10,7 @@ import { SaveAnswerDto } from './dto/save-answer.dto';
 import { UpdateProgressDto } from './dto/update-progress.dto';
 import { ANSWER_OPTIONS, TOTAL_QUESTIONS } from './questions';
 import { computeEngineScore } from './engine-scoring';
+import { computeCalculatorScore } from './calculators';
 import {
   QuestionGenerationService,
   type AssessmentProfile,
@@ -167,8 +168,12 @@ export class AssessmentService {
       throw new ForbiddenException('You do not have access to this assessment');
     }
 
-    const answers = await this.db.query<AnswerRow>(
-      'SELECT question_id, score FROM assessment_answers WHERE assessment_id = $1',
+    const answers = await this.db.query<{
+      question_id: string;
+      score: number;
+      calculator_inputs: Record<string, unknown> | null;
+    }>(
+      'SELECT question_id, score, calculator_inputs FROM assessment_answers WHERE assessment_id = $1',
       [assessmentId],
     );
 
@@ -188,6 +193,7 @@ export class AssessmentService {
       answers: answers.rows.map((a) => ({
         questionId: a.question_id,
         score: a.score,
+        calculatorInputs: a.calculator_inputs ?? null,
       })),
     };
   }
@@ -207,25 +213,46 @@ export class AssessmentService {
     }
 
     // Validate the question belongs to this assessment's frozen snapshot.
-    const snapshotQuestion = await this.db.query<{ id: string }>(
-      'SELECT id FROM assessment_questions WHERE assessment_id = $1 AND bank_question_id = $2',
+    const snapshotQuestion = await this.db.query<{ id: string; calculator_type: string | null }>(
+      'SELECT id, calculator_type FROM assessment_questions WHERE assessment_id = $1 AND bank_question_id = $2',
       [assessmentId, dto.questionId],
     );
-    if (!snapshotQuestion.rows[0]) {
+    const sq = snapshotQuestion.rows[0];
+    if (!sq) {
       throw new BadRequestException(
         `Question "${dto.questionId}" is not part of this assessment`,
       );
     }
 
+    // Calculator questions derive their score server-side from raw inputs.
+    let score: number;
+    let calculatorInputs: Record<string, unknown> | null = null;
+    if (sq.calculator_type && dto.calculatorInputs) {
+      calculatorInputs = dto.calculatorInputs;
+      score = computeCalculatorScore(sq.calculator_type, dto.calculatorInputs);
+    } else if (dto.score !== undefined) {
+      score = dto.score;
+    } else {
+      throw new BadRequestException('A score or calculator inputs are required');
+    }
+
     await this.db.query(
-      `INSERT INTO assessment_answers (id, assessment_id, question_id, score, assessment_question_id)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO assessment_answers (id, assessment_id, question_id, score, assessment_question_id, calculator_inputs)
+       VALUES ($1, $2, $3, $4, $5, $6)
        ON CONFLICT (assessment_id, question_id)
-       DO UPDATE SET score = $4, assessment_question_id = $5, updated_at = NOW()`,
-      [uuidv4(), assessmentId, dto.questionId, dto.score, snapshotQuestion.rows[0].id],
+       DO UPDATE SET score = $4, assessment_question_id = $5, calculator_inputs = $6, updated_at = NOW()`,
+      [
+        uuidv4(),
+        assessmentId,
+        dto.questionId,
+        score,
+        sq.id,
+        calculatorInputs ? JSON.stringify(calculatorInputs) : null,
+      ],
     );
 
-    return { questionId: dto.questionId, score: dto.score };
+    await this.touchActivity(assessmentId);
+    return { questionId: dto.questionId, score, calculatorInputs };
   }
 
   async updateProgress(assessmentId: string, userId: string, dto: UpdateProgressDto) {
@@ -247,6 +274,7 @@ export class AssessmentService {
       [dto.currentQuestionIndex, assessmentId],
     );
 
+    await this.touchActivity(assessmentId);
     return { currentQuestionIndex: dto.currentQuestionIndex };
   }
 
@@ -643,6 +671,14 @@ export class AssessmentService {
         calculatorType: q.calculator_type,
       })),
     };
+  }
+
+  /** Marks a draft active (resets the inactivity reminder window). */
+  private async touchActivity(assessmentId: string) {
+    await this.db.query(
+      'UPDATE assessments SET last_activity_at = NOW(), reminder_sent_at = NULL WHERE id = $1',
+      [assessmentId],
+    );
   }
 
   private toIso(date: Date | string): string {

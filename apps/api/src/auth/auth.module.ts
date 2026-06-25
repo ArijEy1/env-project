@@ -29,6 +29,6 @@ import { RegisterRateLimiter } from './register-rate-limiter';
     LoginRateLimiter,
     RegisterRateLimiter,
   ],
-  exports: [AuthService],
+  exports: [AuthService, AuthEmailService],
 })
 export class AuthModule {}

@@ -386,6 +386,16 @@ export class DatabaseService implements OnModuleInit, OnApplicationShutdown {
     await this.pool.query(
       `ALTER TABLE assessments ADD COLUMN IF NOT EXISTS calculation_audit JSONB`,
     );
+    // Draft retention + reminder tracking (Section 4).
+    await this.pool.query(
+      `ALTER TABLE assessments ADD COLUMN IF NOT EXISTS last_activity_at TIMESTAMPTZ NOT NULL DEFAULT NOW()`,
+    );
+    await this.pool.query(
+      `ALTER TABLE assessments ADD COLUMN IF NOT EXISTS reminder_sent_at TIMESTAMPTZ`,
+    );
+    await this.pool.query(
+      'CREATE INDEX IF NOT EXISTS assessments_last_activity_idx ON assessments (last_activity_at)',
+    );
   }
 
   private async ensureAssessmentQuestionsTable() {
