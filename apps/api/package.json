@@ -9,7 +9,7 @@
     "migrate": "ts-node --transpile-only -P tsconfig.build.json src/database/migrate.ts",
     "migrate:prod": "node dist/database/migrate.js",
     "import:sems": "ts-node --transpile-only -P tsconfig.build.json src/database/import-sems-v04.ts",
-    "import:sems:prod": "node dist/database/import-sems-v04.js"
+    "seed:admin": "ts-node --transpile-only -P tsconfig.build.json src/admin/seed-admin.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.1.27",

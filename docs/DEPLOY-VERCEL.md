@@ -16,21 +16,23 @@ You create **two Vercel projects from the same GitHub repo** — one for the web
 1. Create a project at [neon.tech]; create a database (e.g. `env_project`).
 2. Copy the **pooled** connection string (host contains `-pooler`), e.g.
    `postgres://user:pass@ep-xxx-pooler.eu-central-1.aws.neon.tech/env_project?sslmode=require`
-3. Load the schema + official v0.4 content **from your machine** (Vercel has no release step):
+3. Load the schema + official v0.4 content **from your machine** (Vercel has no
+   release step). Use the **direct** (non-pooled) Neon string for these one-shot
+   commands — the schema step takes a Postgres advisory lock, which the pooler
+   doesn't support. (The app **runtime** uses the pooled string; see §2.)
 
    ```bash
    cd apps/api
-   export DATABASE_URL="postgres://…-pooler…/env_project?sslmode=require"
+   export DATABASE_URL="postgres://…@ep-xxx.region.aws.neon.tech/neondb?sslmode=require"  # DIRECT host (no -pooler)
    export POSTGRES_SSL=true
    export NODE_ENV=production
-   npm run build
-   npm run migrate:prod        # creates all tables (idempotent)
-   npm run import:sems:prod     # loads the 168 v0.4 questions + reference data
-   # optional: seed a platform superadmin
-   node dist/admin/seed-admin.js --email admin@yourdomain.sa --password 'Strong1Pass'
+   npm run migrate                                   # create all tables (idempotent)
+   npm run import:sems                                # load 168 v0.4 questions + reference data
+   npm run seed:admin -- --email admin@yourdomain.sa --password 'Strong1Pass'   # optional
    ```
 
-   Re-run `migrate:prod` / `import:sems:prod` any time the schema or question bank changes.
+   These run via `ts-node` (no build needed) and read the seed JSON from `src/`.
+   Re-run `migrate` / `import:sems` any time the schema or question bank changes.
 
 ---
 

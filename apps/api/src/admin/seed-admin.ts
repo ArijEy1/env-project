@@ -35,13 +35,18 @@ async function main() {
     process.exit(1);
   }
 
-  const client = new Client({
-    host: process.env.POSTGRES_HOST ?? '127.0.0.1',
-    port: Number(process.env.POSTGRES_PORT ?? 5432),
-    user: process.env.POSTGRES_USER ?? 'postgres',
-    password: process.env.POSTGRES_PASSWORD ?? 'postgres',
-    database: process.env.POSTGRES_DB ?? 'env_project',
-  });
+  const ssl =
+    process.env.POSTGRES_SSL === 'true' ? { rejectUnauthorized: false } : undefined;
+  const client = process.env.DATABASE_URL
+    ? new Client({ connectionString: process.env.DATABASE_URL, ssl })
+    : new Client({
+        host: process.env.POSTGRES_HOST ?? '127.0.0.1',
+        port: Number(process.env.POSTGRES_PORT ?? 5432),
+        user: process.env.POSTGRES_USER ?? 'postgres',
+        password: process.env.POSTGRES_PASSWORD ?? 'postgres',
+        database: process.env.POSTGRES_DB ?? 'env_project',
+        ssl,
+      });
 
   await client.connect();
 

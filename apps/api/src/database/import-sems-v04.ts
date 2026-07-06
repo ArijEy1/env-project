@@ -41,16 +41,19 @@ function yn(v: unknown): boolean {
 }
 
 function createPool(): Pool {
+  const ssl =
+    process.env.POSTGRES_SSL === 'true' ? { rejectUnauthorized: false } : undefined;
+  // Managed/serverless Postgres (Neon…) provides a single connection string.
+  if (process.env.DATABASE_URL) {
+    return new Pool({ connectionString: process.env.DATABASE_URL, ssl });
+  }
   return new Pool({
     host: process.env.POSTGRES_HOST ?? '127.0.0.1',
     port: Number(process.env.POSTGRES_PORT ?? 5432),
     user: process.env.POSTGRES_USER ?? 'postgres',
     password: process.env.POSTGRES_PASSWORD ?? 'postgres',
     database: process.env.POSTGRES_DB ?? 'env_project',
-    ssl:
-      process.env.POSTGRES_SSL === 'true'
-        ? { rejectUnauthorized: false }
-        : undefined,
+    ssl,
   });
 }
 
