@@ -1,0 +1,1692 @@
+[
+ {
+  "Dependency_ID": "DEP-REG-001-APP-001",
+  "Parent_Question": "APP-001",
+  "Child_Question_or_Module": "REG-001",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-001 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-REG-002-APP-001",
+  "Parent_Question": "APP-001",
+  "Child_Question_or_Module": "REG-002",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-001 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-REG-003-APP-001",
+  "Parent_Question": "APP-001",
+  "Child_Question_or_Module": "REG-003",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-001 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-REG-004-APP-001",
+  "Parent_Question": "APP-001",
+  "Child_Question_or_Module": "REG-004",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-001 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-REG-005-APP-001",
+  "Parent_Question": "APP-001",
+  "Child_Question_or_Module": "REG-005",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-001 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-REG-006-APP-001",
+  "Parent_Question": "APP-001",
+  "Child_Question_or_Module": "REG-006",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-001 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-REG-007-APP-001",
+  "Parent_Question": "APP-001",
+  "Child_Question_or_Module": "REG-007",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-001 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-REG-008-APP-001",
+  "Parent_Question": "APP-001",
+  "Child_Question_or_Module": "REG-008",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-001 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-REG-009-APP-001",
+  "Parent_Question": "APP-001",
+  "Child_Question_or_Module": "REG-009",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-001 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-REG-010-APP-001",
+  "Parent_Question": "APP-001",
+  "Child_Question_or_Module": "REG-010",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-001 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CLM-001-PRF-010",
+  "Parent_Question": "PRF-010",
+  "Child_Question_or_Module": "CLM-001",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-010 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CLM-001-APP-003",
+  "Parent_Question": "APP-003",
+  "Child_Question_or_Module": "CLM-001",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-003 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CLM-002-PRF-010",
+  "Parent_Question": "PRF-010",
+  "Child_Question_or_Module": "CLM-002",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-010 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CLM-002-APP-003",
+  "Parent_Question": "APP-003",
+  "Child_Question_or_Module": "CLM-002",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-003 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CLM-003-PRF-010",
+  "Parent_Question": "PRF-010",
+  "Child_Question_or_Module": "CLM-003",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-010 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CLM-003-APP-003",
+  "Parent_Question": "APP-003",
+  "Child_Question_or_Module": "CLM-003",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-003 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CLM-004-PRF-010",
+  "Parent_Question": "PRF-010",
+  "Child_Question_or_Module": "CLM-004",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-010 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CLM-004-APP-003",
+  "Parent_Question": "APP-003",
+  "Child_Question_or_Module": "CLM-004",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-003 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CLM-005-PRF-010",
+  "Parent_Question": "PRF-010",
+  "Child_Question_or_Module": "CLM-005",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-010 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CLM-005-APP-003",
+  "Parent_Question": "APP-003",
+  "Child_Question_or_Module": "CLM-005",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-003 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CLM-006-PRF-010",
+  "Parent_Question": "PRF-010",
+  "Child_Question_or_Module": "CLM-006",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-010 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CLM-006-APP-003",
+  "Parent_Question": "APP-003",
+  "Child_Question_or_Module": "CLM-006",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-003 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CLM-007-PRF-010",
+  "Parent_Question": "PRF-010",
+  "Child_Question_or_Module": "CLM-007",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-010 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CLM-007-APP-003",
+  "Parent_Question": "APP-003",
+  "Child_Question_or_Module": "CLM-007",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-003 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CLM-008-PRF-010",
+  "Parent_Question": "PRF-010",
+  "Child_Question_or_Module": "CLM-008",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-010 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CLM-008-APP-003",
+  "Parent_Question": "APP-003",
+  "Child_Question_or_Module": "CLM-008",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-003 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CLM-009-PRF-010",
+  "Parent_Question": "PRF-010",
+  "Child_Question_or_Module": "CLM-009",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-010 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CLM-009-APP-003",
+  "Parent_Question": "APP-003",
+  "Child_Question_or_Module": "CLM-009",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-003 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CLM-010-PRF-010",
+  "Parent_Question": "PRF-010",
+  "Child_Question_or_Module": "CLM-010",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-010 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CLM-010-APP-003",
+  "Parent_Question": "APP-003",
+  "Child_Question_or_Module": "CLM-010",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-003 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CLM-011-PRF-010",
+  "Parent_Question": "PRF-010",
+  "Child_Question_or_Module": "CLM-011",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-010 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CLM-011-APP-003",
+  "Parent_Question": "APP-003",
+  "Child_Question_or_Module": "CLM-011",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-003 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CLM-012-PRF-010",
+  "Parent_Question": "PRF-010",
+  "Child_Question_or_Module": "CLM-012",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-010 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CLM-012-APP-003",
+  "Parent_Question": "APP-003",
+  "Child_Question_or_Module": "CLM-012",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-003 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CLM-013-PRF-010",
+  "Parent_Question": "PRF-010",
+  "Child_Question_or_Module": "CLM-013",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-010 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CLM-013-APP-003",
+  "Parent_Question": "APP-003",
+  "Child_Question_or_Module": "CLM-013",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-003 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CLM-014-PRF-010",
+  "Parent_Question": "PRF-010",
+  "Child_Question_or_Module": "CLM-014",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-010 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CLM-014-APP-003",
+  "Parent_Question": "APP-003",
+  "Child_Question_or_Module": "CLM-014",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-003 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CLM-015-PRF-010",
+  "Parent_Question": "PRF-010",
+  "Child_Question_or_Module": "CLM-015",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-010 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CLM-015-APP-003",
+  "Parent_Question": "APP-003",
+  "Child_Question_or_Module": "CLM-015",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-003 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-WAT-001-PRF-005",
+  "Parent_Question": "PRF-005",
+  "Child_Question_or_Module": "WAT-001",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-005 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-WAT-002-PRF-005",
+  "Parent_Question": "PRF-005",
+  "Child_Question_or_Module": "WAT-002",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-005 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-WAT-003-PRF-005",
+  "Parent_Question": "PRF-005",
+  "Child_Question_or_Module": "WAT-003",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-005 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-WAT-004-PRF-005",
+  "Parent_Question": "PRF-005",
+  "Child_Question_or_Module": "WAT-004",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-005 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-WAT-004-APP-008",
+  "Parent_Question": "APP-008",
+  "Child_Question_or_Module": "WAT-004",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-008 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-WAT-005-PRF-005",
+  "Parent_Question": "PRF-005",
+  "Child_Question_or_Module": "WAT-005",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-005 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-WAT-005-APP-008",
+  "Parent_Question": "APP-008",
+  "Child_Question_or_Module": "WAT-005",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-008 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-WAT-006-PRF-005",
+  "Parent_Question": "PRF-005",
+  "Child_Question_or_Module": "WAT-006",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-005 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-WAT-007-PRF-005",
+  "Parent_Question": "PRF-005",
+  "Child_Question_or_Module": "WAT-007",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-005 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-WAT-007-APP-008",
+  "Parent_Question": "APP-008",
+  "Child_Question_or_Module": "WAT-007",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-008 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-WAT-008-PRF-005",
+  "Parent_Question": "PRF-005",
+  "Child_Question_or_Module": "WAT-008",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-005 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-WAT-009-PRF-005",
+  "Parent_Question": "PRF-005",
+  "Child_Question_or_Module": "WAT-009",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-005 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-WAT-010-PRF-005",
+  "Parent_Question": "PRF-005",
+  "Child_Question_or_Module": "WAT-010",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-005 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-WAT-011-PRF-005",
+  "Parent_Question": "PRF-005",
+  "Child_Question_or_Module": "WAT-011",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-005 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-WAT-012-PRF-005",
+  "Parent_Question": "PRF-005",
+  "Child_Question_or_Module": "WAT-012",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-005 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-WST-001-APP-005",
+  "Parent_Question": "APP-005",
+  "Child_Question_or_Module": "WST-001",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-005 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-WST-002-APP-005",
+  "Parent_Question": "APP-005",
+  "Child_Question_or_Module": "WST-002",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-005 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-WST-003-APP-005",
+  "Parent_Question": "APP-005",
+  "Child_Question_or_Module": "WST-003",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-005 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-WST-004-APP-005",
+  "Parent_Question": "APP-005",
+  "Child_Question_or_Module": "WST-004",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-005 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-WST-005-APP-005",
+  "Parent_Question": "APP-005",
+  "Child_Question_or_Module": "WST-005",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-005 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-WST-006-APP-005",
+  "Parent_Question": "APP-005",
+  "Child_Question_or_Module": "WST-006",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-005 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-WST-007-APP-005",
+  "Parent_Question": "APP-005",
+  "Child_Question_or_Module": "WST-007",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-005 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-WST-008-APP-005",
+  "Parent_Question": "APP-005",
+  "Child_Question_or_Module": "WST-008",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-005 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-WST-009-APP-005",
+  "Parent_Question": "APP-005",
+  "Child_Question_or_Module": "WST-009",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-005 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-WST-010-APP-005",
+  "Parent_Question": "APP-005",
+  "Child_Question_or_Module": "WST-010",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-005 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-HAZ-001-PRF-006",
+  "Parent_Question": "PRF-006",
+  "Child_Question_or_Module": "HAZ-001",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-006 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-HAZ-001-APP-004",
+  "Parent_Question": "APP-004",
+  "Child_Question_or_Module": "HAZ-001",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-004 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-HAZ-002-PRF-006",
+  "Parent_Question": "PRF-006",
+  "Child_Question_or_Module": "HAZ-002",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-006 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-HAZ-002-APP-004",
+  "Parent_Question": "APP-004",
+  "Child_Question_or_Module": "HAZ-002",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-004 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-HAZ-003-PRF-006",
+  "Parent_Question": "PRF-006",
+  "Child_Question_or_Module": "HAZ-003",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-006 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-HAZ-003-APP-004",
+  "Parent_Question": "APP-004",
+  "Child_Question_or_Module": "HAZ-003",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-004 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-HAZ-004-PRF-006",
+  "Parent_Question": "PRF-006",
+  "Child_Question_or_Module": "HAZ-004",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-006 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-HAZ-004-APP-004",
+  "Parent_Question": "APP-004",
+  "Child_Question_or_Module": "HAZ-004",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-004 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-HAZ-005-PRF-006",
+  "Parent_Question": "PRF-006",
+  "Child_Question_or_Module": "HAZ-005",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-006 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-HAZ-005-APP-004",
+  "Parent_Question": "APP-004",
+  "Child_Question_or_Module": "HAZ-005",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-004 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-HAZ-006-PRF-006",
+  "Parent_Question": "PRF-006",
+  "Child_Question_or_Module": "HAZ-006",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-006 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-HAZ-006-APP-004",
+  "Parent_Question": "APP-004",
+  "Child_Question_or_Module": "HAZ-006",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-004 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-NAT-001-PRF-009",
+  "Parent_Question": "PRF-009",
+  "Child_Question_or_Module": "NAT-001",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-009 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-NAT-001-APP-006",
+  "Parent_Question": "APP-006",
+  "Child_Question_or_Module": "NAT-001",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-006 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-NAT-002-PRF-009",
+  "Parent_Question": "PRF-009",
+  "Child_Question_or_Module": "NAT-002",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-009 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-NAT-002-APP-006",
+  "Parent_Question": "APP-006",
+  "Child_Question_or_Module": "NAT-002",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-006 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-NAT-003-PRF-009",
+  "Parent_Question": "PRF-009",
+  "Child_Question_or_Module": "NAT-003",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-009 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-NAT-003-APP-006",
+  "Parent_Question": "APP-006",
+  "Child_Question_or_Module": "NAT-003",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-006 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-NAT-004-PRF-009",
+  "Parent_Question": "PRF-009",
+  "Child_Question_or_Module": "NAT-004",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-009 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-NAT-004-APP-006",
+  "Parent_Question": "APP-006",
+  "Child_Question_or_Module": "NAT-004",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-006 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-NAT-005-PRF-009",
+  "Parent_Question": "PRF-009",
+  "Child_Question_or_Module": "NAT-005",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-009 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-NAT-005-APP-006",
+  "Parent_Question": "APP-006",
+  "Child_Question_or_Module": "NAT-005",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-006 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-NAT-006-PRF-009",
+  "Parent_Question": "PRF-009",
+  "Child_Question_or_Module": "NAT-006",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-009 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-NAT-006-APP-006",
+  "Parent_Question": "APP-006",
+  "Child_Question_or_Module": "NAT-006",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-006 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-NAT-007-PRF-009",
+  "Parent_Question": "PRF-009",
+  "Child_Question_or_Module": "NAT-007",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-009 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-NAT-007-APP-006",
+  "Parent_Question": "APP-006",
+  "Child_Question_or_Module": "NAT-007",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-006 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-NAT-008-PRF-009",
+  "Parent_Question": "PRF-009",
+  "Child_Question_or_Module": "NAT-008",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-009 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-NAT-008-APP-006",
+  "Parent_Question": "APP-006",
+  "Child_Question_or_Module": "NAT-008",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-006 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-NAT-009-PRF-009",
+  "Parent_Question": "PRF-009",
+  "Child_Question_or_Module": "NAT-009",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-009 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-NAT-009-APP-006",
+  "Parent_Question": "APP-006",
+  "Child_Question_or_Module": "NAT-009",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-006 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-NAT-010-PRF-009",
+  "Parent_Question": "PRF-009",
+  "Child_Question_or_Module": "NAT-010",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-009 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-NAT-010-APP-006",
+  "Parent_Question": "APP-006",
+  "Child_Question_or_Module": "NAT-010",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-006 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-SOIL-001-APP-006",
+  "Parent_Question": "APP-006",
+  "Child_Question_or_Module": "SOIL-001",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-006 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-SOIL-001-PRF-005",
+  "Parent_Question": "PRF-005",
+  "Child_Question_or_Module": "SOIL-001",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-005 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-SOIL-002-APP-006",
+  "Parent_Question": "APP-006",
+  "Child_Question_or_Module": "SOIL-002",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-006 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-SOIL-002-PRF-005",
+  "Parent_Question": "PRF-005",
+  "Child_Question_or_Module": "SOIL-002",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-005 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-SOIL-003-APP-006",
+  "Parent_Question": "APP-006",
+  "Child_Question_or_Module": "SOIL-003",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-006 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-SOIL-003-PRF-005",
+  "Parent_Question": "PRF-005",
+  "Child_Question_or_Module": "SOIL-003",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-005 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-SOIL-004-APP-006",
+  "Parent_Question": "APP-006",
+  "Child_Question_or_Module": "SOIL-004",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-006 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-SOIL-004-PRF-005",
+  "Parent_Question": "PRF-005",
+  "Child_Question_or_Module": "SOIL-004",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-005 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-MAR-001-APP-006",
+  "Parent_Question": "APP-006",
+  "Child_Question_or_Module": "MAR-001",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-006 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-MAR-001-PRF-005",
+  "Parent_Question": "PRF-005",
+  "Child_Question_or_Module": "MAR-001",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-005 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-MAR-002-APP-006",
+  "Parent_Question": "APP-006",
+  "Child_Question_or_Module": "MAR-002",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-006 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-MAR-002-PRF-005",
+  "Parent_Question": "PRF-005",
+  "Child_Question_or_Module": "MAR-002",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-005 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-MAR-003-APP-006",
+  "Parent_Question": "APP-006",
+  "Child_Question_or_Module": "MAR-003",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-006 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-MAR-003-PRF-005",
+  "Parent_Question": "PRF-005",
+  "Child_Question_or_Module": "MAR-003",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-005 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-MAR-004-APP-006",
+  "Parent_Question": "APP-006",
+  "Child_Question_or_Module": "MAR-004",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-006 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-MAR-004-PRF-005",
+  "Parent_Question": "PRF-005",
+  "Child_Question_or_Module": "MAR-004",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-005 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-SUP-001-APP-007",
+  "Parent_Question": "APP-007",
+  "Child_Question_or_Module": "SUP-001",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-007 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-SUP-001-PRF-002",
+  "Parent_Question": "PRF-002",
+  "Child_Question_or_Module": "SUP-001",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-002 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-SUP-002-APP-007",
+  "Parent_Question": "APP-007",
+  "Child_Question_or_Module": "SUP-002",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-007 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-SUP-002-PRF-002",
+  "Parent_Question": "PRF-002",
+  "Child_Question_or_Module": "SUP-002",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-002 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-SUP-003-APP-007",
+  "Parent_Question": "APP-007",
+  "Child_Question_or_Module": "SUP-003",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-007 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-SUP-003-PRF-002",
+  "Parent_Question": "PRF-002",
+  "Child_Question_or_Module": "SUP-003",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-002 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-SUP-004-APP-007",
+  "Parent_Question": "APP-007",
+  "Child_Question_or_Module": "SUP-004",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-007 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-SUP-004-PRF-002",
+  "Parent_Question": "PRF-002",
+  "Child_Question_or_Module": "SUP-004",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-002 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-SUP-005-APP-007",
+  "Parent_Question": "APP-007",
+  "Child_Question_or_Module": "SUP-005",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-007 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-SUP-005-PRF-002",
+  "Parent_Question": "PRF-002",
+  "Child_Question_or_Module": "SUP-005",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-002 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-SUP-006-APP-007",
+  "Parent_Question": "APP-007",
+  "Child_Question_or_Module": "SUP-006",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-007 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-SUP-006-PRF-002",
+  "Parent_Question": "PRF-002",
+  "Child_Question_or_Module": "SUP-006",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-002 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-SUP-007-APP-007",
+  "Parent_Question": "APP-007",
+  "Child_Question_or_Module": "SUP-007",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-007 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-SUP-007-PRF-002",
+  "Parent_Question": "PRF-002",
+  "Child_Question_or_Module": "SUP-007",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-002 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-SUP-008-APP-007",
+  "Parent_Question": "APP-007",
+  "Child_Question_or_Module": "SUP-008",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-007 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-SUP-008-PRF-002",
+  "Parent_Question": "PRF-002",
+  "Child_Question_or_Module": "SUP-008",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-002 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-SUP-009-APP-007",
+  "Parent_Question": "APP-007",
+  "Child_Question_or_Module": "SUP-009",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-007 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-SUP-009-PRF-002",
+  "Parent_Question": "PRF-002",
+  "Child_Question_or_Module": "SUP-009",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-002 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-SUP-010-APP-007",
+  "Parent_Question": "APP-007",
+  "Child_Question_or_Module": "SUP-010",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-007 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-SUP-010-PRF-002",
+  "Parent_Question": "PRF-002",
+  "Child_Question_or_Module": "SUP-010",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-002 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-NAT-011-PRF-009",
+  "Parent_Question": "PRF-009",
+  "Child_Question_or_Module": "NAT-011",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-009 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-NAT-011-APP-006",
+  "Parent_Question": "APP-006",
+  "Child_Question_or_Module": "NAT-011",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-006 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-NAT-012-PRF-009",
+  "Parent_Question": "PRF-009",
+  "Child_Question_or_Module": "NAT-012",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-009 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-NAT-012-APP-006",
+  "Parent_Question": "APP-006",
+  "Child_Question_or_Module": "NAT-012",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-006 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-NAT-013-PRF-009",
+  "Parent_Question": "PRF-009",
+  "Child_Question_or_Module": "NAT-013",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-009 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-NAT-013-APP-006",
+  "Parent_Question": "APP-006",
+  "Child_Question_or_Module": "NAT-013",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-006 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-NAT-014-PRF-009",
+  "Parent_Question": "PRF-009",
+  "Child_Question_or_Module": "NAT-014",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-009 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-NAT-014-APP-006",
+  "Parent_Question": "APP-006",
+  "Child_Question_or_Module": "NAT-014",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-006 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-NAT-015-PRF-009",
+  "Parent_Question": "PRF-009",
+  "Child_Question_or_Module": "NAT-015",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-009 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-NAT-015-APP-006",
+  "Parent_Question": "APP-006",
+  "Child_Question_or_Module": "NAT-015",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-006 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-SUP-011-APP-007",
+  "Parent_Question": "APP-007",
+  "Child_Question_or_Module": "SUP-011",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-007 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-SUP-011-PRF-002",
+  "Parent_Question": "PRF-002",
+  "Child_Question_or_Module": "SUP-011",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-002 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-SUP-012-APP-007",
+  "Parent_Question": "APP-007",
+  "Child_Question_or_Module": "SUP-012",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-007 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-SUP-012-PRF-002",
+  "Parent_Question": "PRF-002",
+  "Child_Question_or_Module": "SUP-012",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-002 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-SUP-013-APP-007",
+  "Parent_Question": "APP-007",
+  "Child_Question_or_Module": "SUP-013",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-007 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-SUP-013-PRF-002",
+  "Parent_Question": "PRF-002",
+  "Child_Question_or_Module": "SUP-013",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-002 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-SUP-014-APP-007",
+  "Parent_Question": "APP-007",
+  "Child_Question_or_Module": "SUP-014",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-007 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-SUP-014-PRF-002",
+  "Parent_Question": "PRF-002",
+  "Child_Question_or_Module": "SUP-014",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-002 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-SUP-015-APP-007",
+  "Parent_Question": "APP-007",
+  "Child_Question_or_Module": "SUP-015",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "APP-007 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-SUP-015-PRF-002",
+  "Parent_Question": "PRF-002",
+  "Child_Question_or_Module": "SUP-015",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "PRF-002 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CIR-001-WST-001",
+  "Parent_Question": "WST-001",
+  "Child_Question_or_Module": "CIR-001",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "WST-001 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CIR-001-IMP-006",
+  "Parent_Question": "IMP-006",
+  "Child_Question_or_Module": "CIR-001",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "IMP-006 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CIR-002-WST-001",
+  "Parent_Question": "WST-001",
+  "Child_Question_or_Module": "CIR-002",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "WST-001 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CIR-002-IMP-006",
+  "Parent_Question": "IMP-006",
+  "Child_Question_or_Module": "CIR-002",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "IMP-006 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CIR-003-WST-001",
+  "Parent_Question": "WST-001",
+  "Child_Question_or_Module": "CIR-003",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "WST-001 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CIR-003-IMP-006",
+  "Parent_Question": "IMP-006",
+  "Child_Question_or_Module": "CIR-003",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "IMP-006 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CIR-004-WST-001",
+  "Parent_Question": "WST-001",
+  "Child_Question_or_Module": "CIR-004",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "WST-001 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CIR-004-IMP-006",
+  "Parent_Question": "IMP-006",
+  "Child_Question_or_Module": "CIR-004",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "IMP-006 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CIR-005-WST-001",
+  "Parent_Question": "WST-001",
+  "Child_Question_or_Module": "CIR-005",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "WST-001 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CIR-005-IMP-006",
+  "Parent_Question": "IMP-006",
+  "Child_Question_or_Module": "CIR-005",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "IMP-006 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CIR-006-WST-001",
+  "Parent_Question": "WST-001",
+  "Child_Question_or_Module": "CIR-006",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "WST-001 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CIR-006-IMP-006",
+  "Parent_Question": "IMP-006",
+  "Child_Question_or_Module": "CIR-006",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "IMP-006 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CIR-007-WST-001",
+  "Parent_Question": "WST-001",
+  "Child_Question_or_Module": "CIR-007",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "WST-001 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CIR-007-IMP-006",
+  "Parent_Question": "IMP-006",
+  "Child_Question_or_Module": "CIR-007",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "IMP-006 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CIR-008-WST-001",
+  "Parent_Question": "WST-001",
+  "Child_Question_or_Module": "CIR-008",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "WST-001 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ },
+ {
+  "Dependency_ID": "DEP-CIR-008-IMP-006",
+  "Parent_Question": "IMP-006",
+  "Child_Question_or_Module": "CIR-008",
+  "Dependency_Type": "Activation/Context",
+  "Condition": "IMP-006 indicates applicability or context",
+  "Action": "Activate/validate child question",
+  "Priority": "P2",
+  "Notes": "Generated in v0.4"
+ }
+]

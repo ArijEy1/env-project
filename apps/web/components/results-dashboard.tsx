@@ -165,6 +165,48 @@ export function ResultsDashboard({ assessmentId }: ResultsDashboardProps) {
         </div>
       </div>
 
+      {/* Gate banner + signals */}
+      {results && results.gateStatus !== 'none' && (
+        <div className={`results-gate-banner results-gate-${results.gateStatus}`}>
+          <span className="results-gate-icon" aria-hidden="true">{results.gateStatus === 'hard' ? '⛔' : '⚠'}</span>
+          <div>
+            <strong>
+              {results.gateStatus === 'hard'
+                ? (isArabic ? 'قيد تنظيمي حاسم' : 'Critical regulatory gate')
+                : (isArabic ? 'قيد تنظيمي' : 'Regulatory caution')}
+            </strong>
+            <p>
+              {isArabic
+                ? 'حدّت شروط تنظيمية من الدرجة الإجمالية بغض النظر عن الأداء في المجالات الأخرى.'
+                : 'Regulatory conditions capped the overall score regardless of performance in other domains.'}
+            </p>
+            <ul className="results-gate-reasons">
+              {results.gateReasons.map((r, i) => (
+                <li key={i}>{r}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+      {results && (
+        <div className="results-signals">
+          {results.confidenceScore != null && (
+            <div className="results-signal">
+              <span className="results-signal-label">{isArabic ? 'مستوى الثقة' : 'Confidence'}</span>
+              <span className="results-signal-value">{Math.round(results.confidenceScore)}%</span>
+            </div>
+          )}
+          <div className={`results-signal${results.redFlagCount > 0 ? ' results-signal-alert' : ''}`}>
+            <span className="results-signal-label">{isArabic ? 'إشارات حمراء' : 'Red flags'}</span>
+            <span className="results-signal-value">{results.redFlagCount}</span>
+          </div>
+          <div className="results-signal">
+            <span className="results-signal-label">{isArabic ? 'المجالات المقيّمة' : 'Scored domains'}</span>
+            <span className="results-signal-value">{domainResults.length}</span>
+          </div>
+        </div>
+      )}
+
       {/* Radar + profile summary */}
       {domainResults.length > 0 && (
         <div className="results-radar-row">

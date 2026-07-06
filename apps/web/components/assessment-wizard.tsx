@@ -5,19 +5,26 @@ import {
   getAssessment,
   fetchGeneratedQuestions,
   saveAnswer,
-  saveCalculatorAnswer,
   updateProgress,
   submitAssessment,
   type Assessment,
   type GeneratedQuestionsData,
+  type GeneratedQuestion,
+  type AnswerPayload,
 } from '../lib/assessment-client';
 import { translateError } from '../lib/error-messages';
 import { useLanguage } from './language-provider';
 import { useToast } from './toast-provider';
-import { AssessmentCalculator } from './assessment-calculator';
 
 interface AssessmentWizardProps {
   assessmentId: string;
+}
+
+/** A number-entry question (raw value) vs. an option-select question. */
+function isNumericQuestion(q: GeneratedQuestion): boolean {
+  const t = (q.answerType ?? '').toLowerCase();
+  if (/yes|maturity|trend|single|date|frequency/.test(t)) return false;
+  return /numeric|percentage/.test(t) || q.options.length === 0;
 }
 
 export function AssessmentWizard({ assessmentId }: AssessmentWizardProps) {
@@ -28,8 +35,8 @@ export function AssessmentWizard({ assessmentId }: AssessmentWizardProps) {
   const [questionsData, setQuestionsData] = useState<GeneratedQuestionsData | null>(null);
   const [assessment, setAssessment] = useState<Assessment | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, number>>({});
-  const [calcInputs, setCalcInputs] = useState<Record<string, Record<string, unknown>>>({});
+  // Raw selection per question id (optionIndex / number / attribution).
+  const [answers, setAnswers] = useState<Record<string, AnswerPayload>>({});
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'failed'>('idle');
   const [error, setError] = useState('');
@@ -38,43 +45,15 @@ export function AssessmentWizard({ assessmentId }: AssessmentWizardProps) {
   const [showHelp, setShowHelp] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [numberDraft, setNumberDraft] = useState<string>('');
   const progressSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const saveStatusTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  function getPendingAnswers(): Record<string, number> {
-    try {
-      const raw = localStorage.getItem(`env-pending-${assessmentId}`);
-      return raw ? JSON.parse(raw) : {};
-    } catch { return {}; }
-  }
-
-  function setPendingAnswer(questionId: string, score: number) {
-    const pending = getPendingAnswers();
-    pending[questionId] = score;
-    localStorage.setItem(`env-pending-${assessmentId}`, JSON.stringify(pending));
-  }
-
-  function removePendingAnswer(questionId: string) {
-    const pending = getPendingAnswers();
-    delete pending[questionId];
-    if (Object.keys(pending).length === 0) {
-      localStorage.removeItem(`env-pending-${assessmentId}`);
-    } else {
-      localStorage.setItem(`env-pending-${assessmentId}`, JSON.stringify(pending));
-    }
-  }
-
-  async function syncPendingAnswers() {
-    const pending = getPendingAnswers();
-    for (const [qId, score] of Object.entries(pending)) {
-      try {
-        await saveAnswer(assessmentId, qId, score);
-        removePendingAnswer(qId);
-      } catch {
-        // Still offline, leave pending
-      }
-    }
-  }
+  const refreshQuestions = useCallback(async () => {
+    const qData = await fetchGeneratedQuestions(assessmentId);
+    setQuestionsData(qData);
+    return qData;
+  }, [assessmentId]);
 
   useEffect(() => {
     async function load() {
@@ -86,27 +65,22 @@ export function AssessmentWizard({ assessmentId }: AssessmentWizardProps) {
         setQuestionsData(qData);
         setAssessment(aData);
         setCurrentIndex(Math.min(aData.currentQuestionIndex, Math.max(0, qData.questions.length - 1)));
-        const answerMap: Record<string, number> = {};
-        const calcMap: Record<string, Record<string, unknown>> = {};
+        const answerMap: Record<string, AnswerPayload> = {};
         for (const a of aData.answers) {
-          answerMap[a.questionId] = a.score;
-          if (a.calculatorInputs) calcMap[a.questionId] = a.calculatorInputs;
-        }
-        try {
-          const pendingCalc = localStorage.getItem(`env-pending-calc-${assessmentId}`);
-          if (pendingCalc) Object.assign(calcMap, JSON.parse(pendingCalc));
-        } catch {
-          /* ignore */
+          const raw = a.rawAnswer ?? {};
+          answerMap[a.questionId] = {
+            optionIndex: raw.optionIndex ?? undefined,
+            number: raw.number ?? undefined,
+            attribution: raw.attribution ?? undefined,
+          };
         }
         setAnswers(answerMap);
-        setCalcInputs(calcMap);
-        const pending = getPendingAnswers();
-        if (Object.keys(pending).length > 0) {
-          setAnswers((prev) => ({ ...prev, ...pending }));
-          void syncPendingAnswers();
-        }
       } catch (err) {
-        setError(err instanceof Error ? translateError(err.message, isArabic) : isArabic ? 'فشل تحميل التقييم' : 'Failed to load assessment');
+        setError(
+          err instanceof Error
+            ? translateError(err.message, isArabic)
+            : isArabic ? 'فشل تحميل التقييم' : 'Failed to load assessment',
+        );
       } finally {
         setIsLoading(false);
       }
@@ -149,9 +123,10 @@ export function AssessmentWizard({ assessmentId }: AssessmentWizardProps) {
     );
   }
 
-  const { questions, domains, answerOptions, totalQuestions } = questionsData;
+  const { questions, domains } = questionsData;
+  const totalQuestions = questions.length;
 
-  if (questions.length === 0) {
+  if (totalQuestions === 0) {
     return (
       <div className="wizard-error">
         <p className="auth-feedback auth-feedback-error">{isArabic ? 'لا توجد أسئلة لهذا التقييم.' : 'No questions for this assessment.'}</p>
@@ -159,82 +134,81 @@ export function AssessmentWizard({ assessmentId }: AssessmentWizardProps) {
     );
   }
 
-  const question = questions[currentIndex];
+  const safeIndex = Math.min(currentIndex, totalQuestions - 1);
+  const question = questions[safeIndex];
   const domain = domains.find((d) => d.id === question.domainId) ?? { id: question.domainId, nameAr: question.domainId, nameEn: question.domainId };
-  const selectedScore = answers[question.questionId];
-  const nextQuestion = questions[currentIndex + 1];
+  const answer = answers[question.questionId];
+  const numeric = isNumericQuestion(question);
+  const isAnswered = answer != null && (answer.optionIndex != null || answer.number != null);
+  const nextQuestion = questions[safeIndex + 1];
   const crossesDomain = !!nextQuestion && nextQuestion.domainId !== question.domainId;
-  const isLast = currentIndex === totalQuestions - 1;
-  const answeredCount = Object.keys(answers).length;
+  const isLast = safeIndex === totalQuestions - 1;
+  const answeredCount = questions.filter((q) => {
+    const a = answers[q.questionId];
+    return a != null && (a.optionIndex != null || a.number != null);
+  }).length;
   const helpText = isArabic ? question.helpTextAr : question.helpTextEn;
+  const guidance = isArabic ? question.guidanceAr : question.guidanceEn;
   const domainIndex = domains.findIndex((d) => d.id === question.domainId);
   const domainProgress = domains.map((d) => {
     const qs = questions.filter((q) => q.domainId === d.id);
-    const answered = qs.filter((q) => answers[q.questionId] !== undefined).length;
+    const answered = qs.filter((q) => {
+      const a = answers[q.questionId];
+      return a != null && (a.optionIndex != null || a.number != null);
+    }).length;
     return { id: d.id, name: isArabic ? d.nameAr : d.nameEn, answered, total: qs.length };
   });
 
-  async function handleSelectAnswer(score: number) {
+  async function persist(q: GeneratedQuestion, payload: AnswerPayload) {
     setSaving(true);
     setSaveStatus('saving');
     setError('');
-    setAnswers((prev) => ({ ...prev, [question.questionId]: score }));
-
     try {
-      await saveAnswer(assessmentId, question.questionId, score);
-      removePendingAnswer(question.questionId);
+      await saveAnswer(assessmentId, q.questionId, payload);
       setSaveStatus('saved');
       if (saveStatusTimer.current) clearTimeout(saveStatusTimer.current);
-      saveStatusTimer.current = setTimeout(() => setSaveStatus('idle'), 2000);
+      saveStatusTimer.current = setTimeout(() => setSaveStatus('idle'), 1600);
+      // A profile/applicability answer can add or remove downstream questions.
+      if (q.isRouting) await refreshQuestions();
     } catch {
-      setPendingAnswer(question.questionId, score);
       setSaveStatus('failed');
-      showToast(isArabic ? 'فشل الحفظ — محفوظ محلياً' : 'Save failed — saved locally', 'error');
+      showToast(isArabic ? 'فشل الحفظ، حاول مرة أخرى' : 'Save failed, please retry', 'error');
     } finally {
       setSaving(false);
     }
   }
 
-  function writePendingCalc(questionId: string, inputs: Record<string, unknown> | null) {
-    try {
-      const key = `env-pending-calc-${assessmentId}`;
-      const pending = JSON.parse(localStorage.getItem(key) ?? '{}');
-      if (inputs) pending[questionId] = inputs;
-      else delete pending[questionId];
-      if (Object.keys(pending).length === 0) localStorage.removeItem(key);
-      else localStorage.setItem(key, JSON.stringify(pending));
-    } catch {
-      /* ignore storage errors */
-    }
+  function handleSelectOption(optionIndex: number) {
+    const payload: AnswerPayload = {
+      optionIndex,
+      ...(question.attributionRequired && answer?.attribution ? { attribution: answer.attribution } : {}),
+    };
+    setAnswers((prev) => ({ ...prev, [question.questionId]: { ...prev[question.questionId], ...payload } }));
+    void persist(question, payload);
   }
 
-  async function handleCalculatorSave(inputs: Record<string, unknown>) {
-    setSaving(true);
-    setSaveStatus('saving');
-    setError('');
-    // Keep the inputs in state so they survive in-wizard navigation regardless.
-    setCalcInputs((prev) => ({ ...prev, [question.questionId]: inputs }));
-    try {
-      const res = await saveCalculatorAnswer(assessmentId, question.questionId, inputs);
-      setAnswers((prev) => ({ ...prev, [question.questionId]: res.score }));
-      writePendingCalc(question.questionId, null);
-      setSaveStatus('saved');
-      if (saveStatusTimer.current) clearTimeout(saveStatusTimer.current);
-      saveStatusTimer.current = setTimeout(() => setSaveStatus('idle'), 2000);
-    } catch {
-      // Persist locally so the figures survive reload/navigation.
-      writePendingCalc(question.questionId, inputs);
-      setSaveStatus('failed');
-      showToast(isArabic ? 'فشل الحفظ — محفوظ محليًا' : 'Save failed — saved locally', 'error');
-    } finally {
-      setSaving(false);
-    }
+  function handleAttribution(text: string) {
+    setAnswers((prev) => ({
+      ...prev,
+      [question.questionId]: { ...prev[question.questionId], attribution: text },
+    }));
+  }
+
+  function commitNumber() {
+    const value = numberDraft.trim();
+    if (value === '') return;
+    const num = Number(value);
+    if (!Number.isFinite(num)) return;
+    const payload: AnswerPayload = { number: num };
+    setAnswers((prev) => ({ ...prev, [question.questionId]: payload }));
+    void persist(question, payload);
   }
 
   function goToIndex(index: number) {
     setCurrentIndex(index);
     setShowTransition(false);
     setShowHelp(false);
+    setNumberDraft('');
     debouncedProgressSave(index);
   }
 
@@ -247,7 +221,7 @@ export function AssessmentWizard({ assessmentId }: AssessmentWizardProps) {
       setShowConfirm(true);
       return;
     }
-    goToIndex(currentIndex + 1);
+    goToIndex(safeIndex + 1);
   }
 
   function handleBack() {
@@ -255,9 +229,7 @@ export function AssessmentWizard({ assessmentId }: AssessmentWizardProps) {
       setShowTransition(false);
       return;
     }
-    if (currentIndex > 0) {
-      goToIndex(currentIndex - 1);
-    }
+    if (safeIndex > 0) goToIndex(safeIndex - 1);
   }
 
   async function handleSubmit() {
@@ -277,16 +249,15 @@ export function AssessmentWizard({ assessmentId }: AssessmentWizardProps) {
     }
   }
 
-  // Domain transition screen (generic, fires whenever the domain changes)
   if (showTransition && nextQuestion) {
     const nextDomain = domains.find((d) => d.id === nextQuestion.domainId)!;
     return (
       <div className="wizard-shell">
         <div className="wizard-progress">
           <div className="wizard-progress-bar">
-            <div className="wizard-progress-fill" style={{ width: `${((currentIndex + 1) / totalQuestions) * 100}%` }} />
+            <div className="wizard-progress-fill" style={{ width: `${((safeIndex + 1) / totalQuestions) * 100}%` }} />
           </div>
-          <span className="wizard-progress-text">{currentIndex + 1} / {totalQuestions}</span>
+          <span className="wizard-progress-text">{safeIndex + 1} / {totalQuestions}</span>
         </div>
         <div className="wizard-transition-card">
           <div className="wizard-transition-check">&#10003;</div>
@@ -294,40 +265,52 @@ export function AssessmentWizard({ assessmentId }: AssessmentWizardProps) {
           <p>{isArabic ? `الآن ننتقل إلى: ${nextDomain.nameAr}` : `Now starting: ${nextDomain.nameEn}`}</p>
           <div className="wizard-nav">
             <button className="secondary-btn" onClick={handleBack} type="button">{isArabic ? '→ رجوع' : '← Back'}</button>
-            <button className="primary-btn" onClick={() => goToIndex(currentIndex + 1)} type="button">{isArabic ? 'متابعة ←' : 'Continue →'}</button>
+            <button className="primary-btn" onClick={() => goToIndex(safeIndex + 1)} type="button">{isArabic ? 'متابعة ←' : 'Continue →'}</button>
           </div>
         </div>
       </div>
     );
   }
 
-  // Confirm dialog
   if (showConfirm) {
     return (
       <div className="wizard-shell">
         <div className="wizard-transition-card">
           <h2>{isArabic ? 'تأكيد الإرسال' : 'Confirm submission'}</h2>
-          <p>{isArabic ? `لقد أجبت على ${answeredCount} من ${totalQuestions} سؤال. هل تريد إرسال التقييم؟` : `You have answered ${answeredCount} of ${totalQuestions} questions. Submit the assessment?`}</p>
+          <p>{isArabic ? `لقد أجبت على ${answeredCount} من ${totalQuestions} سؤال منطبق. هل تريد إرسال التقييم؟` : `You have answered ${answeredCount} of ${totalQuestions} applicable questions. Submit the assessment?`}</p>
           {answeredCount < totalQuestions && (
-            <p className="wizard-confirm-warning">{isArabic ? 'تنبيه: لم تجب على جميع الأسئلة بعد.' : 'Warning: Not all questions have been answered yet.'}</p>
+            <p className="wizard-confirm-warning">{isArabic ? 'تنبيه: يجب الإجابة على جميع الأسئلة المنطبقة قبل الإرسال.' : 'Note: all applicable questions must be answered before submitting.'}</p>
           )}
           {error && <p className="auth-feedback auth-feedback-error">{error}</p>}
           <div className="wizard-nav">
             <button className="secondary-btn" onClick={() => setShowConfirm(false)} type="button">{isArabic ? 'إلغاء' : 'Cancel'}</button>
-            <button className="primary-btn" onClick={handleSubmit} disabled={submitting} type="button">{submitting ? (isArabic ? 'جاري الإرسال...' : 'Submitting...') : (isArabic ? 'إرسال التقييم' : 'Submit assessment')}</button>
+            <button className="primary-btn" onClick={handleSubmit} disabled={submitting || answeredCount < totalQuestions} type="button">{submitting ? (isArabic ? 'جاري الإرسال...' : 'Submitting...') : (isArabic ? 'إرسال التقييم' : 'Submit assessment')}</button>
           </div>
         </div>
       </div>
     );
   }
 
+  const categoryLabel = (cat: string | null): string | null => {
+    if (!cat) return null;
+    const map: Record<string, [string, string]> = {
+      Profile: ['ملف الجهة', 'Profile'],
+      Applicability: ['الانطباق', 'Applicability'],
+      Core: ['أساسي', 'Core'],
+      Conditional: ['مشروط', 'Conditional'],
+      Advanced: ['متقدم', 'Advanced'],
+    };
+    const m = map[cat];
+    return m ? (isArabic ? m[0] : m[1]) : cat;
+  };
+
   return (
     <div className="wizard-shell">
       <div className="wizard-progress">
         <div className="wizard-progress-bar">
-          <div className="wizard-progress-fill" style={{ width: `${((currentIndex + 1) / totalQuestions) * 100}%` }} />
+          <div className="wizard-progress-fill" style={{ width: `${((safeIndex + 1) / totalQuestions) * 100}%` }} />
         </div>
-        <span className="wizard-progress-text">{currentIndex + 1} / {totalQuestions}</span>
+        <span className="wizard-progress-text">{safeIndex + 1} / {totalQuestions}</span>
       </div>
       <div className="wizard-domain-progress">
         {domainProgress.map((dp) => (
@@ -345,16 +328,24 @@ export function AssessmentWizard({ assessmentId }: AssessmentWizardProps) {
         <div className={`wizard-save-indicator wizard-save-${saveStatus}`}>
           {saveStatus === 'saving' && (isArabic ? 'جاري الحفظ...' : 'Saving...')}
           {saveStatus === 'saved' && (isArabic ? 'تم الحفظ' : 'Saved')}
-          {saveStatus === 'failed' && (isArabic ? 'فشل الحفظ — محفوظ محلياً' : 'Save failed — saved locally')}
+          {saveStatus === 'failed' && (isArabic ? 'فشل الحفظ' : 'Save failed')}
         </div>
       )}
       <div className="wizard-domain-badge">
         {isArabic ? domain.nameAr : domain.nameEn}
         {domains.length > 1 ? ` · ${domainIndex + 1}/${domains.length}` : ''}
+        {question.category ? <span className="wizard-cat-tag">{categoryLabel(question.category)}</span> : null}
       </div>
       <div className="wizard-question-card">
-        <span className="wizard-question-number">{isArabic ? `س${currentIndex + 1}` : `Q${currentIndex + 1}`}</span>
+        <span className="wizard-question-number">{isArabic ? `س${safeIndex + 1}` : `Q${safeIndex + 1}`}</span>
         <h2 className="wizard-question-text">{isArabic ? question.textAr : question.textEn}</h2>
+        {question.isRouting ? (
+          <p className="wizard-routing-note">
+            {isArabic
+              ? 'هذا السؤال يحدد الأسئلة المنطبقة على منشأتكم.'
+              : 'This question determines which questions apply to your organization.'}
+          </p>
+        ) : null}
         {helpText ? (
           <div className="wizard-help">
             <button type="button" className="wizard-help-toggle" onClick={() => setShowHelp((v) => !v)}>
@@ -363,37 +354,90 @@ export function AssessmentWizard({ assessmentId }: AssessmentWizardProps) {
             {showHelp ? <p className="wizard-help-text">{helpText}</p> : null}
           </div>
         ) : null}
+        {!helpText && guidance ? (
+          <div className="wizard-help">
+            <button type="button" className="wizard-help-toggle" onClick={() => setShowHelp((v) => !v)}>
+              {showHelp ? (isArabic ? 'إخفاء الإرشاد' : 'Hide guidance') : (isArabic ? 'إرشاد' : 'Guidance')}
+            </button>
+            {showHelp ? <p className="wizard-help-text">{guidance}</p> : null}
+          </div>
+        ) : null}
       </div>
-      {question.calculatorType ? (
-        <AssessmentCalculator
-          type={question.calculatorType}
-          isArabic={isArabic}
-          initialInputs={calcInputs[question.questionId] ?? null}
-          currentScore={selectedScore}
-          saving={saving}
-          onSave={handleCalculatorSave}
-        />
+
+      {numeric ? (
+        <div className="wizard-number">
+          <label className="wizard-number-label" htmlFor="wizard-number-input">
+            {isArabic ? 'أدخل القيمة' : 'Enter value'}
+            {question.options[0]?.labelAr ? (
+              <span className="wizard-number-unit"> · {isArabic ? question.options[0].labelAr : (question.options[0].labelEn ?? question.options[0].labelAr)}</span>
+            ) : null}
+          </label>
+          <div className="wizard-number-row">
+            <input
+              id="wizard-number-input"
+              className="wizard-number-input"
+              type="number"
+              inputMode="decimal"
+              value={numberDraft !== '' ? numberDraft : (answer?.number ?? '')}
+              onChange={(e) => setNumberDraft(e.target.value)}
+              onBlur={commitNumber}
+              placeholder={isArabic ? 'رقم' : 'Number'}
+              disabled={saving}
+            />
+            <button type="button" className="secondary-btn" onClick={commitNumber} disabled={saving}>
+              {isArabic ? 'حفظ' : 'Save'}
+            </button>
+          </div>
+          {answer?.number != null ? (
+            <p className="wizard-number-saved">{isArabic ? 'القيمة المحفوظة:' : 'Saved value:'} <strong>{answer.number}</strong></p>
+          ) : null}
+        </div>
       ) : (
         <div className="wizard-options">
-          {answerOptions.map((option) => (
-            <button
-              key={option.score}
-              className={`wizard-option ${selectedScore === option.score ? 'wizard-option-selected' : ''}`}
-              onClick={() => handleSelectAnswer(option.score)}
-              disabled={saving}
-              type="button"
-            >
-              <span className="wizard-option-radio">{selectedScore === option.score ? '●' : '○'}</span>
-              <span className="wizard-option-label">{isArabic ? option.labelAr : option.labelEn}</span>
-              <span className="wizard-option-score">{option.score}</span>
-            </button>
-          ))}
+          {question.options.map((option) => {
+            const selected = answer?.optionIndex === option.index;
+            return (
+              <button
+                key={option.index}
+                className={`wizard-option ${selected ? 'wizard-option-selected' : ''}`}
+                onClick={() => handleSelectOption(option.index)}
+                disabled={saving}
+                type="button"
+              >
+                <span className="wizard-option-radio">{selected ? '●' : '○'}</span>
+                <span className="wizard-option-label">
+                  {option.level != null ? <span className="wizard-option-level">{option.level}</span> : null}
+                  {isArabic ? option.labelAr : (option.labelEn ?? option.labelAr)}
+                </span>
+              </button>
+            );
+          })}
         </div>
       )}
+
+      {question.attributionRequired && isAnswered ? (
+        <div className="wizard-attribution">
+          <label htmlFor="wizard-attr">
+            {isArabic
+              ? 'إثبات التحسن (اختياري): صف المبادرة أو خط الأساس الذي يفسر التغير.'
+              : 'Attribution (optional): describe the initiative or baseline behind the change.'}
+          </label>
+          <input
+            id="wizard-attr"
+            className="wizard-attr-input"
+            type="text"
+            value={answer?.attribution ?? ''}
+            onChange={(e) => handleAttribution(e.target.value)}
+            onBlur={() => answer?.optionIndex != null && persist(question, { optionIndex: answer.optionIndex, attribution: answer.attribution })}
+            placeholder={isArabic ? 'مثال: مشروع كفاءة الطاقة 2025' : 'e.g. 2025 energy-efficiency project'}
+          />
+        </div>
+      ) : null}
+
       {error && <p className="auth-feedback auth-feedback-error">{error}</p>}
       <div className="wizard-nav">
-        <button className="secondary-btn" onClick={handleBack} disabled={currentIndex === 0} type="button">{isArabic ? '→ السابق' : '← Previous'}</button>
-        <button className="primary-btn" onClick={handleNext} disabled={selectedScore === undefined} type="button">{isLast ? (isArabic ? 'إرسال التقييم' : 'Submit assessment') : (isArabic ? 'التالي ←' : 'Next →')}</button>
+        <button className="secondary-btn" onClick={handleBack} disabled={safeIndex === 0} type="button">{isArabic ? '→ السابق' : '← Previous'}</button>
+        <button className="primary-btn" onClick={handleNext} disabled={!isAnswered} type="button">{isLast ? (isArabic ? 'مراجعة وإرسال' : 'Review & submit') : (isArabic ? 'التالي ←' : 'Next →')}</button>
       </div>
     </div>
   );

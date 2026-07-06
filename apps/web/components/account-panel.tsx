@@ -9,7 +9,7 @@ import {
   updateProfile,
   type AuthUser,
 } from '../lib/auth-client';
-import { listAssessments, type AssessmentListItem } from '../lib/assessment-client';
+import { listAssessments, deleteAssessment, type AssessmentListItem } from '../lib/assessment-client';
 import { translateError } from '../lib/error-messages';
 import { useLanguage } from './language-provider';
 import { useToast } from './toast-provider';
@@ -24,7 +24,24 @@ export function AccountPanel() {
   const [editingEntity, setEditingEntity] = useState(false);
   const [saving, setSaving] = useState(false);
   const [assessments, setAssessments] = useState<AssessmentListItem[]>([]);
+  const [confirmingDiscard, setConfirmingDiscard] = useState(false);
+  const [discarding, setDiscarding] = useState(false);
   const isArabic = language === 'ar';
+
+  async function handleDiscard(id: string) {
+    setDiscarding(true);
+    try {
+      await deleteAssessment(id);
+      setAssessments((prev) => prev.filter((a) => a.id !== id));
+      setConfirmingDiscard(false);
+      showToast(isArabic ? 'تم حذف التقييم غير المكتمل' : 'Draft assessment discarded', 'success');
+    } catch (err) {
+      const msg = err instanceof Error ? translateError(err.message, isArabic) : isArabic ? 'تعذر الحذف' : 'Failed to discard';
+      showToast(msg, 'error');
+    } finally {
+      setDiscarding(false);
+    }
+  }
 
   // Profile edit state
   const [editFirstName, setEditFirstName] = useState('');
@@ -225,9 +242,28 @@ export function AccountPanel() {
                       {draft.answeredCount} / {draft.totalQuestions}
                     </span>
                   </div>
-                  <a href={`/assessment/${draft.id}`} className="primary-btn account-assessment-btn">
-                    {isArabic ? 'متابعة التقييم' : 'Continue Assessment'}
-                  </a>
+                  <div className="account-assessment-actions">
+                    <a href={`/assessment/${draft.id}`} className="primary-btn account-assessment-btn">
+                      {isArabic ? 'متابعة التقييم' : 'Continue Assessment'}
+                    </a>
+                    {confirmingDiscard ? (
+                      <div className="account-discard-confirm">
+                        <span>{isArabic ? 'حذف هذا التقييم نهائيًا؟' : 'Discard this assessment permanently?'}</span>
+                        <div className="account-discard-buttons">
+                          <button className="secondary-btn" type="button" onClick={() => setConfirmingDiscard(false)} disabled={discarding}>
+                            {isArabic ? 'إلغاء' : 'Cancel'}
+                          </button>
+                          <button className="account-discard-yes" type="button" onClick={() => handleDiscard(draft.id)} disabled={discarding}>
+                            {discarding ? (isArabic ? 'جارٍ الحذف...' : 'Discarding...') : (isArabic ? 'نعم، احذف' : 'Yes, discard')}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button className="secondary-btn account-discard-btn" type="button" onClick={() => setConfirmingDiscard(true)}>
+                        {isArabic ? 'حذف والبدء من جديد' : 'Discard & start over'}
+                      </button>
+                    )}
+                  </div>
                 </div>
               ) : (
                 <a href="/assessment/new" className="primary-btn account-assessment-btn">

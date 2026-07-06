@@ -1,0 +1,42 @@
+[
+ {
+  "Rule_ID": "FR-000",
+  "Evidence_Type": "Self-declaration / no evidence",
+  "Freshness_Expectation": "Current declaration only; insufficient for high confidence",
+  "Conflict_Rule": "Self-declaration loses to any record/evidence",
+  "Confidence_Explanation_Trigger": "No formal evidence provided",
+  "Exception": "Only for routing/profile or low-risk initial screen"
+ },
+ {
+  "Rule_ID": "FR-001",
+  "Evidence_Type": "Internal document/policy/procedure",
+  "Freshness_Expectation": "Current or still approved; recent implementation records needed if older than 24 months",
+  "Conflict_Rule": "Document loses to operational records where inconsistent",
+  "Confidence_Explanation_Trigger": "Document age or missing approval affects confidence",
+  "Exception": "Long-term policy accepted if supported by recent records"
+ },
+ {
+  "Rule_ID": "FR-002",
+  "Evidence_Type": "Operational records",
+  "Freshness_Expectation": "Should cover assessment period; gaps >3 months flagged for periodic data",
+  "Conflict_Rule": "Operational records override narrative claim",
+  "Confidence_Explanation_Trigger": "Missing periods or inconsistent records reduce confidence",
+  "Exception": "Seasonal operations require appropriate period note"
+ },
+ {
+  "Rule_ID": "FR-003",
+  "Evidence_Type": "Official permit/measurement/regulatory record",
+  "Freshness_Expectation": "Current validity or within required monitoring period; generally <=12-24 months for performance evidence",
+  "Conflict_Rule": "Regulatory/official record overrides internal report",
+  "Confidence_Explanation_Trigger": "Expired/outdated official evidence reduces confidence",
+  "Exception": "Long-valid permits need recent condition tracking"
+ },
+ {
+  "Rule_ID": "FR-004",
+  "Evidence_Type": "External verification",
+  "Freshness_Expectation": "Verification must specify scope, period, and methodology; <=24 months preferred",
+  "Conflict_Rule": "Verified evidence overrides internal non-verified evidence if scopes match",
+  "Confidence_Explanation_Trigger": "Scope mismatch or old verification requires explanation",
+  "Exception": "Older verification may support baseline only"
+ }
+]

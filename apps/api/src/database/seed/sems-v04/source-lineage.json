@@ -1,0 +1,154 @@
+[
+ {
+  "Source_ID": "SEMS-ONT",
+  "Source_Name": "SEMS Conceptual Ontology",
+  "Source_Category": "Internal Methodology",
+  "Jurisdiction_or_Framework": "Internal",
+  "Used_For": "Profile, scope, routing, question graph",
+  "Notes": "Approved theoretical framework"
+ },
+ {
+  "Source_ID": "NCEC",
+  "Source_Name": "Saudi environmental compliance and permitting requirements",
+  "Source_Category": "Saudi Regulation",
+  "Jurisdiction_or_Framework": "Saudi",
+  "Used_For": "Permits, compliance, air/water monitoring, violations",
+  "Notes": "Requires regulatory alignment review"
+ },
+ {
+  "Source_ID": "MWAN",
+  "Source_Name": "Saudi waste management licensing and tracking requirements",
+  "Source_Category": "Saudi Regulation",
+  "Jurisdiction_or_Framework": "Saudi",
+  "Used_For": "Waste, licensed providers, tracking",
+  "Notes": "Requires regulatory alignment review"
+ },
+ {
+  "Source_ID": "NCVC",
+  "Source_Name": "Saudi vegetation cover and land-related environmental references",
+  "Source_Category": "Saudi Regulation / National Alignment",
+  "Jurisdiction_or_Framework": "Saudi",
+  "Used_For": "Vegetation, land, restoration",
+  "Notes": "Nature module reference"
+ },
+ {
+  "Source_ID": "NCW",
+  "Source_Name": "Saudi wildlife and protected areas context",
+  "Source_Category": "Saudi Regulation / National Alignment",
+  "Jurisdiction_or_Framework": "Saudi",
+  "Used_For": "Biodiversity, sensitive sites, protected areas",
+  "Notes": "Nature module reference"
+ },
+ {
+  "Source_ID": "ISO14001",
+  "Source_Name": "ISO 14001 Environmental Management Systems",
+  "Source_Category": "International Standard",
+  "Jurisdiction_or_Framework": "International",
+  "Used_For": "Governance, obligations, improvement, audits",
+  "Notes": "Management system lineage"
+ },
+ {
+  "Source_ID": "ISO14031",
+  "Source_Name": "ISO 14031 Environmental Performance Evaluation",
+  "Source_Category": "International Standard",
+  "Jurisdiction_or_Framework": "International",
+  "Used_For": "Indicators, performance, data quality",
+  "Notes": "Performance evaluation lineage"
+ },
+ {
+  "Source_ID": "ISO14064",
+  "Source_Name": "ISO 14064 Greenhouse Gas Quantification",
+  "Source_Category": "International Standard",
+  "Jurisdiction_or_Framework": "International",
+  "Used_For": "GHG measurement and evidence",
+  "Notes": "Climate module lineage"
+ },
+ {
+  "Source_ID": "GRI",
+  "Source_Name": "GRI Environmental Disclosures",
+  "Source_Category": "Disclosure Framework",
+  "Jurisdiction_or_Framework": "International",
+  "Used_For": "Water, waste, biodiversity, emissions disclosures",
+  "Notes": "Disclosure / impact lineage"
+ },
+ {
+  "Source_ID": "ISSB-S2",
+  "Source_Name": "Climate-related disclosures",
+  "Source_Category": "Disclosure Framework",
+  "Jurisdiction_or_Framework": "International",
+  "Used_For": "Climate risk and emissions",
+  "Notes": "Advanced/listed entities"
+ },
+ {
+  "Source_ID": "TCFD",
+  "Source_Name": "Climate-related financial disclosure framework",
+  "Source_Category": "Disclosure Framework",
+  "Jurisdiction_or_Framework": "International",
+  "Used_For": "Climate risk, scenarios",
+  "Notes": "Advanced/listed entities"
+ },
+ {
+  "Source_ID": "CDP",
+  "Source_Name": "CDP climate/water/forests/supply chain questionnaires",
+  "Source_Category": "Disclosure / Global Practice",
+  "Jurisdiction_or_Framework": "International",
+  "Used_For": "Climate, water, supplier impact",
+  "Notes": "Advanced and supply chain modules"
+ },
+ {
+  "Source_ID": "TNFD",
+  "Source_Name": "Taskforce on Nature-related Financial Disclosures LEAP approach",
+  "Source_Category": "International Framework",
+  "Jurisdiction_or_Framework": "International",
+  "Used_For": "Nature dependencies, impacts, risks",
+  "Notes": "Nature module"
+ },
+ {
+  "Source_ID": "OECD-DPSIR",
+  "Source_Name": "DPSIR/PSR environmental indicator logic",
+  "Source_Category": "Scientific Model",
+  "Jurisdiction_or_Framework": "International",
+  "Used_For": "Activity-pressure-state-impact-response",
+  "Notes": "Conceptual model"
+ },
+ {
+  "Source_ID": "IFC-PS",
+  "Source_Name": "IFC Performance Standards",
+  "Source_Category": "International Best Practice",
+  "Jurisdiction_or_Framework": "International",
+  "Used_For": "Biodiversity risk, hazardous materials, E&S risk",
+  "Notes": "Project/site high-risk contexts"
+ },
+ {
+  "Source_ID": "WB-ESF",
+  "Source_Name": "World Bank Environmental and Social Framework",
+  "Source_Category": "International Best Practice",
+  "Jurisdiction_or_Framework": "International",
+  "Used_For": "Project environmental risk management",
+  "Notes": "Project/site risk contexts"
+ },
+ {
+  "Source_ID": "ISO20400",
+  "Source_Name": "ISO 20400 Sustainable Procurement",
+  "Source_Category": "International Best Practice",
+  "Jurisdiction_or_Framework": "International",
+  "Used_For": "Supply chain and procurement",
+  "Notes": "Supply chain module"
+ },
+ {
+  "Source_ID": "CIRCULAR",
+  "Source_Name": "Circular Economy Principles",
+  "Source_Category": "Global Best Practice",
+  "Jurisdiction_or_Framework": "International",
+  "Used_For": "Circularity, material flows, resource productivity",
+  "Notes": "v0.4 circularity module"
+ },
+ {
+  "Source_ID": "SEMS-RULES",
+  "Source_Name": "SEMS Measurement & Decision Logic",
+  "Source_Category": "Internal Methodology",
+  "Jurisdiction_or_Framework": "Internal",
+  "Used_For": "Rules, gates, attribution, confidence",
+  "Notes": "v0.4 hardening layer"
+ }
+]

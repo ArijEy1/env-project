@@ -1,0 +1,58 @@
+[
+ {
+  "Readiness_ID": "BR-001",
+  "Criterion": "Scope clarity",
+  "Definition": "Assessment boundary, sites, and activities are defined",
+  "Pass_Condition": "Scope documented and consistent",
+  "Failure_Output": "Not Benchmark Ready - clarify scope",
+  "Related_Question_Types": "Numeric; Outcome; Trend"
+ },
+ {
+  "Readiness_ID": "BR-002",
+  "Criterion": "Period clarity",
+  "Definition": "Data period is defined and comparable",
+  "Pass_Condition": "Baseline/current periods are known",
+  "Failure_Output": "Use internal baseline only",
+  "Related_Question_Types": "Numeric; Trend"
+ },
+ {
+  "Readiness_ID": "BR-003",
+  "Criterion": "Unit clarity",
+  "Definition": "Units and denominator are defined",
+  "Pass_Condition": "Unit and intensity denominator are available",
+  "Failure_Output": "Not comparable externally",
+  "Related_Question_Types": "Numeric; Outcome"
+ },
+ {
+  "Readiness_ID": "BR-004",
+  "Criterion": "Evidence strength",
+  "Definition": "Data has acceptable evidence level and source",
+  "Pass_Condition": "E3 or higher for performance data",
+  "Failure_Output": "Confidence-limited benchmark",
+  "Related_Question_Types": "Outcome; Trend"
+ },
+ {
+  "Readiness_ID": "BR-005",
+  "Criterion": "Data completeness",
+  "Definition": "Data covers relevant sites/periods without major gaps",
+  "Pass_Condition": "Completeness acceptable",
+  "Failure_Output": "Not Benchmark Ready - data gaps",
+  "Related_Question_Types": "Numeric"
+ },
+ {
+  "Readiness_ID": "BR-006",
+  "Criterion": "Normalization available",
+  "Definition": "Activity denominator exists where needed",
+  "Pass_Condition": "m2, employee, production, revenue, occupancy, etc.",
+  "Failure_Output": "Use absolute/presence scoring",
+  "Related_Question_Types": "Performance metrics"
+ },
+ {
+  "Readiness_ID": "BR-007",
+  "Criterion": "No major boundary change",
+  "Definition": "No unexplained boundary/scope change distorts comparison",
+  "Pass_Condition": "No boundary change or adjusted baseline",
+  "Failure_Output": "Benchmark not valid without adjustment",
+  "Related_Question_Types": "Trend; Outcome"
+ }
+]

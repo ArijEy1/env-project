@@ -1,8 +1,17 @@
 import { apiBaseUrl, authStorage, clearAuthAndRedirect } from './auth-client';
 
+export interface RawAnswerStored {
+  canonical?: string | null;
+  optionIndex?: number | null;
+  optionValue?: string | null;
+  number?: number | null;
+  attribution?: string | null;
+}
+
 export interface AssessmentAnswer {
   questionId: string;
   score: number;
+  rawAnswer?: RawAnswerStored | null;
   calculatorInputs?: Record<string, unknown> | null;
 }
 
@@ -22,17 +31,30 @@ export interface Assessment {
   answers: AssessmentAnswer[];
 }
 
+export interface QuestionOption {
+  index: number;
+  value: string;
+  labelAr: string;
+  labelEn: string | null;
+  level: number | null;
+}
+
 export interface GeneratedQuestion {
   questionId: string;
   domainId: string;
-  materialityTopicId: string | null;
-  effectiveWeight: number;
   displayOrder: number;
+  category: string | null;
   textAr: string;
   textEn: string;
   helpTextAr: string | null;
   helpTextEn: string | null;
-  calculatorType: string | null;
+  guidanceAr: string | null;
+  guidanceEn: string | null;
+  answerType: string | null;
+  options: QuestionOption[];
+  minEvidenceLevel: string | null;
+  attributionRequired: boolean;
+  isRouting: boolean;
 }
 
 export interface GeneratedDomain {
@@ -45,9 +67,25 @@ export interface GeneratedQuestionsData {
   assessmentId: string;
   profileSnapshot: unknown;
   totalQuestions: number;
-  answerOptions: AnswerOptionDef[];
   domains: GeneratedDomain[];
   questions: GeneratedQuestion[];
+}
+
+/** What the client submits for an answer, per the question's answer type. */
+export interface AnswerPayload {
+  optionIndex?: number;
+  number?: number;
+  attribution?: string;
+  evidenceLevel?: string;
+}
+
+export interface SaveAnswerResult {
+  questionId: string;
+  score: number | null;
+  canonical: string | null;
+  needsAttribution: boolean;
+  redFlag: boolean;
+  activeCount: number | null;
 }
 
 export interface AssessmentListItem {
@@ -159,6 +197,10 @@ export interface ResultsData {
   assessmentId: string;
   totalScore: number;
   maturityLevel: number;
+  confidenceScore: number | null;
+  gateStatus: 'none' | 'soft' | 'hard';
+  gateReasons: string[];
+  redFlagCount: number;
   submittedAt: string | null;
   domains: DomainResult[];
   profile: ResultsProfile;
@@ -180,21 +222,14 @@ export function getAssessment(id: string) {
   return request<Assessment>(`/assessments/${id}`);
 }
 
-export function saveAnswer(assessmentId: string, questionId: string, score: number) {
-  return request<AssessmentAnswer>(`/assessments/${assessmentId}/answer`, {
-    method: 'PUT',
-    body: JSON.stringify({ questionId, score }),
-  });
-}
-
-export function saveCalculatorAnswer(
+export function saveAnswer(
   assessmentId: string,
   questionId: string,
-  calculatorInputs: Record<string, unknown>,
+  payload: AnswerPayload,
 ) {
-  return request<AssessmentAnswer>(`/assessments/${assessmentId}/answer`, {
+  return request<SaveAnswerResult>(`/assessments/${assessmentId}/answer`, {
     method: 'PUT',
-    body: JSON.stringify({ questionId, calculatorInputs }),
+    body: JSON.stringify({ questionId, ...payload }),
   });
 }
 
@@ -207,6 +242,10 @@ export function updateProgress(assessmentId: string, currentQuestionIndex: numbe
 
 export function submitAssessment(assessmentId: string) {
   return request<Assessment>(`/assessments/${assessmentId}/submit`, { method: 'POST' });
+}
+
+export function deleteAssessment(assessmentId: string) {
+  return request<{ discarded: boolean }>(`/assessments/${assessmentId}`, { method: 'DELETE' });
 }
 
 export interface Recommendation {

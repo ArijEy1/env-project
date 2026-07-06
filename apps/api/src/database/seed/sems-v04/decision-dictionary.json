@@ -1,0 +1,106 @@
+[
+ {
+  "Term_ID": "DD-000",
+  "Term": "Standard SEMS Term",
+  "Operational_Definition": "A term with no special threshold or override, interpreted according to the question wording.",
+  "Decision_Use": "General interpretation",
+  "Example": "Standard routing/profile term",
+  "Review_Notes": "Review during pilot if ambiguity appears"
+ },
+ {
+  "Term_ID": "DD-001",
+  "Term": "Significant / Material",
+  "Operational_Definition": "Environmentally, operationally, financially, or regulatory relevant enough to affect assessment scope, risk, or improvement priority.",
+  "Decision_Use": "Materiality screening",
+  "Example": "A supplier responsible for a large share of waste transport is material.",
+  "Review_Notes": "Should be calibrated by sector"
+ },
+ {
+  "Term_ID": "DD-002",
+  "Term": "Regulatory Criticality",
+  "Operational_Definition": "A situation linked to permit, license, legal requirement, violation, or mandated reporting.",
+  "Decision_Use": "Gate/flag logic",
+  "Example": "Missing required permit.",
+  "Review_Notes": "Saudi regulatory review required"
+ },
+ {
+  "Term_ID": "DD-003",
+  "Term": "High Impact",
+  "Operational_Definition": "A condition that can materially affect air, water, waste, climate, soil, marine, biodiversity, or community risk.",
+  "Decision_Use": "Risk/exposure logic",
+  "Example": "Large wastewater discharge or hazardous waste stream.",
+  "Review_Notes": "Needs threshold library"
+ },
+ {
+  "Term_ID": "DD-004",
+  "Term": "Proven Improvement",
+  "Operational_Definition": "A positive change supported by baseline, current data, comparable boundary, and attribution evidence.",
+  "Decision_Use": "Outcome scoring",
+  "Example": "Energy intensity improved after documented retrofit.",
+  "Review_Notes": "Trend alone is not sufficient"
+ },
+ {
+  "Term_ID": "DD-005",
+  "Term": "Periodic Review",
+  "Operational_Definition": "A documented review performed at defined intervals appropriate to risk or regulation; annually is the default minimum where no requirement exists.",
+  "Decision_Use": "Governance/risk control",
+  "Example": "Annual management review with actions.",
+  "Review_Notes": "Could vary by risk level"
+ },
+ {
+  "Term_ID": "DD-006",
+  "Term": "Sensitive Site",
+  "Operational_Definition": "A site within, adjacent to, or materially interacting with protected areas, critical habitats, coastal/marine zones, water bodies, or sensitive ecosystems.",
+  "Decision_Use": "Nature applicability",
+  "Example": "Facility near reserve, wetland, coastline.",
+  "Review_Notes": "Requires maps/source validation"
+ },
+ {
+  "Term_ID": "DD-007",
+  "Term": "Major Initiative",
+  "Operational_Definition": "An initiative with defined scope, owner, budget/resources, indicators, and measurable environmental impact or risk reduction.",
+  "Decision_Use": "Improvement scoring",
+  "Example": "Waste reduction program with KPI and measured diversion.",
+  "Review_Notes": "Not a minor awareness activity"
+ },
+ {
+  "Term_ID": "DD-008",
+  "Term": "Baseline",
+  "Operational_Definition": "A defined reference period or condition used for comparison, with scope, boundaries, unit, and data source.",
+  "Decision_Use": "Trend/outcome logic",
+  "Example": "2024 water consumption per production unit.",
+  "Review_Notes": "Must be comparable"
+ },
+ {
+  "Term_ID": "DD-009",
+  "Term": "Boundary Change",
+  "Operational_Definition": "A change in sites, operations, outsourcing, production, or scope that can explain performance change without true improvement.",
+  "Decision_Use": "Attribution logic",
+  "Example": "Closing a high-use site reduced energy.",
+  "Review_Notes": "Must be disclosed"
+ },
+ {
+  "Term_ID": "DD-010",
+  "Term": "Benchmark Ready",
+  "Operational_Definition": "Data has clear scope, period, unit, activity denominator, evidence, and quality sufficient for internal or external comparison.",
+  "Decision_Use": "Benchmarking",
+  "Example": "kWh/m²/year with complete bills and scope.",
+  "Review_Notes": "Not all entities are benchmark-ready"
+ },
+ {
+  "Term_ID": "DD-011",
+  "Term": "Hazardous Materials",
+  "Operational_Definition": "Materials with environmental, health, spill, contamination, or regulatory risk requiring controlled storage/handling and safety information.",
+  "Decision_Use": "Hazard applicability",
+  "Example": "Chemical solvents, fuels, toxic substances.",
+  "Review_Notes": "Office cleaning products may need simplified handling"
+ },
+ {
+  "Term_ID": "DD-012",
+  "Term": "Evidence Freshness",
+  "Operational_Definition": "The age and continued relevance of evidence to the current assessment period.",
+  "Decision_Use": "Confidence scoring",
+  "Example": "7-year old EIA needs recent monitoring records.",
+  "Review_Notes": "Freshness threshold varies by evidence type"
+ }
+]

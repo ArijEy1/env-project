@@ -1,0 +1,104 @@
+[
+ {
+  "id": "PROFILE",
+  "nameAr": "ملف الجهة والنطاق",
+  "nameEn": "Entity Profile & Scope",
+  "displayOrder": 1
+ },
+ {
+  "id": "APPLIC",
+  "nameAr": "أسئلة الانطباق والتفعيل",
+  "nameEn": "Applicability & Activation",
+  "displayOrder": 2
+ },
+ {
+  "id": "GOV",
+  "nameAr": "الحوكمة البيئية",
+  "nameEn": "Environmental Governance",
+  "displayOrder": 3
+ },
+ {
+  "id": "REG",
+  "nameAr": "الالتزام التنظيمي",
+  "nameEn": "Regulatory Compliance",
+  "displayOrder": 4
+ },
+ {
+  "id": "DATA",
+  "nameAr": "القياس وجودة البيانات",
+  "nameEn": "Measurement & Data Quality",
+  "displayOrder": 5
+ },
+ {
+  "id": "CLIMATE",
+  "nameAr": "الطاقة والمناخ والانبعاثات",
+  "nameEn": "Energy, Climate & Emissions",
+  "displayOrder": 6
+ },
+ {
+  "id": "WATER",
+  "nameAr": "المياه والصرف",
+  "nameEn": "Water & Wastewater",
+  "displayOrder": 7
+ },
+ {
+  "id": "WASTE",
+  "nameAr": "النفايات والمواد الخطرة",
+  "nameEn": "Waste & Hazardous Materials",
+  "displayOrder": 8
+ },
+ {
+  "id": "NATURE",
+  "nameAr": "الطبيعة والمواقع الحساسة",
+  "nameEn": "Nature & Sensitive Sites",
+  "displayOrder": 9
+ },
+ {
+  "id": "SUPPLY",
+  "nameAr": "سلسلة الإمداد والموردون",
+  "nameEn": "Supply Chain & Suppliers",
+  "displayOrder": 10
+ },
+ {
+  "id": "DISCLOSE",
+  "nameAr": "القياس والإفصاح",
+  "nameEn": "Measurement & Disclosure",
+  "displayOrder": 11
+ },
+ {
+  "id": "IMPROVE",
+  "nameAr": "التحسين والابتكار",
+  "nameEn": "Improvement & Innovation",
+  "displayOrder": 12
+ },
+ {
+  "id": "SYSTEM",
+  "nameAr": "النظام والتكامل",
+  "nameEn": "System & Integration",
+  "displayOrder": 13
+ },
+ {
+  "id": "AIR",
+  "nameAr": "الهواء وجودة الأوساط",
+  "nameEn": "Air & Ambient Quality",
+  "displayOrder": 14
+ },
+ {
+  "id": "BIORES",
+  "nameAr": "الطبيعة والموارد الحيوية",
+  "nameEn": "Nature & Biological Resources",
+  "displayOrder": 15
+ },
+ {
+  "id": "PROCURE",
+  "nameAr": "سلسلة الإمداد والمشتريات",
+  "nameEn": "Supply Chain & Procurement",
+  "displayOrder": 16
+ },
+ {
+  "id": "CIRCULAR",
+  "nameAr": "التحسين والاقتصاد الدائري",
+  "nameEn": "Improvement & Circular Economy",
+  "displayOrder": 17
+ }
+]

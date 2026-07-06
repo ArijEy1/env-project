@@ -1,0 +1,72 @@
+[
+ {
+  "Threshold_ID": "TH-GEN-001",
+  "Impact_Area": "General Outcome",
+  "Metric_Type": "Any outcome/trend metric",
+  "Initial_Interpretation": "Use baseline/current comparison and require attribution",
+  "Relative_Threshold": "<5% minor; 5-15% moderate; >15% strong",
+  "Absolute_Threshold": "Absolute significance must be reviewed by domain",
+  "Validation_Status": "Draft - calibrate in pilot",
+  "Notes": "Do not use as final standard threshold"
+ },
+ {
+  "Threshold_ID": "TH-CLM-001",
+  "Impact_Area": "Climate/Energy/Air",
+  "Metric_Type": "Energy, emissions, air",
+  "Initial_Interpretation": "Use intensity and absolute reduction together",
+  "Relative_Threshold": "<3% minor; 3-10% moderate; >10% strong",
+  "Absolute_Threshold": "tCO2e/kWh/air pollutant absolute change to be reviewed",
+  "Validation_Status": "Draft - calibrate in pilot",
+  "Notes": "Activity-normalized metrics required"
+ },
+ {
+  "Threshold_ID": "TH-WAT-001",
+  "Impact_Area": "Water/Wastewater",
+  "Metric_Type": "Water consumption/discharge quality",
+  "Initial_Interpretation": "Use intensity, compliance limits, and absolute volume",
+  "Relative_Threshold": "<5% minor; 5-15% moderate; >15% strong",
+  "Absolute_Threshold": "m3/year and discharge parameter significance",
+  "Validation_Status": "Draft - calibrate in pilot",
+  "Notes": "Regulatory limits override trend"
+ },
+ {
+  "Threshold_ID": "TH-WST-001",
+  "Impact_Area": "Waste/Hazardous",
+  "Metric_Type": "Waste generation/diversion",
+  "Initial_Interpretation": "Use absolute and diversion percentage",
+  "Relative_Threshold": "<5% minor; 5-20% moderate; >20% strong",
+  "Absolute_Threshold": "kg/tonnes absolute mass and hazard class",
+  "Validation_Status": "Draft - calibrate in pilot",
+  "Notes": "Hazardous waste has higher materiality"
+ },
+ {
+  "Threshold_ID": "TH-NAT-001",
+  "Impact_Area": "Nature/Biodiversity",
+  "Metric_Type": "Habitat/restoration/biodiversity",
+  "Initial_Interpretation": "Use outcome evidence and expert judgment",
+  "Relative_Threshold": "Trend labels require monitoring evidence",
+  "Absolute_Threshold": "Area restored, habitat quality, species indicators",
+  "Validation_Status": "Draft - expert calibration",
+  "Notes": "No universal threshold before expert validation"
+ },
+ {
+  "Threshold_ID": "TH-SUP-001",
+  "Impact_Area": "Supply Chain",
+  "Metric_Type": "Supplier impact/improvement",
+  "Initial_Interpretation": "Use high-risk supplier coverage and improvement rate",
+  "Relative_Threshold": "<30% weak; 30-70% developing; >70% strong coverage",
+  "Absolute_Threshold": "Impact of top suppliers to be reviewed",
+  "Validation_Status": "Draft - pilot calibration",
+  "Notes": "Start with high-risk/material suppliers"
+ },
+ {
+  "Threshold_ID": "TH-CIR-001",
+  "Impact_Area": "Circularity",
+  "Metric_Type": "Recovery/resource productivity",
+  "Initial_Interpretation": "Use recovery rate, productivity, and burden-shift check",
+  "Relative_Threshold": "<10% initial; 10-30% moderate; >30% strong",
+  "Absolute_Threshold": "Material mass/value/resource impact",
+  "Validation_Status": "Draft - pilot calibration",
+  "Notes": "Must check cross-impact"
+ }
+]

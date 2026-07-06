@@ -1,0 +1,842 @@
+{
+  "PRF-001": {
+    "textEn": "What type of entity is it?",
+    "purposeEn": "Determine the nature of the entity and the assessment pathway",
+    "optionsEn": ["Governmental", "Semi-governmental", "Private", "Listed", "Non-profit", "Other"]
+  },
+  "PRF-002": {
+    "textEn": "What is the entity's primary sector?",
+    "purposeEn": "Activate the appropriate sector modules",
+    "optionsEn": ["Industry", "Energy", "Services", "Government", "Transport", "Construction", "Agriculture", "Tourism", "Education", "Health", "Other"]
+  },
+  "PRF-003": {
+    "textEn": "What is the size of the entity?",
+    "purposeEn": "Determine the Lite/Core/Full pathway and burden fairness",
+    "optionsEn": ["Small", "Medium", "Large", "Not specified"]
+  },
+  "PRF-004": {
+    "textEn": "How many operational sites does the entity have?",
+    "purposeEn": "Determine the assessment unit and the level of site complexity",
+    "optionsEn": ["Integer"]
+  },
+  "PRF-005": {
+    "textEn": "Does the entity have field or operational activities that affect the environment?",
+    "purposeEn": "Determine activation of performance and site questions",
+    "optionsEn": ["Yes", "No", "Not sure"]
+  },
+  "PRF-006": {
+    "textEn": "Does the entity use or store chemical or hazardous materials?",
+    "purposeEn": "Activate the hazardous materials module",
+    "optionsEn": ["Yes", "No", "Unknown"]
+  },
+  "PRF-007": {
+    "textEn": "Does the entity generate any type of hazardous or special waste?",
+    "purposeEn": "Activate hazardous waste and tracking questions",
+    "optionsEn": ["Yes", "No", "Unknown"]
+  },
+  "PRF-008": {
+    "textEn": "Is there industrial or non-domestic discharge associated with the activity?",
+    "purposeEn": "Activate discharge quality questions",
+    "optionsEn": ["Yes", "No", "Unknown"]
+  },
+  "PRF-009": {
+    "textEn": "Are any of the entity's sites located near a protected area or environmentally sensitive zone?",
+    "purposeEn": "Activate the nature and sensitive sites module",
+    "optionsEn": ["Yes", "No", "Unknown"]
+  },
+  "PRF-010": {
+    "textEn": "Is the entity listed or does it have sustainability or climate disclosure obligations?",
+    "purposeEn": "Activate advanced disclosure and climate questions",
+    "optionsEn": ["Yes", "No", "Not applicable"]
+  },
+  "PRF-011": {
+    "textEn": "What time period does the assessment cover?",
+    "purposeEn": "Determine the data period and baseline",
+    "optionsEn": ["Last 12 months", "Fiscal year", "Custom period"]
+  },
+  "PRF-012": {
+    "textEn": "What is the assessment unit adopted for this cycle?",
+    "purposeEn": "Determine whether the assessment is at the entity, site, or activity level",
+    "optionsEn": ["Entity", "Site", "Activity", "Project", "Portfolio"]
+  },
+  "APP-001": {
+    "textEn": "Do the entity's activities require an environmental permit or environmental approval?",
+    "purposeEn": "Activate permit and compliance questions",
+    "optionsEn": ["Yes", "No", "Unknown"]
+  },
+  "APP-002": {
+    "textEn": "Are there stationary air emission sources within the assessment scope?",
+    "purposeEn": "Activate air and stationary emissions questions",
+    "optionsEn": ["Yes", "No", "Unknown"]
+  },
+  "APP-003": {
+    "textEn": "Does the entity own or operate a transport fleet or mobile equipment with fuel consumption?",
+    "purposeEn": "Activate mobile emissions questions",
+    "optionsEn": ["Yes", "No", "Unknown"]
+  },
+  "APP-004": {
+    "textEn": "Are there operations or sites that require special waste management?",
+    "purposeEn": "Activate detailed waste questions",
+    "optionsEn": ["Yes", "No", "Unknown"]
+  },
+  "APP-005": {
+    "textEn": "Is there significant water use or water-dependent activities?",
+    "purposeEn": "Activate water and intensity questions",
+    "optionsEn": ["Yes", "No", "Unknown"]
+  },
+  "APP-006": {
+    "textEn": "Does the entity contract with suppliers or contractors that have a direct environmental impact?",
+    "purposeEn": "Activate the supply chain module",
+    "optionsEn": ["Yes", "No", "Unknown"]
+  },
+  "APP-007": {
+    "textEn": "Do the entity's activities include construction, excavation, or site development works?",
+    "purposeEn": "Activate soil, construction, and habitat questions",
+    "optionsEn": ["Yes", "No", "Unknown"]
+  },
+  "APP-008": {
+    "textEn": "Are there activities or sites associated with the marine or coastal environment?",
+    "purposeEn": "Activate the marine environment module",
+    "optionsEn": ["Yes", "No", "Unknown"]
+  },
+  "APP-009": {
+    "textEn": "Does the entity have approved quantitative environmental targets?",
+    "purposeEn": "Activate Outcome and Trend questions",
+    "optionsEn": ["Yes", "No", "Unknown"]
+  },
+  "APP-010": {
+    "textEn": "Is environmental performance data available for a previous year or baseline?",
+    "purposeEn": "Activate Before/After and Trend",
+    "optionsEn": ["Yes", "No", "Unknown"]
+  },
+  "APP-011": {
+    "textEn": "Are there regulatory limits or numerical requirements applicable to any environmental indicator?",
+    "purposeEn": "Activate Threshold/Compliance checks",
+    "optionsEn": ["Yes", "No", "Unknown"]
+  },
+  "APP-012": {
+    "textEn": "Does the entity have environmental improvement initiatives implemented during the last 12 months?",
+    "purposeEn": "Activate output and outcome questions",
+    "optionsEn": ["Yes", "No", "Unknown"]
+  },
+  "GOV-001": {
+    "textEn": "Does the entity have an environmental policy approved by senior management?",
+    "purposeEn": "Verify formal institutional commitment",
+    "optionsEn": ["Yes", "Partially", "No"]
+  },
+  "GOV-002": {
+    "textEn": "Have clear responsibilities and authorities been defined for environmental management?",
+    "purposeEn": "Measure environmental accountability",
+    "optionsEn": ["None", "Initial", "Defined", "Applied", "Optimized"]
+  },
+  "GOV-003": {
+    "textEn": "Are there approved quantitative or qualitative environmental targets?",
+    "purposeEn": "Link management to improvement",
+    "optionsEn": ["Yes", "Partially", "No"]
+  },
+  "GOV-004": {
+    "textEn": "Is environmental performance reviewed periodically by senior management?",
+    "purposeEn": "Measure integration of the environment into management decision-making",
+    "optionsEn": ["No", "As needed", "Annually", "Periodic with decisions", "Periodic with documented improvement"]
+  },
+  "GOV-005": {
+    "textEn": "Is there an environmental training or awareness plan linked to risks and activities?",
+    "purposeEn": "Measure internal capabilities",
+    "optionsEn": ["Yes", "Partially", "No"]
+  },
+  "GOV-006": {
+    "textEn": "Is there an internal mechanism for reporting environmental incidents or complaints?",
+    "purposeEn": "Measure the ability to detect problems",
+    "optionsEn": ["Yes", "Partially", "No"]
+  },
+  "GOV-007": {
+    "textEn": "Are policies or targets updated based on measurement results and incidents?",
+    "purposeEn": "Test the feedback loop",
+    "optionsEn": ["No", "Irregular", "Upon review", "Based on data", "Proven systematic improvement"]
+  },
+  "GOV-008": {
+    "textEn": "Is there a mechanism to identify environmental trade-offs among energy, water, waste, and materials?",
+    "purposeEn": "Measure systems thinking",
+    "optionsEn": ["No", "Limited cases", "Simple procedure", "Periodic analysis", "Multi-criteria optimization"]
+  },
+  "GOV-009": {
+    "textEn": "Does the entity use environmental assessment results to prioritize investment or improvement?",
+    "purposeEn": "Measure the use of results in decision-making",
+    "optionsEn": ["No", "Informal", "As needed", "Systematic", "Based on impact/cost/risk"]
+  },
+  "GOV-010": {
+    "textEn": "Is there a mechanism to maintain and update environmental records in an auditable manner?",
+    "purposeEn": "Measure digital or manual governance of records",
+    "optionsEn": ["No", "Scattered files", "Organized register", "Unified repository", "Digital and audited"]
+  },
+  "REG-001": {
+    "textEn": "Does the entity maintain an up-to-date register of the environmental requirements applicable to it?",
+    "purposeEn": "Measure awareness of obligations",
+    "optionsEn": ["Yes", "Partially", "No"]
+  },
+  "REG-002": {
+    "textEn": "Has the entity obtained the environmental permits or approvals required for its activities?",
+    "purposeEn": "Verify regulatory readiness",
+    "optionsEn": ["Yes", "Partially", "No", "Not applicable"]
+  },
+  "REG-003": {
+    "textEn": "Are permit or approval conditions monitored periodically?",
+    "purposeEn": "Measure regulatory follow-up",
+    "optionsEn": ["No", "Irregular", "Tracking log", "Periodic monitoring", "Monitoring and improvement"]
+  },
+  "REG-004": {
+    "textEn": "Does the entity have any open environmental violations during the last 12 months?",
+    "purposeEn": "Detect critical risks",
+    "optionsEn": ["Yes", "No"]
+  },
+  "REG-005": {
+    "textEn": "What is the closure rate of corrective actions related to violations or observations?",
+    "purposeEn": "Measure compliance outputs",
+    "optionsEn": ["0-100%"]
+  },
+  "REG-006": {
+    "textEn": "Is there a mechanism to monitor relevant regulatory updates?",
+    "purposeEn": "Measure the sustainability of compliance",
+    "optionsEn": ["Yes", "Partially", "No"]
+  },
+  "REG-007": {
+    "textEn": "Are the environmental reports or correspondence required by the competent authorities documented?",
+    "purposeEn": "Document submitted obligations",
+    "optionsEn": ["Yes", "Partially", "No"]
+  },
+  "REG-008": {
+    "textEn": "Are there numerical limits or performance requirements that are measured and compared regularly?",
+    "purposeEn": "Link compliance to numerical results",
+    "optionsEn": ["Yes", "Partially", "No", "Not applicable"]
+  },
+  "REG-009": {
+    "textEn": "Has any exceedance of regulatory limits occurred during the last 12 months?",
+    "purposeEn": "Measure the actual regulatory outcome",
+    "optionsEn": ["Yes", "No", "Unknown"]
+  },
+  "REG-010": {
+    "textEn": "Has the number of regulatory violations or observations decreased compared to the previous period?",
+    "purposeEn": "Measure the compliance trend",
+    "optionsEn": ["Decreased", "Stable", "Increased", "No baseline"]
+  },
+  "DAT-001": {
+    "textEn": "Are there approved environmental performance indicators covering the material areas?",
+    "purposeEn": "Measure the entity's ability to move from documentation to performance",
+    "optionsEn": ["Yes", "Partially", "No"]
+  },
+  "DAT-002": {
+    "textEn": "Is environmental data updated periodically and at defined intervals?",
+    "purposeEn": "Measure data regularity",
+    "optionsEn": ["Monthly", "Quarterly", "Annually", "Irregular", "None"]
+  },
+  "DAT-003": {
+    "textEn": "Does the environmental data cover all sites or activities within the assessment scope?",
+    "purposeEn": "Measure scope completeness",
+    "optionsEn": ["0-100%"]
+  },
+  "DAT-004": {
+    "textEn": "Are there documented sources for the environmental figures entered?",
+    "purposeEn": "Improve verifiability",
+    "optionsEn": ["Yes", "Partially", "No"]
+  },
+  "DAT-005": {
+    "textEn": "Is an internal review or sanity check of environmental data performed before it is used?",
+    "purposeEn": "Reduce data errors",
+    "optionsEn": ["No", "Informal", "Limited check", "Systematic", "Documented and optimized"]
+  },
+  "DAT-006": {
+    "textEn": "Are there time gaps in the performance data during the assessment period?",
+    "purposeEn": "Measure the completeness of the time series",
+    "optionsEn": ["Yes", "No", "Partially"]
+  },
+  "DAT-007": {
+    "textEn": "What percentage of performance indicators have a documented baseline?",
+    "purposeEn": "Enable trend measurement",
+    "optionsEn": ["0-100%"]
+  },
+  "DAT-008": {
+    "textEn": "What percentage of performance indicators showed improvement during the last 12 months?",
+    "purposeEn": "Measure the overall outcome",
+    "optionsEn": ["0-100%"]
+  },
+  "CLM-001": {
+    "textEn": "Does the entity measure electricity and energy consumption periodically?",
+    "purposeEn": "Build an energy baseline",
+    "optionsEn": ["Yes", "Partially", "No"]
+  },
+  "CLM-002": {
+    "textEn": "What is the total electricity consumption during the assessment period?",
+    "purposeEn": "Enter a quantitative performance value",
+    "optionsEn": ["kWh during the period"]
+  },
+  "CLM-003": {
+    "textEn": "What was the electricity consumption in the baseline or previous period?",
+    "purposeEn": "Enable Before/After",
+    "optionsEn": ["kWh in the baseline"]
+  },
+  "CLM-004": {
+    "textEn": "What is the percentage change in electricity consumption compared to the baseline?",
+    "purposeEn": "Measure improvement or decline",
+    "optionsEn": ["Decrease %", "Increase %", "Stable", "No baseline"]
+  },
+  "CLM-005": {
+    "textEn": "Are there implemented initiatives to reduce energy consumption?",
+    "purposeEn": "Link practice to improvement",
+    "optionsEn": ["Yes", "Partially", "No"]
+  },
+  "CLM-006": {
+    "textEn": "What is the documented reduction in energy consumption resulting from the initiatives?",
+    "purposeEn": "Measure the impact of the initiatives",
+    "optionsEn": ["kWh or % reduction"]
+  },
+  "CLM-007": {
+    "textEn": "Does the entity have an energy intensity indicator appropriate to the nature of its activity?",
+    "purposeEn": "Normalize performance",
+    "optionsEn": ["Yes", "Partially", "No"]
+  },
+  "CLM-008": {
+    "textEn": "Does the entity account for Scope 1 emissions?",
+    "purposeEn": "Measure direct emissions",
+    "optionsEn": ["Yes", "No", "Not applicable"]
+  },
+  "CLM-009": {
+    "textEn": "Does the entity account for Scope 2 emissions?",
+    "purposeEn": "Measure purchased-energy emissions",
+    "optionsEn": ["Yes", "No", "Not applicable"]
+  },
+  "CLM-010": {
+    "textEn": "Does the entity account for material Scope 3 emissions?",
+    "purposeEn": "Measure indirect impact",
+    "optionsEn": ["Yes", "Partially", "No", "Not applicable"]
+  },
+  "CLM-011": {
+    "textEn": "Have any emissions data been externally verified?",
+    "purposeEn": "Increase the reliability of climate data",
+    "optionsEn": ["Yes", "No", "Not applicable"]
+  },
+  "CLM-012": {
+    "textEn": "Does the entity have a time-bound emissions or energy reduction target?",
+    "purposeEn": "Link climate to targets",
+    "optionsEn": ["Yes", "Partially", "No"]
+  },
+  "CLM-013": {
+    "textEn": "What is the progress toward the emissions or energy reduction target?",
+    "purposeEn": "Measure target outputs",
+    "optionsEn": ["0-100%"]
+  },
+  "CLM-014": {
+    "textEn": "Does the entity assess climate risks to its business or sites?",
+    "purposeEn": "Measure climate risks",
+    "optionsEn": ["No", "Initial", "Qualitative", "Partially quantitative", "Integrated into decision-making"]
+  },
+  "CLM-015": {
+    "textEn": "Have any operational or investment decisions been made based on energy or emissions data?",
+    "purposeEn": "Turn data into decisions",
+    "optionsEn": ["No", "Limited cases", "Sporadic decisions", "Systematic", "Optimized based on impact"]
+  },
+  "WAT-001": {
+    "textEn": "Is water consumption measured periodically?",
+    "purposeEn": "Build a water baseline",
+    "optionsEn": ["Yes", "Partially", "No"]
+  },
+  "WAT-002": {
+    "textEn": "What is the total water consumption during the assessment period?",
+    "purposeEn": "Enter quantitative water performance",
+    "optionsEn": ["m3 during the period"]
+  },
+  "WAT-003": {
+    "textEn": "What was the water consumption in the baseline or previous period?",
+    "purposeEn": "Enable time-based comparison",
+    "optionsEn": ["m3 in the baseline"]
+  },
+  "WAT-004": {
+    "textEn": "What is the percentage change in water consumption compared to the baseline?",
+    "purposeEn": "Measure improvement or decline",
+    "optionsEn": ["Decrease %", "Increase %", "Stable", "No baseline"]
+  },
+  "WAT-005": {
+    "textEn": "Are there water intensity indicators appropriate to the activity?",
+    "purposeEn": "Normalize water performance",
+    "optionsEn": ["Yes", "Partially", "No"]
+  },
+  "WAT-006": {
+    "textEn": "Is there industrial discharge within the assessment scope?",
+    "purposeEn": "Determine the applicability of discharge quality",
+    "optionsEn": ["Yes", "No", "Not applicable"]
+  },
+  "WAT-007": {
+    "textEn": "Is industrial discharge quality analyzed periodically where applicable?",
+    "purposeEn": "Measure compliance and impact",
+    "optionsEn": ["Yes", "Partially", "No", "Not applicable"]
+  },
+  "WAT-008": {
+    "textEn": "Have discharge quality results improved compared to the previous period or the required limits?",
+    "purposeEn": "Measure an actual environmental outcome",
+    "optionsEn": ["Improved", "Stable", "Declined", "No baseline"]
+  },
+  "WAT-009": {
+    "textEn": "Are there initiatives to reuse water or reduce consumption?",
+    "purposeEn": "Measure improvement efforts",
+    "optionsEn": ["Yes", "Partially", "No"]
+  },
+  "WAT-010": {
+    "textEn": "What is the quantity or percentage of water reused or saved during the assessment period?",
+    "purposeEn": "Measure the impact of water initiatives",
+    "optionsEn": ["m3 or %"]
+  },
+  "WAT-011": {
+    "textEn": "Have any exceedances or incidents related to water or discharge been recorded during the last 12 months?",
+    "purposeEn": "Measure water and discharge risks",
+    "optionsEn": ["Yes", "No"]
+  },
+  "WAT-012": {
+    "textEn": "Have the corrective actions for water incidents or exceedances been closed?",
+    "purposeEn": "Measure the response outcome",
+    "optionsEn": ["0-100%"]
+  },
+  "WST-001": {
+    "textEn": "Does the entity maintain a register of waste types and quantities?",
+    "purposeEn": "Build a waste baseline",
+    "optionsEn": ["Yes", "Partially", "No"]
+  },
+  "WST-002": {
+    "textEn": "What is the total quantity of waste generated during the assessment period?",
+    "purposeEn": "Enter quantitative waste performance",
+    "optionsEn": ["kg or ton"]
+  },
+  "WST-003": {
+    "textEn": "What was the waste quantity in the baseline or previous period?",
+    "purposeEn": "Enable time-based comparison",
+    "optionsEn": ["kg or ton"]
+  },
+  "WST-004": {
+    "textEn": "What is the percentage change in waste quantity compared to the baseline?",
+    "purposeEn": "Measure improvement or decline",
+    "optionsEn": ["Decrease %", "Increase %", "Stable", "No baseline"]
+  },
+  "WST-005": {
+    "textEn": "Is waste classified by type and hazard?",
+    "purposeEn": "Improve management and treatment",
+    "optionsEn": ["Yes", "Partially", "No"]
+  },
+  "WST-006": {
+    "textEn": "Is waste handled through licensed providers where needed?",
+    "purposeEn": "Ensure the regulatory pathway",
+    "optionsEn": ["Yes", "Partially", "No", "Not applicable"]
+  },
+  "WST-007": {
+    "textEn": "Are there tracking documents for the fate of the waste?",
+    "purposeEn": "Prove the final fate of the waste",
+    "optionsEn": ["Yes", "Partially", "No"]
+  },
+  "WST-008": {
+    "textEn": "What percentage of waste is diverted from landfill or recycled?",
+    "purposeEn": "Measure the circular economy outcome",
+    "optionsEn": ["0-100%"]
+  },
+  "WST-009": {
+    "textEn": "Are there initiatives to reduce waste at source?",
+    "purposeEn": "Measure source reduction",
+    "optionsEn": ["Yes", "Partially", "No"]
+  },
+  "WST-010": {
+    "textEn": "What quantity of waste was reduced or avoided as a result of the initiatives?",
+    "purposeEn": "Measure the impact of waste reduction",
+    "optionsEn": ["kg or %"]
+  },
+  "HAZ-001": {
+    "textEn": "Does the entity maintain an up-to-date register of hazardous materials?",
+    "purposeEn": "Inventory hazardous materials",
+    "optionsEn": ["Yes", "Partially", "No"]
+  },
+  "HAZ-002": {
+    "textEn": "Are SDS/MSDS available for all hazardous materials?",
+    "purposeEn": "Provide safety and control information",
+    "optionsEn": ["Yes", "Partially", "No", "Not applicable"]
+  },
+  "HAZ-003": {
+    "textEn": "Are hazardous materials stored in a safe and appropriate manner?",
+    "purposeEn": "Reduce the risk of leaks and incidents",
+    "optionsEn": ["No", "Limited", "Acceptable", "Organized", "Audited and optimized"]
+  },
+  "HAZ-004": {
+    "textEn": "Is there a response plan for spills and leaks?",
+    "purposeEn": "Prepare for incidents",
+    "optionsEn": ["Yes", "Partially", "No"]
+  },
+  "HAZ-005": {
+    "textEn": "Have any spills or leaks occurred during the last 12 months?",
+    "purposeEn": "Measure actual incidents",
+    "optionsEn": ["Yes", "No", "Number"]
+  },
+  "HAZ-006": {
+    "textEn": "Has the number or severity of spills decreased compared to the previous period?",
+    "purposeEn": "Measure the control outcome",
+    "optionsEn": ["Decreased", "Stable", "Increased", "No baseline"]
+  },
+  "NAT-001": {
+    "textEn": "Has the environmental sensitivity of the entity's sites been determined using maps or reliable sources?",
+    "purposeEn": "Improve spatial applicability",
+    "optionsEn": ["Yes", "Partially", "No"]
+  },
+  "NAT-002": {
+    "textEn": "Is any site located within or near a protected area or environmentally sensitive zone?",
+    "purposeEn": "Identify site risks",
+    "optionsEn": ["Yes", "No", "Unknown"]
+  },
+  "NAT-003": {
+    "textEn": "Has the activity's impact on biodiversity or habitats been assessed?",
+    "purposeEn": "Measure nature impact assessment",
+    "optionsEn": ["Yes", "Partially", "No", "Not applicable"]
+  },
+  "NAT-004": {
+    "textEn": "Is there a plan to mitigate the impact on nature or for rehabilitation?",
+    "purposeEn": "Measure the response to impact",
+    "optionsEn": ["Yes", "Partially", "No", "Not applicable"]
+  },
+  "NAT-005": {
+    "textEn": "Is the activity's impact on habitats, species, or vegetation cover monitored after implementation?",
+    "purposeEn": "Measure post-implementation monitoring",
+    "optionsEn": ["Yes", "Partially", "No", "Not applicable"]
+  },
+  "NAT-006": {
+    "textEn": "Has the condition of the affected site improved or has rehabilitation been completed compared to the baseline?",
+    "purposeEn": "Measure the nature outcome",
+    "optionsEn": ["Improved", "Stable", "Deteriorated", "No baseline"]
+  },
+  "NAT-007": {
+    "textEn": "Are there activities that may lead to habitat fragmentation or impede the movement of organisms?",
+    "purposeEn": "Deepen the nature module",
+    "optionsEn": ["Yes", "No", "Unknown"]
+  },
+  "NAT-008": {
+    "textEn": "Has the entity's or project's dependence on ecosystem services been identified?",
+    "purposeEn": "Introduce the concept of dependence on nature",
+    "optionsEn": ["No", "Initial", "Qualitative", "Partially quantitative", "Integrated into decision-making"]
+  },
+  "NAT-009": {
+    "textEn": "Are there any complaints or incidents related to nature or habitats during the last 12 months?",
+    "purposeEn": "Measure real-world impact",
+    "optionsEn": ["Yes", "No"]
+  },
+  "NAT-010": {
+    "textEn": "Have nature-related incidents or complaints decreased compared to the previous period?",
+    "purposeEn": "Measure the trend",
+    "optionsEn": ["Decreased", "Stable", "Increased", "No baseline"]
+  },
+  "SOIL-001": {
+    "textEn": "Are there activities that may affect soil or cause contamination or erosion?",
+    "purposeEn": "Activate the soil module",
+    "optionsEn": ["Yes", "No", "Unknown"]
+  },
+  "SOIL-002": {
+    "textEn": "Has any soil contamination or disturbance been assessed or monitored at the relevant sites?",
+    "purposeEn": "Measure soil impact",
+    "optionsEn": ["Yes", "Partially", "No", "Not applicable"]
+  },
+  "SOIL-003": {
+    "textEn": "Have measures been implemented to prevent or remediate soil contamination or erosion?",
+    "purposeEn": "Measure the response",
+    "optionsEn": ["Yes", "Partially", "No", "Not applicable"]
+  },
+  "SOIL-004": {
+    "textEn": "Have soil indicators improved or have contaminated areas been closed compared to the baseline?",
+    "purposeEn": "Measure the soil outcome",
+    "optionsEn": ["Improved", "Stable", "Deteriorated", "No baseline"]
+  },
+  "MAR-001": {
+    "textEn": "Are there activities that may affect the marine or coastal environment?",
+    "purposeEn": "Activate the marine and coastal module",
+    "optionsEn": ["Yes", "No", "Unknown"]
+  },
+  "MAR-002": {
+    "textEn": "Has the activity's impact on coastal or marine systems been assessed?",
+    "purposeEn": "Marine impact assessment",
+    "optionsEn": ["Yes", "Partially", "No", "Not applicable"]
+  },
+  "MAR-003": {
+    "textEn": "Are there measures to prevent pollution or disturbance of the marine or coastal environment?",
+    "purposeEn": "Measure protection controls",
+    "optionsEn": ["Yes", "Partially", "No", "Not applicable"]
+  },
+  "MAR-004": {
+    "textEn": "Has improvement or non-deterioration of marine or coastal environment indicators been monitored compared to the baseline?",
+    "purposeEn": "Measure the marine outcome",
+    "optionsEn": ["Improved", "No deterioration", "Deterioration", "No baseline"]
+  },
+  "SUP-001": {
+    "textEn": "Does the entity have a list of suppliers or contractors with high environmental impact?",
+    "purposeEn": "Identify supply chain impact",
+    "optionsEn": ["Yes", "Partially", "No"]
+  },
+  "SUP-002": {
+    "textEn": "Do supplier or contractor contracts include appropriate environmental clauses?",
+    "purposeEn": "Integrate the environment into contracting",
+    "optionsEn": ["Yes", "Partially", "No"]
+  },
+  "SUP-003": {
+    "textEn": "Are the licenses or competence of environmental service providers such as waste or transport verified?",
+    "purposeEn": "Reduce indirect risks",
+    "optionsEn": ["Yes", "Partially", "No", "Not applicable"]
+  },
+  "SUP-004": {
+    "textEn": "Is the environmental performance of key suppliers or contractors evaluated?",
+    "purposeEn": "Measure the management of indirect impact",
+    "optionsEn": ["No", "Initial", "For some suppliers", "Systematic", "Linked to improvement"]
+  },
+  "SUP-005": {
+    "textEn": "Is there a green procurement policy or criteria?",
+    "purposeEn": "Improve purchasing decisions",
+    "optionsEn": ["Yes", "Partially", "No"]
+  },
+  "SUP-006": {
+    "textEn": "Is environmental data related to suppliers, such as transport, packaging, or materials, tracked?",
+    "purposeEn": "Measure supply chain outputs",
+    "optionsEn": ["Yes", "Partially", "No"]
+  },
+  "SUP-007": {
+    "textEn": "Has the environmental impact of key suppliers, packaging materials, or transport decreased compared to the baseline?",
+    "purposeEn": "Measure the supply chain outcome",
+    "optionsEn": ["Improved", "Stable", "Declined", "No baseline"]
+  },
+  "SUP-008": {
+    "textEn": "Are environmental requirements included in the evaluation and selection of new suppliers?",
+    "purposeEn": "Prevent impact before contracting",
+    "optionsEn": ["Yes", "Partially", "No"]
+  },
+  "SUP-009": {
+    "textEn": "Is there a plan to address suppliers with poor environmental performance?",
+    "purposeEn": "Turn assessment into action",
+    "optionsEn": ["Yes", "Partially", "No"]
+  },
+  "SUP-010": {
+    "textEn": "Are the emissions or impacts of external transport associated with suppliers measured or estimated?",
+    "purposeEn": "Strengthen Scope 3 and transport",
+    "optionsEn": ["Yes", "Partially", "No"]
+  },
+  "REP-001": {
+    "textEn": "Does the entity issue an environmental or sustainability report?",
+    "purposeEn": "Measure transparency",
+    "optionsEn": ["Yes", "Partially", "No"]
+  },
+  "REP-002": {
+    "textEn": "Are water, waste, or emissions indicators disclosed?",
+    "purposeEn": "Measure the disclosure scope",
+    "optionsEn": ["Yes", "Partially", "No"]
+  },
+  "REP-003": {
+    "textEn": "Have any published environmental data been externally verified?",
+    "purposeEn": "Build trust",
+    "optionsEn": ["Yes", "No", "Not applicable"]
+  },
+  "REP-004": {
+    "textEn": "Is there an internal dashboard for environmental performance?",
+    "purposeEn": "Improve decision-making",
+    "optionsEn": ["Yes", "Partially", "No"]
+  },
+  "REP-005": {
+    "textEn": "Are periodic environmental reports submitted to senior management?",
+    "purposeEn": "Link data to decision-making",
+    "optionsEn": ["Yes", "Partially", "No"]
+  },
+  "REP-006": {
+    "textEn": "Does the entity use measurement results in improvement or prioritization decisions?",
+    "purposeEn": "Measure the impact of reporting on decision-making",
+    "optionsEn": ["No", "Limited cases", "Partially", "Systematic", "Linked to outcomes"]
+  },
+  "IMP-001": {
+    "textEn": "Is there an approved environmental improvement plan based on clear gaps?",
+    "purposeEn": "Turn assessment into action",
+    "optionsEn": ["Yes", "Partially", "No"]
+  },
+  "IMP-002": {
+    "textEn": "Are improvement initiatives linked to performance indicators, responsibilities, and dates?",
+    "purposeEn": "Increase feasibility of implementation",
+    "optionsEn": ["Yes", "Partially", "No"]
+  },
+  "IMP-003": {
+    "textEn": "What percentage of improvement initiatives were completed on time?",
+    "purposeEn": "Measure implementation outputs",
+    "optionsEn": ["0-100%"]
+  },
+  "IMP-004": {
+    "textEn": "What is the documented environmental impact of the completed initiatives?",
+    "purposeEn": "Measure the actual outcome",
+    "optionsEn": ["By indicator"]
+  },
+  "IMP-005": {
+    "textEn": "Is the environmental or financial return of significant initiatives calculated?",
+    "purposeEn": "Link improvement to value",
+    "optionsEn": ["Yes", "Partially", "No"]
+  },
+  "IMP-006": {
+    "textEn": "Are there circular economy or environmental innovation initiatives?",
+    "purposeEn": "Measure advanced maturity",
+    "optionsEn": ["Yes", "Partially", "No"]
+  },
+  "IMP-007": {
+    "textEn": "Has the impact of the circular economy or innovation initiatives been measured?",
+    "purposeEn": "Measure the advanced outcome",
+    "optionsEn": ["Reduction, saving, or diversion"]
+  },
+  "SYS-001": {
+    "textEn": "Is there a matrix linking each improvement initiative to the expected environmental impact?",
+    "purposeEn": "Prevent improvement not linked to impact",
+    "optionsEn": ["No", "Informal", "For some initiatives", "For all initiatives", "With documented results"]
+  },
+  "SYS-002": {
+    "textEn": "Are the trade-offs between reducing water consumption and increasing energy consumption, or vice versa, analyzed?",
+    "purposeEn": "Test the interdependence between resources",
+    "optionsEn": ["No", "Limited cases", "Qualitative analysis", "Quantitative analysis", "Integrated into decision-making"]
+  },
+  "SYS-003": {
+    "textEn": "Is the impact of waste management on carbon emissions, or vice versa, analyzed?",
+    "purposeEn": "Test the interdependence between waste and climate",
+    "optionsEn": ["No", "Initial", "Qualitative", "Partially quantitative", "Integrated into decision-making"]
+  },
+  "SYS-004": {
+    "textEn": "Are gaps prioritized according to environmental impact, risk, cost, and implementation capacity?",
+    "purposeEn": "Turn assessment into prioritized decisions",
+    "optionsEn": ["No", "Judgment-based", "With simple criteria", "Multi-criteria", "Documented and reviewed"]
+  },
+  "SYS-005": {
+    "textEn": "Are there Outcome indicators independent of indicators of the existence of policies and procedures?",
+    "purposeEn": "Confirm the existence of an actual results layer",
+    "optionsEn": ["Yes", "Partially", "No"]
+  },
+  "SYS-006": {
+    "textEn": "What percentage of assessment questions or items have impact or outcome evidence and not only existence evidence?",
+    "purposeEn": "Measure the quality of the measurement system itself",
+    "optionsEn": ["0-100%"]
+  },
+  "SYS-007": {
+    "textEn": "Is there a periodic review of the effectiveness of the assessment system itself after each cycle?",
+    "purposeEn": "Improve the SEMS internally",
+    "optionsEn": ["No", "Informal", "After each cycle", "With data", "Leading to improvement of the questions"]
+  },
+  "SYS-008": {
+    "textEn": "Are internal benchmarking results used to set realistic improvement targets?",
+    "purposeEn": "Link benchmarking to improvement",
+    "optionsEn": ["No", "For information only", "General targets", "Gap-based targets", "Periodically updated targets"]
+  },
+  "AIR-001": {
+    "textEn": "Are there stationary or operational air emission sources within the assessment scope?",
+    "purposeEn": "Confirm the applicability of the air module",
+    "optionsEn": ["Yes", "No", "Not applicable"]
+  },
+  "AIR-002": {
+    "textEn": "Are air emissions measured or monitored where applicable?",
+    "purposeEn": "Measure operational air monitoring",
+    "optionsEn": ["Yes", "Partially", "No", "Not applicable"]
+  },
+  "AIR-003": {
+    "textEn": "What is the current emission or air quality indicator value for the most significant source or site?",
+    "purposeEn": "Enter an air performance indicator",
+    "optionsEn": ["Value by indicator and unit of measurement"]
+  },
+  "AIR-004": {
+    "textEn": "What is the emission or air quality indicator value in the baseline or previous period?",
+    "purposeEn": "Enable a before/after comparison for air",
+    "optionsEn": ["Value by indicator and unit of measurement"]
+  },
+  "AIR-005": {
+    "textEn": "Have emissions or air quality indicators improved compared to the baseline or the regulatory limits?",
+    "purposeEn": "Measure the actual air outcome",
+    "optionsEn": ["Improved", "Stable", "Declined", "No baseline"]
+  },
+  "AIR-006": {
+    "textEn": "Have any exceedances or complaints related to emissions or air quality occurred during the last 12 months?",
+    "purposeEn": "Measure real-world air-related risks",
+    "optionsEn": ["Yes", "No"]
+  },
+  "NAT-011": {
+    "textEn": "What percentage of the affected habitat area or sites has been restored or rehabilitated during the assessment period?",
+    "purposeEn": "Measure an actual outcome of rehabilitation programs, not merely the existence of a plan.",
+    "optionsEn": ["0-100%"]
+  },
+  "NAT-012": {
+    "textEn": "Do the monitoring results show improvement or stability in biodiversity indicators compared to the baseline?",
+    "purposeEn": "Measure the actual trend of biodiversity indicators.",
+    "optionsEn": ["No data", "Preliminary data", "Partial monitoring", "Regular monitoring", "Proven improvement/stability"]
+  },
+  "NAT-013": {
+    "textEn": "Has the activity's impact on habitat connectivity or fragmentation been measured, and have measures been implemented to address it where needed?",
+    "purposeEn": "Test the activity's impact on ecological connectivity between habitats.",
+    "optionsEn": ["None", "Initial identification", "Partial assessment", "Documented measures", "Proven positive impact"]
+  },
+  "NAT-014": {
+    "textEn": "Has the entity's or project's dependence on ecosystem services and the impact of the activity on these services been assessed?",
+    "purposeEn": "Measure the relationship between the activity and ecosystem services, not just sensitive sites.",
+    "optionsEn": ["None", "Initial identification", "Partial assessment", "Documented assessment", "Integration into management decisions"]
+  },
+  "NAT-015": {
+    "textEn": "Are the results of rehabilitation or mitigation monitored after implementation to confirm their success?",
+    "purposeEn": "Prevent settling for implementing a measure without measuring its success.",
+    "optionsEn": ["None", "Irregular monitoring", "Partial monitoring", "Periodic monitoring", "Monitoring that proves success or continuous correction"]
+  },
+  "SUP-011": {
+    "textEn": "What percentage of high-risk suppliers or contractors underwent an environmental assessment during the last 12 months?",
+    "purposeEn": "Measure the assessment coverage of the most environmentally material suppliers.",
+    "optionsEn": ["0-100%"]
+  },
+  "SUP-012": {
+    "textEn": "What percentage of high-risk suppliers showed documented improvement in environmental performance compared to the previous period?",
+    "purposeEn": "Measure the impact of the supplier program on actual improvement.",
+    "optionsEn": ["0-100%"]
+  },
+  "SUP-013": {
+    "textEn": "Has the transport, packaging, or materials impact associated with suppliers been reduced compared to the baseline?",
+    "purposeEn": "Measure a tangible impact in transport, packaging, or materials within the supply chain.",
+    "optionsEn": ["None", "Unmeasured initiatives", "Partial measurement", "Documented reduction", "Documented and normalized reduction"]
+  },
+  "SUP-014": {
+    "textEn": "What percentage of environmental non-compliance cases among high-risk suppliers have been closed or corrected?",
+    "purposeEn": "Measure the entity's ability to improve suppliers or close their risks.",
+    "optionsEn": ["0-100%"]
+  },
+  "SUP-015": {
+    "textEn": "Is quantitative data available on the environmental impact of the most material suppliers, such as emissions, waste, water, or transport?",
+    "purposeEn": "Test the availability of real impact data from the most material suppliers.",
+    "optionsEn": ["None", "Limited data", "Data for some suppliers", "Systematic data", "Documented data used in decision-making"]
+  },
+  "CIR-001": {
+    "textEn": "Is there a map of the main material flows entering and leaving operations?",
+    "purposeEn": "Establish circular economy measurement through understanding material flows.",
+    "optionsEn": ["None", "Initial identification", "Partial map", "Documented map", "Used in improvement decisions"]
+  },
+  "CIR-002": {
+    "textEn": "What percentage of materials are recovered, reused, or recycled out of total outgoing materials?",
+    "purposeEn": "Measure the circular economy outcome, not merely the existence of an initiative.",
+    "optionsEn": ["0-100%"]
+  },
+  "CIR-003": {
+    "textEn": "Has resource productivity improved compared to the baseline, such as output or service per unit of material, water, or energy?",
+    "purposeEn": "Measure resource use efficiency on a normalized basis.",
+    "optionsEn": ["None", "Initial measurement", "Baseline", "Documented improvement", "Normalized and explained improvement"]
+  },
+  "CIR-004": {
+    "textEn": "Has a product, service, or process been designed to reduce waste, extend material life, or facilitate reuse?",
+    "purposeEn": "Measure the integration of circular thinking into design or operations.",
+    "optionsEn": ["None", "Concept", "Limited initiative", "Documented implementation", "Measured impact"]
+  },
+  "CIR-005": {
+    "textEn": "What is the financial or operational value generated from material recovery or waste reduction during the assessment period?",
+    "purposeEn": "Link the circular economy to measurable value.",
+    "optionsEn": ["SAR/year or an appropriate unit"]
+  },
+  "CIR-006": {
+    "textEn": "Are there external partnerships to convert waste or by-products into valuable inputs?",
+    "purposeEn": "Measure circular integration opportunities beyond the entity's boundaries.",
+    "optionsEn": ["None", "Identified opportunities", "Pilot partnership", "Active partnership", "Measured impact"]
+  },
+  "CIR-007": {
+    "textEn": "Is the ratio of reliance on virgin raw materials versus recycled or recovered materials tracked?",
+    "purposeEn": "Measure the shift in resource inputs, not just waste outputs.",
+    "optionsEn": ["0-100%"]
+  },
+  "CIR-008": {
+    "textEn": "Is the impact of circular economy initiatives on emissions, water, or waste tracked to avoid shifting the impact from one area to another?",
+    "purposeEn": "Introduce systems logic and trade-offs into the evaluation of circular economy initiatives.",
+    "optionsEn": ["None", "Qualitative assessment", "Partial assessment", "Multi-dimensional measurement", "Documented improvement without shifting a negative impact"]
+  }
+}

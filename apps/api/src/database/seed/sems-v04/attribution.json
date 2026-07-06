@@ -1,0 +1,42 @@
+[
+ {
+  "Attribution_ID": "ATR-DIR",
+  "Attribution_Category": "Directly Attributed",
+  "Definition": "Improvement is linked to a documented initiative with comparable baseline/current data.",
+  "Required_Evidence": "Initiative record + baseline/current data + scope consistency",
+  "Scoring_Implication": "Full outcome consideration if evidence and DQ are sufficient",
+  "Example": "Energy retrofit reduced normalized kWh/m²."
+ },
+ {
+  "Attribution_ID": "ATR-PAR",
+  "Attribution_Category": "Partially Attributed",
+  "Definition": "Improvement likely results from several factors, including at least one documented intervention.",
+  "Required_Evidence": "Intervention evidence + explanation of other factors",
+  "Scoring_Implication": "Partial outcome consideration; confidence note required",
+  "Example": "Water use reduced after new controls and lower occupancy."
+ },
+ {
+  "Attribution_ID": "ATR-ACT",
+  "Attribution_Category": "Activity Reduction",
+  "Definition": "Performance improved because activity, production, occupancy, or service level decreased.",
+  "Required_Evidence": "Activity denominator or production/occupancy evidence",
+  "Scoring_Implication": "Do not treat as true improvement unless normalized metrics also improve",
+  "Example": "Electricity fell because a facility closed."
+ },
+ {
+  "Attribution_ID": "ATR-BOUND",
+  "Attribution_Category": "Boundary Change",
+  "Definition": "Improvement results from changing assessment boundary, outsourcing, excluding sites, or scope adjustments.",
+  "Required_Evidence": "Scope/boundary change evidence",
+  "Scoring_Implication": "Flag and adjust baseline; avoid direct improvement credit",
+  "Example": "Waste decreased after outsourcing process."
+ },
+ {
+  "Attribution_ID": "ATR-UNK",
+  "Attribution_Category": "Unknown Attribution",
+  "Definition": "No clear evidence explaining the trend.",
+  "Required_Evidence": "None or insufficient evidence",
+  "Scoring_Implication": "Trend may be reported but not scored as proven improvement",
+  "Example": "Water decreased but no initiative or activity data."
+ }
+]

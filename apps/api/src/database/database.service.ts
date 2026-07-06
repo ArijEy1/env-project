@@ -93,6 +93,14 @@ export class DatabaseService implements OnModuleInit, OnApplicationShutdown {
       await this.ensureAssessmentEngineColumns();
       await this.ensureAssessmentQuestionsTable();
       await this.ensureAssessmentAnswerEngineColumns();
+
+      // --- SEMS v0.4 engine (Phase 1: schema only; content loaded by the
+      //     import-sems-v04 script, not by boot seeding). ---
+      await this.ensureSemsV04QuestionColumns();
+      await this.ensureSemsV04ReferenceTables();
+      await this.ensureSemsV04AnswerColumns();
+      await this.ensureSemsV04AssessmentColumns();
+
       await this.seedDraftContent();
     } finally {
       await client
@@ -115,25 +123,37 @@ export class DatabaseService implements OnModuleInit, OnApplicationShutdown {
     return this.pool.query<T>(text, params);
   }
 
+  private get sslConfig() {
+    return process.env.POSTGRES_SSL === 'true'
+      ? { rejectUnauthorized: false }
+      : undefined;
+  }
+
   private createPool(database: string) {
+    // Managed/serverless Postgres (Neon, Supabase, Railway…) hands you a single
+    // connection string — prefer it when present; the `database` is baked into it.
+    if (process.env.DATABASE_URL) {
+      return new Pool({
+        connectionString: process.env.DATABASE_URL,
+        ssl: this.sslConfig,
+      });
+    }
     return new Pool({
       host: process.env.POSTGRES_HOST ?? '127.0.0.1',
       port: Number(process.env.POSTGRES_PORT ?? 5432),
       user: process.env.POSTGRES_USER ?? 'postgres',
       password: process.env.POSTGRES_PASSWORD ?? 'postgres',
       database,
-      ssl:
-        process.env.POSTGRES_SSL === 'true'
-          ? { rejectUnauthorized: false }
-          : undefined,
+      ssl: this.sslConfig,
     });
   }
 
   private async ensureDatabaseExists() {
-    // Managed Postgres (RDS/Cloud SQL/Azure) pre-creates the DB and the app role
-    // usually can't CREATE DATABASE or reach the admin DB. Skip explicitly via
-    // SKIP_DB_CREATE=true, and treat any failure as "DB already exists".
-    if (process.env.SKIP_DB_CREATE === 'true') {
+    // Managed Postgres (Neon/RDS/Cloud SQL/Azure) pre-creates the DB and the app
+    // role usually can't CREATE DATABASE or reach the admin DB. Skip explicitly
+    // via SKIP_DB_CREATE=true or when a DATABASE_URL is supplied, and treat any
+    // failure as "DB already exists".
+    if (process.env.SKIP_DB_CREATE === 'true' || process.env.DATABASE_URL) {
       return;
     }
 
@@ -505,6 +525,257 @@ export class DatabaseService implements OnModuleInit, OnApplicationShutdown {
     await this.pool.query(
       `ALTER TABLE assessment_answers ADD COLUMN IF NOT EXISTS calculator_inputs JSONB`,
     );
+  }
+
+  // --- SEMS v0.4 engine schema (Phase 1) ---------------------------------
+  // The client's official v0.4 question bank is a full decision-grade engine
+  // spec (168 questions, rule engine, rubrics, thresholds, dependencies…).
+  // These migrations extend the existing tables and add the reference tables
+  // the engine needs. Content is loaded by `npm run import:sems` — NOT seeded
+  // on boot — so it stays reproducible from the client's spreadsheet.
+  //
+  // All statements are idempotent (ADD COLUMN / CREATE TABLE IF NOT EXISTS).
+
+  private async ensureSemsV04QuestionColumns() {
+    // v0.4 questions are Arabic-only; English is machine-translated on import
+    // and flagged for review, so text_en can no longer be NOT NULL.
+    await this.pool.query(
+      `ALTER TABLE question_bank ALTER COLUMN text_en DROP NOT NULL`,
+    );
+
+    const cols: Array<[string, string]> = [
+      ['spec_version', 'VARCHAR(20)'], // e.g. "v0.4" (distinct from numeric version)
+      ['status', 'TEXT'],
+      ['category', 'VARCHAR(30)'], // Core | Conditional | Advanced | Profile | Applicability
+      ['layer', 'VARCHAR(30)'],
+      ['measurement_layer', 'VARCHAR(30)'],
+      ['sub_domain', 'VARCHAR(255)'],
+      ['assessment_element', 'VARCHAR(255)'],
+      ['purpose_ar', 'TEXT'],
+      ['purpose_en', 'TEXT'],
+      ['typology', 'VARCHAR(80)'],
+      ['answer_type', 'VARCHAR(60)'],
+      ['answer_options', "JSONB NOT NULL DEFAULT '[]'::jsonb"],
+      ['answer_options_raw', 'TEXT'],
+      ['applicability_rule_id', 'VARCHAR(60)'],
+      ['applicability_trigger', 'VARCHAR(120)'],
+      ['applicability_priority', 'VARCHAR(10)'],
+      ['scoring_treatment', 'VARCHAR(80)'],
+      ['red_flag_logic', 'TEXT'],
+      ['recommendation_id', 'VARCHAR(60)'],
+      ['min_evidence_level', 'VARCHAR(10)'],
+      ['maturity_rubric_id', 'VARCHAR(60)'],
+      ['outcome_threshold_id', 'VARCHAR(60)'],
+      ['attribution_required', 'BOOLEAN NOT NULL DEFAULT FALSE'],
+      ['attribution_method', 'VARCHAR(120)'],
+      ['baseline_required', 'BOOLEAN NOT NULL DEFAULT FALSE'],
+      ['trend_required', 'BOOLEAN NOT NULL DEFAULT FALSE'],
+      ['evidence_freshness_rule', 'TEXT'],
+      ['evidence_conflict_rule', 'TEXT'],
+      ['benchmark_readiness_criteria', 'TEXT'],
+      ['benchmarking_method', 'TEXT'],
+      ['guidance_ar', 'TEXT'],
+      ['guidance_en', 'TEXT'],
+      ['basic_guidance_ar', 'TEXT'],
+      ['basic_guidance_en', 'TEXT'],
+      ['advanced_guidance_ar', 'TEXT'],
+      ['advanced_guidance_en', 'TEXT'],
+      ['completion_effort', 'VARCHAR(20)'],
+      ['data_availability', 'VARCHAR(40)'],
+      ['user_difficulty', 'VARCHAR(20)'],
+      ['estimated_time', 'VARCHAR(40)'],
+      ['rule_engine_id', 'VARCHAR(60)'],
+      ['kg_node_id', 'VARCHAR(80)'],
+      ['retirement_status', 'VARCHAR(40)'],
+      ['dependency_parents', 'TEXT'],
+      ['dependency_children', 'TEXT'],
+      // Machine-translation review state for the English fields.
+      ['en_review_status', "VARCHAR(20) NOT NULL DEFAULT 'pending'"],
+      // Full verbatim spreadsheet row for traceability / audit.
+      ['raw', 'JSONB'],
+    ];
+    for (const [name, type] of cols) {
+      await this.pool.query(
+        `ALTER TABLE question_bank ADD COLUMN IF NOT EXISTS ${name} ${type}`,
+      );
+    }
+
+    await this.pool.query(
+      'CREATE INDEX IF NOT EXISTS question_bank_category_idx ON question_bank (category)',
+    );
+    await this.pool.query(
+      'CREATE INDEX IF NOT EXISTS question_bank_scoring_treatment_idx ON question_bank (scoring_treatment)',
+    );
+  }
+
+  private async ensureSemsV04ReferenceTables() {
+    // Each table carries its natural key + the few fields the engine queries by,
+    // plus a `data` JSONB holding the full record so nothing from the spec is lost.
+    await this.pool.query(`
+      CREATE TABLE IF NOT EXISTS rule_engine_rules (
+        id VARCHAR(60) PRIMARY KEY,
+        rule_type VARCHAR(60),
+        priority VARCHAR(10),
+        status VARCHAR(40),
+        data JSONB NOT NULL
+      )
+    `);
+    await this.pool.query(`
+      CREATE TABLE IF NOT EXISTS decision_dictionary (
+        id VARCHAR(60) PRIMARY KEY,
+        term VARCHAR(255),
+        data JSONB NOT NULL
+      )
+    `);
+    await this.pool.query(`
+      CREATE TABLE IF NOT EXISTS conflict_decision_tree (
+        step INT PRIMARY KEY,
+        data JSONB NOT NULL
+      )
+    `);
+    await this.pool.query(`
+      CREATE TABLE IF NOT EXISTS maturity_rubrics (
+        id VARCHAR(60) PRIMARY KEY,
+        applies_to VARCHAR(255),
+        data JSONB NOT NULL
+      )
+    `);
+    await this.pool.query(`
+      CREATE TABLE IF NOT EXISTS attribution_categories (
+        id VARCHAR(60) PRIMARY KEY,
+        category VARCHAR(120),
+        data JSONB NOT NULL
+      )
+    `);
+    await this.pool.query(`
+      CREATE TABLE IF NOT EXISTS outcome_thresholds (
+        id VARCHAR(60) PRIMARY KEY,
+        impact_area VARCHAR(120),
+        data JSONB NOT NULL
+      )
+    `);
+    await this.pool.query(`
+      CREATE TABLE IF NOT EXISTS evidence_rules (
+        id VARCHAR(60) PRIMARY KEY,
+        evidence_type VARCHAR(255),
+        data JSONB NOT NULL
+      )
+    `);
+    await this.pool.query(`
+      CREATE TABLE IF NOT EXISTS benchmark_readiness_criteria (
+        id VARCHAR(60) PRIMARY KEY,
+        criterion VARCHAR(255),
+        data JSONB NOT NULL
+      )
+    `);
+    await this.pool.query(`
+      CREATE TABLE IF NOT EXISTS question_dependencies (
+        id VARCHAR(80) PRIMARY KEY,
+        parent_question VARCHAR(40),
+        child_question VARCHAR(60),
+        dependency_type VARCHAR(60),
+        priority VARCHAR(10),
+        data JSONB NOT NULL
+      )
+    `);
+    await this.pool.query(
+      'CREATE INDEX IF NOT EXISTS question_dependencies_parent_idx ON question_dependencies (parent_question)',
+    );
+    await this.pool.query(
+      'CREATE INDEX IF NOT EXISTS question_dependencies_child_idx ON question_dependencies (child_question)',
+    );
+    await this.pool.query(`
+      CREATE TABLE IF NOT EXISTS knowledge_graph_edges (
+        id VARCHAR(120) PRIMARY KEY,
+        from_node VARCHAR(255),
+        relation VARCHAR(80),
+        to_node VARCHAR(255),
+        source_question VARCHAR(40),
+        data JSONB NOT NULL
+      )
+    `);
+    await this.pool.query(
+      'CREATE INDEX IF NOT EXISTS kg_edges_source_question_idx ON knowledge_graph_edges (source_question)',
+    );
+    await this.pool.query(`
+      CREATE TABLE IF NOT EXISTS source_lineage (
+        id VARCHAR(60) PRIMARY KEY,
+        source_name VARCHAR(255),
+        data JSONB NOT NULL
+      )
+    `);
+  }
+
+  private async ensureSemsV04AnswerColumns() {
+    // The v0.4 answer model is richer than the fixed 0/25/50/75/100 scale:
+    // answers carry a raw value (option / number / trend) plus a server-derived
+    // normalized score, confidence, evidence level and red-flag state. The old
+    // `score` CHECK constraint would reject the new normalized values, so drop it.
+    await this.pool.query(
+      `ALTER TABLE assessment_answers DROP CONSTRAINT IF EXISTS assessment_answers_score_check`,
+    );
+    const cols: Array<[string, string]> = [
+      ['answer_type', 'VARCHAR(60)'],
+      ['raw_answer', 'JSONB'],
+      ['normalized_score', 'NUMERIC(6,2)'], // 0-100, nullable (no-score questions)
+      ['confidence', 'NUMERIC(5,2)'],
+      ['evidence_level', 'VARCHAR(10)'],
+      ['red_flag', 'BOOLEAN NOT NULL DEFAULT FALSE'],
+    ];
+    for (const [name, type] of cols) {
+      await this.pool.query(
+        `ALTER TABLE assessment_answers ADD COLUMN IF NOT EXISTS ${name} ${type}`,
+      );
+    }
+  }
+
+  private async ensureSemsV04AssessmentColumns() {
+    // The frozen per-assessment question snapshot needs the v0.4 fields required
+    // to serve + score each question, plus an `active` flag toggled by routing.
+    const qCols: Array<[string, string]> = [
+      ['category', 'VARCHAR(30)'],
+      ['answer_type', 'VARCHAR(60)'],
+      ['answer_options', "JSONB NOT NULL DEFAULT '[]'::jsonb"],
+      ['scoring_treatment', 'VARCHAR(80)'],
+      ['applicability_rule_id', 'VARCHAR(60)'],
+      ['applicability_trigger', 'VARCHAR(120)'],
+      ['min_evidence_level', 'VARCHAR(10)'],
+      ['maturity_rubric_id', 'VARCHAR(60)'],
+      ['outcome_threshold_id', 'VARCHAR(60)'],
+      ['attribution_required', 'BOOLEAN NOT NULL DEFAULT FALSE'],
+      ['trend_required', 'BOOLEAN NOT NULL DEFAULT FALSE'],
+      ['red_flag_logic', 'TEXT'],
+      ['guidance_ar', 'TEXT'],
+      ['guidance_en', 'TEXT'],
+      ['purpose_ar', 'TEXT'],
+      ['purpose_en', 'TEXT'],
+      // Conditional routing: a question is served/scored only while active.
+      ['active', 'BOOLEAN NOT NULL DEFAULT TRUE'],
+      // Profile/Applicability questions drive routing.
+      ['is_routing', 'BOOLEAN NOT NULL DEFAULT FALSE'],
+    ];
+    for (const [name, type] of qCols) {
+      await this.pool.query(
+        `ALTER TABLE assessment_questions ADD COLUMN IF NOT EXISTS ${name} ${type}`,
+      );
+    }
+    await this.pool.query(
+      'CREATE INDEX IF NOT EXISTS assessment_questions_active_idx ON assessment_questions (assessment_id, active)',
+    );
+
+    // Assessment-level v0.4 results: confidence, gate outcome, red flags.
+    const aCols: Array<[string, string]> = [
+      ['raw_total_score', 'NUMERIC(6,2)'],
+      ['confidence_score', 'NUMERIC(5,2)'],
+      ['gate_status', 'VARCHAR(10)'],
+      ['gate_reasons', 'JSONB'],
+      ['red_flags', 'JSONB'],
+    ];
+    for (const [name, type] of aCols) {
+      await this.pool.query(
+        `ALTER TABLE assessments ADD COLUMN IF NOT EXISTS ${name} ${type}`,
+      );
+    }
   }
 
   /**
