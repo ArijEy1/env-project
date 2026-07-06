@@ -8,9 +8,10 @@ import { v4 as uuidv4 } from 'uuid';
 import { DatabaseService } from '../database/database.service';
 import { SaveAnswerDto } from './dto/save-answer.dto';
 import { UpdateProgressDto } from './dto/update-progress.dto';
-import { ANSWER_OPTIONS, TOTAL_QUESTIONS } from './questions';
-import { computeEngineScore } from './engine-scoring';
-import { computeCalculatorScore } from './calculators';
+import { TOTAL_QUESTIONS } from './questions';
+import { computeV04Score, type ScoredAnswer } from './engine/v04-scoring';
+import { normalizeAnswer } from './engine/answer-normalization';
+import type { AnswerOption, Canonical } from './engine/answer-types';
 import {
   QuestionGenerationService,
   type AssessmentProfile,
@@ -33,6 +34,10 @@ interface AssessmentRow {
   maturity_level: number | null;
   scoring_config_id: string | null;
   domain_scores: Record<string, number> | null;
+  confidence_score: string | null;
+  gate_status: string | null;
+  gate_reasons: string[] | null;
+  red_flags: string[] | null;
   created_at: Date | string;
   submitted_at: Date | string | null;
 }
@@ -98,7 +103,9 @@ export class AssessmentService {
       [
         JSON.stringify({
           ...assessmentProfile,
-          questionCount: generated.length,
+          depth: generated.depth,
+          questionCount: generated.total,
+          activeCount: generated.active,
           scoringConfigId,
         }),
         scoringConfigId,
@@ -132,7 +139,7 @@ export class AssessmentService {
         [row.id],
       );
       const snapshotCount = await this.db.query<{ count: string }>(
-        'SELECT COUNT(*) as count FROM assessment_questions WHERE assessment_id = $1',
+        'SELECT COUNT(*) as count FROM assessment_questions WHERE assessment_id = $1 AND active = TRUE',
         [row.id],
       );
       const totalQuestions = Number(snapshotCount.rows[0].count) || TOTAL_QUESTIONS;
@@ -171,9 +178,11 @@ export class AssessmentService {
     const answers = await this.db.query<{
       question_id: string;
       score: number;
+      normalized_score: string | null;
+      raw_answer: Record<string, unknown> | null;
       calculator_inputs: Record<string, unknown> | null;
     }>(
-      'SELECT question_id, score, calculator_inputs FROM assessment_answers WHERE assessment_id = $1',
+      'SELECT question_id, score, normalized_score, raw_answer, calculator_inputs FROM assessment_answers WHERE assessment_id = $1',
       [assessmentId],
     );
 
@@ -192,7 +201,8 @@ export class AssessmentService {
       domainScores: row.domain_scores ?? null,
       answers: answers.rows.map((a) => ({
         questionId: a.question_id,
-        score: a.score,
+        score: a.normalized_score != null ? Number(a.normalized_score) : a.score,
+        rawAnswer: a.raw_answer ?? null,
         calculatorInputs: a.calculator_inputs ?? null,
       })),
     };
@@ -212,9 +222,22 @@ export class AssessmentService {
       throw new BadRequestException('Cannot modify a submitted assessment');
     }
 
-    // Validate the question belongs to this assessment's frozen snapshot.
-    const snapshotQuestion = await this.db.query<{ id: string; calculator_type: string | null }>(
-      'SELECT id, calculator_type FROM assessment_questions WHERE assessment_id = $1 AND bank_question_id = $2',
+    // Validate the question belongs to this assessment's frozen snapshot and is
+    // currently active (routing may have switched it off).
+    const snapshotQuestion = await this.db.query<{
+      id: string;
+      answer_type: string | null;
+      scoring_treatment: string | null;
+      answer_options: unknown;
+      attribution_required: boolean;
+      min_evidence_level: string | null;
+      red_flag_logic: string | null;
+      is_routing: boolean;
+      active: boolean;
+    }>(
+      `SELECT id, answer_type, scoring_treatment, answer_options, attribution_required,
+              min_evidence_level, red_flag_logic, is_routing, active
+       FROM assessment_questions WHERE assessment_id = $1 AND bank_question_id = $2`,
       [assessmentId, dto.questionId],
     );
     const sq = snapshotQuestion.rows[0];
@@ -223,40 +246,104 @@ export class AssessmentService {
         `Question "${dto.questionId}" is not part of this assessment`,
       );
     }
-
-    // Calculator questions ALWAYS derive their score server-side from inputs —
-    // a client-supplied raw score is ignored, so it can't be spoofed.
-    let score: number;
-    let calculatorInputs: Record<string, unknown> | null = null;
-    if (sq.calculator_type) {
-      if (!dto.calculatorInputs) {
-        throw new BadRequestException('This question requires calculator inputs');
-      }
-      calculatorInputs = dto.calculatorInputs;
-      score = computeCalculatorScore(sq.calculator_type, dto.calculatorInputs);
-    } else if (dto.score !== undefined) {
-      score = dto.score;
-    } else {
-      throw new BadRequestException('A score is required');
+    if (!sq.active) {
+      throw new BadRequestException(
+        `Question "${dto.questionId}" is not applicable to this assessment`,
+      );
     }
 
+    // Normalize the raw answer to a score server-side, per the question's answer
+    // type — the client never computes or sees the mapping.
+    const options = (Array.isArray(sq.answer_options) ? sq.answer_options : []) as AnswerOption[];
+    const normalized = normalizeAnswer({
+      answerType: sq.answer_type,
+      scoringTreatment: sq.scoring_treatment,
+      options,
+      attributionRequired: sq.attribution_required,
+      minEvidenceLevel: sq.min_evidence_level,
+      redFlagLogic: sq.red_flag_logic,
+      raw: {
+        optionIndex: dto.optionIndex ?? null,
+        optionValue: dto.optionValue ?? null,
+        number: dto.number ?? null,
+        attribution: dto.attribution ?? null,
+        evidenceLevel: dto.evidenceLevel ?? null,
+      },
+    });
+
+    const rawAnswer = {
+      canonical: normalized.canonical,
+      optionIndex: dto.optionIndex ?? null,
+      optionValue: dto.optionValue ?? null,
+      number: dto.number ?? null,
+      attribution: dto.attribution ?? null,
+    };
+    const legacyScore = Math.round(normalized.score ?? 0);
+
     await this.db.query(
-      `INSERT INTO assessment_answers (id, assessment_id, question_id, score, assessment_question_id, calculator_inputs)
-       VALUES ($1, $2, $3, $4, $5, $6)
-       ON CONFLICT (assessment_id, question_id)
-       DO UPDATE SET score = $4, assessment_question_id = $5, calculator_inputs = $6, updated_at = NOW()`,
+      `INSERT INTO assessment_answers (
+         id, assessment_id, question_id, score, assessment_question_id,
+         answer_type, raw_answer, normalized_score, confidence, evidence_level, red_flag
+       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+       ON CONFLICT (assessment_id, question_id) DO UPDATE SET
+         score = $4, assessment_question_id = $5, answer_type = $6,
+         raw_answer = $7, normalized_score = $8, confidence = $9,
+         evidence_level = $10, red_flag = $11, updated_at = NOW()`,
       [
         uuidv4(),
         assessmentId,
         dto.questionId,
-        score,
+        legacyScore,
         sq.id,
-        calculatorInputs ? JSON.stringify(calculatorInputs) : null,
+        sq.answer_type,
+        JSON.stringify(rawAnswer),
+        normalized.score,
+        normalized.confidence,
+        normalized.evidenceLevel,
+        normalized.redFlag,
       ],
     );
 
+    // A profile/applicability answer can change which questions apply — re-route.
+    let routing: { active: number } | null = null;
+    if (sq.is_routing) {
+      const profile = await this.getEntityProfile(userId);
+      routing = await this.questionGeneration.recomputeRouting(assessmentId, {
+        sector: profile.sector,
+        entityType: profile.entityType,
+        size: profile.employeeCountBracket,
+        exposure: profile.environmentalExposure,
+      });
+    }
+
     await this.touchActivity(assessmentId);
-    return { questionId: dto.questionId, score, calculatorInputs };
+    return {
+      questionId: dto.questionId,
+      score: normalized.score,
+      canonical: normalized.canonical,
+      needsAttribution: normalized.needsAttribution,
+      redFlag: normalized.redFlag,
+      activeCount: routing?.active ?? null,
+    };
+  }
+
+  /** Discards a draft assessment (cascades questions + answers). Draft only. */
+  async discard(assessmentId: string, userId: string) {
+    const entityId = await this.getEntityId(userId);
+    const row = await this.findAssessment(assessmentId);
+
+    if (!row) {
+      throw new NotFoundException('Assessment not found');
+    }
+    if (row.entity_id !== entityId) {
+      throw new ForbiddenException('You do not have access to this assessment');
+    }
+    if (row.status !== 'draft') {
+      throw new BadRequestException('Only draft assessments can be discarded');
+    }
+
+    await this.db.query('DELETE FROM assessments WHERE id = $1', [assessmentId]);
+    return { discarded: true };
   }
 
   async updateProgress(assessmentId: string, userId: string, dto: UpdateProgressDto) {
@@ -296,77 +383,78 @@ export class AssessmentService {
       throw new BadRequestException('Assessment is already submitted');
     }
 
-    // Score against the frozen snapshot (Phase D).
+    // Score against the ACTIVE questions only (conditional routing decides the
+    // set) using the v0.4 engine.
     const snapshot = await this.db.query<{
       bank_question_id: string;
       domain_id: string;
       effective_weight: string;
+      scoring_treatment: string | null;
+      normalized_score: string | null;
+      confidence: string | null;
+      red_flag: boolean | null;
+      canonical: string | null;
+      answered: boolean;
     }>(
-      'SELECT bank_question_id, domain_id, effective_weight FROM assessment_questions WHERE assessment_id = $1',
+      `SELECT aq.bank_question_id, aq.domain_id, aq.effective_weight, aq.scoring_treatment,
+              aa.normalized_score, aa.confidence, aa.red_flag,
+              aa.raw_answer->>'canonical' AS canonical,
+              (aa.question_id IS NOT NULL) AS answered
+       FROM assessment_questions aq
+       LEFT JOIN assessment_answers aa
+         ON aa.assessment_id = aq.assessment_id AND aa.question_id = aq.bank_question_id
+       WHERE aq.assessment_id = $1 AND aq.active = TRUE`,
       [assessmentId],
     );
-    const snapshotCount = snapshot.rows.length;
-    if (snapshotCount === 0) {
+    const activeQuestions = snapshot.rows;
+    if (activeQuestions.length === 0) {
       throw new BadRequestException(
-        'This assessment has no generated questions. Please start a new assessment.',
+        'This assessment has no applicable questions. Please start a new assessment.',
       );
     }
 
-    const countResult = await this.db.query<{ count: string }>(
-      'SELECT COUNT(*) as count FROM assessment_answers WHERE assessment_id = $1',
-      [assessmentId],
-    );
-    const answeredCount = Number(countResult.rows[0].count);
-    if (answeredCount < snapshotCount) {
+    const unanswered = activeQuestions.filter((q) => !q.answered);
+    if (unanswered.length > 0) {
       throw new BadRequestException(
-        `All ${snapshotCount} questions must be answered before submitting. Currently answered: ${answeredCount}`,
+        `All ${activeQuestions.length} applicable questions must be answered before submitting. Remaining: ${unanswered.length}`,
       );
     }
 
-    const answersResult = await this.db.query<AnswerRow>(
-      'SELECT question_id, score FROM assessment_answers WHERE assessment_id = $1',
-      [assessmentId],
-    );
-    const answerMap = new Map(
-      answersResult.rows.map((a) => [a.question_id, a.score]),
-    );
-
-    const questions = snapshot.rows.map((q) => ({
+    const scored: ScoredAnswer[] = activeQuestions.map((q) => ({
       questionId: q.bank_question_id,
       domainId: q.domain_id,
-      effectiveWeight: Number(q.effective_weight),
+      scoringTreatment: q.scoring_treatment,
+      weight: Number(q.effective_weight) || 1,
+      score: q.normalized_score != null ? Number(q.normalized_score) : null,
+      canonical: (q.canonical as Canonical) ?? null,
+      redFlag: q.red_flag ?? false,
+      confidence: q.confidence != null ? Number(q.confidence) : 100,
     }));
 
-    let domainWeights = await this.loadDomainWeights(row.scoring_config_id);
-    if (Object.keys(domainWeights).length === 0) {
-      // No active/valid scoring config — fall back to equal domain weights so a
-      // submission still scores correctly instead of silently producing 0.
-      const domainsInSnapshot = [...new Set(questions.map((q) => q.domainId))];
-      domainWeights = Object.fromEntries(domainsInSnapshot.map((d) => [d, 1]));
-    }
-    const result = computeEngineScore(
-      questions,
-      answerMap,
-      domainWeights,
-      row.scoring_config_id,
-      new Date().toISOString(),
+    // Canonical answers for gate evaluation (permit / violation questions).
+    const routing = new Map<string, Canonical>(
+      activeQuestions.map((q) => [q.bank_question_id, (q.canonical as Canonical) ?? null]),
     );
+
+    const result = computeV04Score(scored, {}, routing, new Date().toISOString());
 
     await this.db.query(
       `UPDATE assessments
        SET status = 'submitted', submitted_at = NOW(),
-           total_score = $1, maturity_level = $2, domain_scores = $3,
-           calculation_audit = $4, governance_score = $5, compliance_score = $6
-       WHERE id = $7`,
+           total_score = $1, raw_total_score = $2, maturity_level = $3,
+           domain_scores = $4, calculation_audit = $5, confidence_score = $6,
+           gate_status = $7, gate_reasons = $8, red_flags = $9
+       WHERE id = $10`,
       [
         result.totalScore,
+        result.rawTotalScore,
         result.maturityLevel,
         JSON.stringify(result.domainScores),
-        JSON.stringify(result.calculationAudit),
-        // Legacy columns kept populated (= D1/D2) for the current results page + PDF
-        // until the Phase F dashboard.
-        result.domainScores['D1'] ?? null,
-        result.domainScores['D2'] ?? null,
+        JSON.stringify(result.audit),
+        result.confidence,
+        result.gateStatus,
+        JSON.stringify(result.gateReasons),
+        JSON.stringify(result.redFlags),
         assessmentId,
       ],
     );
@@ -393,6 +481,12 @@ export class AssessmentService {
     const entity = await this.findEntityById(entityId);
     const results = await this.getResults(assessmentId, userId);
     const recommendations = await this.recommendationEngine.build(assessmentId);
+
+    // Count this report download (Section 9 platform statistics).
+    await this.db.query(
+      'UPDATE assessments SET download_count = download_count + 1 WHERE id = $1',
+      [assessmentId],
+    );
 
     return buildReportData(entity?.name_ar ?? '', results, recommendations);
   }
@@ -503,6 +597,10 @@ export class AssessmentService {
       assessmentId,
       totalScore: row.total_score ? Number(row.total_score) : 0,
       maturityLevel: row.maturity_level ?? 1,
+      confidenceScore: row.confidence_score != null ? Number(row.confidence_score) : null,
+      gateStatus: row.gate_status ?? 'none',
+      gateReasons: row.gate_reasons ?? [],
+      redFlagCount: Array.isArray(row.red_flags) ? row.red_flags.length : 0,
       submittedAt: row.submitted_at ? this.toIso(row.submitted_at) : null,
       domains,
       profile: {
@@ -526,7 +624,8 @@ export class AssessmentService {
     const result = await this.db.query<AssessmentRow>(
       `SELECT id, entity_id, user_id, status, current_question_index, total_score,
               governance_score, compliance_score, maturity_level, scoring_config_id,
-              domain_scores, created_at, submitted_at
+              domain_scores, confidence_score, gate_status, gate_reasons, red_flags,
+              created_at, submitted_at
        FROM assessments WHERE id = $1`,
       [id],
     );
@@ -610,18 +709,26 @@ export class AssessmentService {
       this.db.query<{
         bank_question_id: string;
         domain_id: string;
-        materiality_topic_id: string | null;
         effective_weight: string;
         display_order: number;
+        category: string | null;
         text_ar: string;
         text_en: string;
         help_text_ar: string | null;
         help_text_en: string | null;
-        calculator_type: string | null;
+        guidance_ar: string | null;
+        guidance_en: string | null;
+        answer_type: string | null;
+        answer_options: unknown;
+        min_evidence_level: string | null;
+        attribution_required: boolean;
+        is_routing: boolean;
       }>(
-        `SELECT bank_question_id, domain_id, materiality_topic_id, effective_weight,
-                display_order, text_ar, text_en, help_text_ar, help_text_en, calculator_type
-         FROM assessment_questions WHERE assessment_id = $1 ORDER BY display_order ASC`,
+        `SELECT bank_question_id, domain_id, effective_weight, display_order, category,
+                text_ar, text_en, help_text_ar, help_text_en, guidance_ar, guidance_en,
+                answer_type, answer_options, min_evidence_level, attribution_required, is_routing
+         FROM assessment_questions
+         WHERE assessment_id = $1 AND active = TRUE ORDER BY display_order ASC`,
         [assessmentId],
       );
 
@@ -664,21 +771,34 @@ export class AssessmentService {
       assessmentId,
       profileSnapshot: profileSnapshot.rows[0]?.profile_snapshot ?? null,
       totalQuestions: questions.rows.length,
-      answerOptions: ANSWER_OPTIONS,
       domains: domains.rows
         .filter((d) => usedDomainIds.has(d.id))
         .map((d) => ({ id: d.id, nameAr: d.name_ar, nameEn: d.name_en })),
       questions: questions.rows.map((q) => ({
         questionId: q.bank_question_id,
         domainId: q.domain_id,
-        materialityTopicId: q.materiality_topic_id,
-        effectiveWeight: Number(q.effective_weight),
         displayOrder: q.display_order,
+        category: q.category,
         textAr: q.text_ar,
         textEn: q.text_en,
         helpTextAr: q.help_text_ar,
         helpTextEn: q.help_text_en,
-        calculatorType: q.calculator_type,
+        guidanceAr: q.guidance_ar,
+        guidanceEn: q.guidance_en,
+        answerType: q.answer_type,
+        // Only labels are sent to the client — never the scoring mapping.
+        options: (Array.isArray(q.answer_options) ? q.answer_options : []).map(
+          (o: AnswerOption, i: number) => ({
+            index: i,
+            value: o.value,
+            labelAr: o.labelAr,
+            labelEn: o.labelEn ?? null,
+            level: o.level ?? null,
+          }),
+        ),
+        minEvidenceLevel: q.min_evidence_level,
+        attributionRequired: q.attribution_required,
+        isRouting: q.is_routing,
       })),
     };
   }

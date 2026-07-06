@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Put, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Res, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { generatePdfReport, generateReferenceNumber } from '../assessment/pdf-report';
@@ -57,6 +57,26 @@ export class AdminController {
   @Get('regulatory-mappings')
   listRegulatoryMappings() {
     return this.adminService.listRegulatoryMappings();
+  }
+
+  @Get('glossary')
+  listGlossary() {
+    return this.adminService.listGlossary();
+  }
+
+  @Post('glossary')
+  createGlossaryTerm(@Body() dto: Record<string, unknown>) {
+    return this.adminService.createGlossaryTerm(dto);
+  }
+
+  @Put('glossary/:id')
+  updateGlossaryTerm(@Param('id') id: string, @Body() dto: Record<string, unknown>) {
+    return this.adminService.updateGlossaryTerm(id, dto);
+  }
+
+  @Delete('glossary/:id')
+  deleteGlossaryTerm(@Param('id') id: string) {
+    return this.adminService.deleteGlossaryTerm(id);
   }
 
   @Get('assessments')

@@ -1,0 +1,58 @@
+[
+ {
+  "Step": "1",
+  "Decision_Condition": "Regulatory gate triggered",
+  "Dominant_Evidence_or_Rule": "Regulatory/Gate Rule",
+  "Action": "Apply hard/soft gate before domain score",
+  "Explanation_Template": "A critical regulatory condition limits the result regardless of other strengths."
+ },
+ {
+  "Step": "2",
+  "Decision_Condition": "External verified/regulatory evidence conflicts with internal claim",
+  "Dominant_Evidence_or_Rule": "External/Regulatory Evidence",
+  "Action": "Use external evidence or trigger expert review",
+  "Explanation_Template": "External or regulatory evidence has priority over self-reported or internal evidence."
+ },
+ {
+  "Step": "3",
+  "Decision_Condition": "Outcome high but attribution missing",
+  "Dominant_Evidence_or_Rule": "Attribution Rule",
+  "Action": "Do not treat trend as proven improvement; apply confidence limitation",
+  "Explanation_Template": "The observed trend is not attributed to a documented initiative or comparable boundary."
+ },
+ {
+  "Step": "4",
+  "Decision_Condition": "Outcome high but evidence weak/old",
+  "Dominant_Evidence_or_Rule": "Evidence Strength + Freshness",
+  "Action": "Cap confidence and request updated evidence",
+  "Explanation_Template": "The result may be valid but evidence does not support a high-confidence claim."
+ },
+ {
+  "Step": "5",
+  "Decision_Condition": "Data quality high but evidence weak",
+  "Dominant_Evidence_or_Rule": "Evidence Strength",
+  "Action": "Accept data for analysis but cap maturity/claim confidence",
+  "Explanation_Template": "Data fields are complete, but the evidence level is insufficient for high maturity."
+ },
+ {
+  "Step": "6",
+  "Decision_Condition": "Self-declaration conflicts with operational record",
+  "Dominant_Evidence_or_Rule": "Operational Record",
+  "Action": "Use operational record and flag inconsistency",
+  "Explanation_Template": "Operational records override narrative responses."
+ },
+ {
+  "Step": "7",
+  "Decision_Condition": "Applicability rule conflicts with self-declared non-applicability",
+  "Dominant_Evidence_or_Rule": "Rule Priority",
+  "Action": "Apply higher priority rule and log override",
+  "Explanation_Template": "System-triggered applicability overrides user selection where risk/regulation indicates relevance."
+ },
+ {
+  "Step": "8",
+  "Decision_Condition": "No rule resolves the case",
+  "Dominant_Evidence_or_Rule": "Expert Review Trigger",
+  "Action": "Escalate to expert decision",
+  "Explanation_Template": "The case requires documented expert judgment before scoring."
+ }
+]

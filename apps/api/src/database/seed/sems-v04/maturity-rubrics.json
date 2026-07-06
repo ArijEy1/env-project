@@ -1,0 +1,90 @@
+[
+ {
+  "Rubric_ID": "RUB-GEN-MATURITY",
+  "Applies_To": "Generic maturity scale",
+  "Level_0": "No practice or evidence",
+  "Level_1": "Ad-hoc or informal practice",
+  "Level_2": "Partially documented or limited implementation",
+  "Level_3": "Documented, assigned, implemented, and periodically reviewed",
+  "Level_4": "Demonstrated improvement, learning loop, or external/independent validation",
+  "Evidence_Minimum": "E2 for Level 2; E3 for Level 3; E3/E4 for Level 4",
+  "Notes": "Default rubric where no specific rubric exists"
+ },
+ {
+  "Rubric_ID": "RUB-GOV",
+  "Applies_To": "Governance questions",
+  "Level_0": "No policy/responsibility",
+  "Level_1": "Informal responsibility",
+  "Level_2": "Documented policy or responsibility but limited implementation",
+  "Level_3": "Implemented governance with records and management review",
+  "Level_4": "Governance updated based on measured performance and improvement outcomes",
+  "Evidence_Minimum": "E2/E3",
+  "Notes": "Used for GOV maturity items"
+ },
+ {
+  "Rubric_ID": "RUB-REG",
+  "Applies_To": "Regulatory readiness",
+  "Level_0": "No understanding of obligations",
+  "Level_1": "Ad-hoc understanding",
+  "Level_2": "Partial register or permit tracking",
+  "Level_3": "Updated register with owner and periodic review",
+  "Level_4": "Evidence of proactive update, closure, and prevention of recurrence",
+  "Evidence_Minimum": "E3/E4",
+  "Notes": "Regulatory gates remain separate"
+ },
+ {
+  "Rubric_ID": "RUB-DATA",
+  "Applies_To": "Data/data quality maturity",
+  "Level_0": "No data",
+  "Level_1": "Partial data without source",
+  "Level_2": "Data with limited period/source",
+  "Level_3": "Complete, traceable, and regularly reviewed data",
+  "Level_4": "Data verified, analyzed, benchmark-ready, and used in decisions",
+  "Evidence_Minimum": "E3/E4",
+  "Notes": "Supports confidence calculation"
+ },
+ {
+  "Rubric_ID": "RUB-OUTCOME",
+  "Applies_To": "Outcome/proven improvement",
+  "Level_0": "No outcome data",
+  "Level_1": "Outcome claimed without baseline",
+  "Level_2": "Baseline/current data available but limited attribution",
+  "Level_3": "Comparable data with attribution and evidence",
+  "Level_4": "Proven, normalized, and sustained improvement with feedback loop",
+  "Evidence_Minimum": "E3/E4",
+  "Notes": "Trend is not improvement without attribution"
+ },
+ {
+  "Rubric_ID": "RUB-NAT",
+  "Applies_To": "Nature/biodiversity maturity",
+  "Level_0": "No nature screening",
+  "Level_1": "Sensitivity identified informally",
+  "Level_2": "Sensitivity or impact assessed partially",
+  "Level_3": "Monitoring/mitigation documented and implemented",
+  "Level_4": "Outcome shows restoration/stability/improvement with follow-up",
+  "Evidence_Minimum": "E3",
+  "Notes": "Nature module specific"
+ },
+ {
+  "Rubric_ID": "RUB-SUP",
+  "Applies_To": "Supply chain maturity",
+  "Level_0": "No supplier consideration",
+  "Level_1": "Basic environmental clauses",
+  "Level_2": "High-risk suppliers identified or partially assessed",
+  "Level_3": "Supplier impacts assessed and corrective actions tracked",
+  "Level_4": "Supplier improvement or quantified impact demonstrated",
+  "Evidence_Minimum": "E3",
+  "Notes": "Supply chain impact shift"
+ },
+ {
+  "Rubric_ID": "RUB-CIR",
+  "Applies_To": "Circularity maturity",
+  "Level_0": "No circularity practice",
+  "Level_1": "Ad-hoc recycling/waste reduction",
+  "Level_2": "Material flow or initiative documented",
+  "Level_3": "Recovery/productivity measured and tracked",
+  "Level_4": "Circularity outcomes demonstrated without burden shifting",
+  "Evidence_Minimum": "E3",
+  "Notes": "Circularity questions"
+ }
+]

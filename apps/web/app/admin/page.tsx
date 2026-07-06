@@ -52,6 +52,10 @@ export default function AdminDashboardPage() {
               <span className="admin-stat-value">{stats.averageMaturity?.toFixed(2) ?? '—'}</span>
               <span className="admin-stat-label">{isArabic ? 'متوسط النضج' : 'Average Maturity'}</span>
             </div>
+            <div className="admin-stat-card">
+              <span className="admin-stat-value">{stats.reportDownloads}</span>
+              <span className="admin-stat-label">{isArabic ? 'تنزيلات التقارير' : 'Report Downloads'}</span>
+            </div>
           </div>
         )}
 
@@ -83,9 +87,6 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
-        <p className="admin-page-sub" style={{ marginTop: 16 }}>
-          {isArabic ? 'ملاحظة: تتبّع تنزيلات التقارير غير مُفعّل بعد.' : 'Note: report-download tracking is not enabled yet.'}
-        </p>
       </AdminLayout>
     </main>
   );

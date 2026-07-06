@@ -14,7 +14,18 @@ export interface AdminStats {
   submittedAssessments: number;
   averageScore: number | null;
   averageMaturity: number | null;
+  reportDownloads: number;
   bySector: AdminSectorStat[];
+}
+
+export interface AdminGlossaryTerm {
+  id: string;
+  termAr: string;
+  termEn: string | null;
+  definitionAr: string;
+  definitionEn: string | null;
+  category: string | null;
+  active: boolean;
 }
 
 export interface AdminQuestion {
@@ -127,12 +138,16 @@ async function request<T>(path: string): Promise<T> {
   return (await response.json()) as T;
 }
 
-async function mutate<T>(path: string, method: 'PATCH' | 'PUT', body: unknown): Promise<T> {
+async function mutate<T>(
+  path: string,
+  method: 'PATCH' | 'PUT' | 'POST' | 'DELETE',
+  body?: unknown,
+): Promise<T> {
   const token = getToken();
   const response = await fetch(`${apiBaseUrl}${path}`, {
     method,
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify(body),
+    body: body === undefined ? undefined : JSON.stringify(body),
   });
   if (!response.ok) {
     const b = await response.json().catch(() => ({}));
@@ -163,6 +178,22 @@ export function updateAdminRecommendation(id: string, patch: Partial<AdminRecomm
 
 export function fetchAdminRegulatoryMappings() {
   return request<AdminRegMapping[]>('/admin/regulatory-mappings');
+}
+
+export function fetchGlossary() {
+  return request<AdminGlossaryTerm[]>('/admin/glossary');
+}
+
+export function createGlossaryTerm(term: Partial<AdminGlossaryTerm>) {
+  return mutate<AdminGlossaryTerm>('/admin/glossary', 'POST', term);
+}
+
+export function updateGlossaryTerm(id: string, patch: Partial<AdminGlossaryTerm>) {
+  return mutate<AdminGlossaryTerm>(`/admin/glossary/${id}`, 'PUT', patch);
+}
+
+export function deleteGlossaryTerm(id: string) {
+  return mutate<{ id: string; deleted: boolean }>(`/admin/glossary/${id}`, 'DELETE');
 }
 
 export function fetchAdminEntities() {

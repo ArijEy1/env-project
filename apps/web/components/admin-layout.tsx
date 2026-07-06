@@ -20,6 +20,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     { href: '/admin/questions', label: isArabic ? 'بنك الأسئلة' : 'Question Bank', exact: false },
     { href: '/admin/recommendations', label: isArabic ? 'مكتبة التوصيات' : 'Recommendations', exact: false },
     { href: '/admin/regulatory', label: isArabic ? 'الربط التنظيمي' : 'Regulatory', exact: false },
+    { href: '/admin/glossary', label: isArabic ? 'المصطلحات' : 'Glossary', exact: false },
   ];
 
   return (

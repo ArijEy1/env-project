@@ -236,6 +236,7 @@ h6 {
   border: 0;
   cursor: pointer;
   padding: 12px 16px;
+  color: var(--white);
 }
 
 .page-shell {
@@ -1710,8 +1711,8 @@ body[data-language='en'] .session-badge {
   margin: 8px 0 0;
   padding: 10px 12px;
   border-radius: 10px;
-  background: rgba(15, 107, 91, 0.08);
-  color: #2c4a44;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--white);
   font-size: 14px;
   line-height: 1.6;
 }
@@ -3982,4 +3983,239 @@ summary:focus-visible {
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
   }
+}
+
+/* --- v0.4 wizard additions --- */
+/* Secondary buttons in the wizard sit on a dark card — keep their label white. */
+.wizard-shell .secondary-btn,
+.wizard-number-row .secondary-btn {
+  color: var(--white);
+}
+
+.wizard-cat-tag {
+  margin-inline-start: 10px;
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(216, 177, 108, 0.14);
+  color: var(--sand);
+  vertical-align: middle;
+}
+
+.wizard-routing-note {
+  margin: 10px 0 0;
+  font-size: 0.85rem;
+  color: rgba(207, 227, 221, 0.72);
+  border-inline-start: 3px solid rgba(216, 177, 108, 0.5);
+  padding-inline-start: 12px;
+}
+
+.wizard-option-level {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  margin-inline-end: 10px;
+  border-radius: 6px;
+  background: rgba(216, 177, 108, 0.16);
+  color: var(--sand);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.wizard-number {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px 22px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+}
+.wizard-number-label {
+  font-size: 0.86rem;
+  color: rgba(245, 240, 230, 0.82);
+}
+.wizard-number-unit {
+  color: rgba(207, 227, 221, 0.55);
+}
+.wizard-number-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.wizard-number-input {
+  flex: 1;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--white);
+  font-size: 1rem;
+}
+.wizard-number-input:focus {
+  outline: 2px solid rgba(216, 177, 108, 0.6);
+  outline-offset: 1px;
+}
+.wizard-number-saved {
+  margin: 0;
+  font-size: 0.82rem;
+  color: rgba(207, 227, 221, 0.7);
+}
+
+.wizard-attribution {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  border: 1px dashed rgba(216, 177, 108, 0.3);
+  background: rgba(216, 177, 108, 0.05);
+}
+.wizard-attribution label {
+  font-size: 0.82rem;
+  color: rgba(245, 240, 230, 0.82);
+}
+.wizard-attr-input {
+  padding: 11px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--white);
+  font-size: 0.95rem;
+}
+.wizard-attr-input:focus {
+  outline: 2px solid rgba(216, 177, 108, 0.6);
+  outline-offset: 1px;
+}
+
+/* --- v0.4 results additions --- */
+.results-gate-banner {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 20px 24px;
+  border-radius: 20px;
+  border: 1px solid transparent;
+}
+.results-gate-hard {
+  background: rgba(226, 75, 74, 0.12);
+  border-color: rgba(226, 75, 74, 0.4);
+}
+.results-gate-soft {
+  background: rgba(239, 159, 39, 0.12);
+  border-color: rgba(239, 159, 39, 0.4);
+}
+.results-gate-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.results-gate-banner strong {
+  color: var(--white);
+  font-size: 1rem;
+}
+.results-gate-banner p {
+  margin: 4px 0 0;
+  color: rgba(245, 240, 230, 0.78);
+  font-size: 0.88rem;
+}
+.results-gate-reasons {
+  margin: 8px 0 0;
+  padding-inline-start: 18px;
+  color: rgba(245, 240, 230, 0.9);
+  font-size: 0.85rem;
+}
+.results-gate-reasons li {
+  margin-bottom: 3px;
+}
+
+.results-signals {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.results-signal {
+  flex: 1;
+  min-width: 130px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 20px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+}
+.results-signal-label {
+  font-size: 0.76rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(245, 240, 230, 0.66);
+}
+.results-signal-value {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--white);
+}
+.results-signal-alert .results-signal-value {
+  color: #f0a24b;
+}
+
+/* --- Discard draft assessment --- */
+.account-assessment-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: stretch;
+}
+.account-discard-btn {
+  color: rgba(245, 240, 230, 0.85);
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 0.9rem;
+}
+.account-discard-btn:hover {
+  color: #f0a24b;
+  border-color: rgba(240, 162, 75, 0.4);
+}
+.account-discard-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(226, 75, 74, 0.35);
+  background: rgba(226, 75, 74, 0.08);
+}
+.account-discard-confirm > span {
+  color: var(--white);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.account-discard-buttons {
+  display: flex;
+  gap: 10px;
+}
+.account-discard-buttons .secondary-btn,
+.account-discard-yes {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.account-discard-buttons .secondary-btn {
+  color: var(--white);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border);
+}
+.account-discard-yes {
+  color: #fff;
+  background: #b3352f;
+  border: 1px solid #b3352f;
+}
+.account-discard-yes:hover {
+  background: #9c2b26;
 }

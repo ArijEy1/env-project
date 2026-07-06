@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Req, Res, UseGuards } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
@@ -88,5 +88,10 @@ export class AssessmentController {
   @Post(':id/submit')
   submit(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
     return this.assessmentService.submit(id, req.user.sub);
+  }
+
+  @Delete(':id')
+  discard(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
+    return this.assessmentService.discard(id, req.user.sub);
   }
 }

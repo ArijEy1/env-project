@@ -27,123 +27,90 @@ export interface EngineRecommendation {
   legalReference: string | null;
 }
 
-interface SnapshotAnswerRow {
+interface GapRow {
   bank_question_id: string;
   domain_id: string;
-  materiality_topic_id: string | null;
   effective_weight: string;
   text_ar: string;
   text_en: string;
-  score: number | null;
+  guidance_ar: string | null;
+  recommendation_id: string | null;
+  scoring_treatment: string | null;
+  normalized_score: string | null;
+  red_flag: boolean | null;
 }
 
-interface RecommendationRow {
-  id: string;
-  materiality_topic_id: string | null;
-  domain_id: string;
-  trigger_max_score: number;
-  immediate_action_ar: string;
-  immediate_action_en: string;
-  short_term_action_ar: string;
-  short_term_action_en: string;
-  medium_term_action_ar: string;
-  medium_term_action_en: string;
-  cost_estimate: string | null;
-  effort_level: string;
-  score_impact_points: number;
-  timeline_weeks: number;
-  legal_reference: string | null;
-}
+// Generic v0.4 action copy (Arabic) used until the client's official
+// recommendation library is imported. See [[question-bank-official-import]].
+const SHORT_TERM_AR =
+  'وثّق الإجراء وحدد المسؤول والجدول الزمني، وابدأ جمع الأدلة الداعمة.';
+const MEDIUM_TERM_AR =
+  'طبّق الممارسة بشكل كامل مع مراجعة دورية وتتبع مؤشرات الأداء لإثبات التحسن.';
 
 @Injectable()
 export class RecommendationEngineService {
   constructor(private readonly db: DatabaseService) {}
 
   /**
-   * Rule-based gap analysis (Phase 1): for each snapshot question scoring at or
-   * below its matched recommendation's trigger, surface a library recommendation.
-   * Gaps are weighted by materiality (shortfall x effective weight). D2 gaps are
-   * always prioritised; within that, ranked by Impact / Effort.
+   * v0.4 gap analysis: surface the active, scored questions that fell at or
+   * below the improvement threshold (<= 50), ranked by weighted shortfall.
+   * Compliance-domain (REG) gaps and red-flagged questions are prioritised.
+   * Action copy is generic until the client's recommendation library lands.
    */
   async build(assessmentId: string): Promise<EngineRecommendation[]> {
-    const snapshot = await this.db.query<SnapshotAnswerRow>(
-      `SELECT aq.bank_question_id, aq.domain_id, aq.materiality_topic_id,
-              aq.effective_weight, aq.text_ar, aq.text_en, aa.score
+    const rows = await this.db.query<GapRow>(
+      `SELECT aq.bank_question_id, aq.domain_id, aq.effective_weight, aq.text_ar,
+              aq.text_en, aq.guidance_ar, qb.recommendation_id, aq.scoring_treatment,
+              aa.normalized_score, aa.red_flag
        FROM assessment_questions aq
-       LEFT JOIN assessment_answers aa
-         ON aa.assessment_id = aq.assessment_id
-        AND aa.question_id = aq.bank_question_id
-       WHERE aq.assessment_id = $1`,
+       JOIN assessment_answers aa
+         ON aa.assessment_id = aq.assessment_id AND aa.question_id = aq.bank_question_id
+       LEFT JOIN question_bank qb ON qb.id = aq.bank_question_id
+       WHERE aq.assessment_id = $1 AND aq.active = TRUE
+         AND aa.normalized_score IS NOT NULL AND aa.normalized_score <= 50`,
       [assessmentId],
     );
 
-    const library = await this.db.query<RecommendationRow>(
-      `SELECT * FROM recommendation_library WHERE active = TRUE`,
-    );
-    const libByTopic = new Map<string, RecommendationRow>();
-    for (const r of library.rows) {
-      if (r.materiality_topic_id && !libByTopic.has(r.materiality_topic_id)) {
-        libByTopic.set(r.materiality_topic_id, r);
-      }
-    }
-
-    // Candidate gaps: a question with a matching recommendation, scoring at or
-    // below the trigger. Keep the worst-gap question per recommendation.
-    const byRec = new Map<
-      string,
-      { q: SnapshotAnswerRow; rec: RecommendationRow; answer: number; gap: number }
-    >();
-
-    for (const q of snapshot.rows) {
-      const topic = q.materiality_topic_id;
-      if (!topic) continue;
-      const rec = libByTopic.get(topic);
-      if (!rec) continue;
-
-      const answer = q.score ?? 0;
-      if (answer > rec.trigger_max_score) continue;
-
-      const gap = (100 - answer) * Number(q.effective_weight);
-      const existing = byRec.get(rec.id);
-      if (!existing || gap > existing.gap) {
-        byRec.set(rec.id, { q, rec, answer, gap });
-      }
-    }
-
-    const ranked = [...byRec.values()]
-      .map((c) => ({
-        ...c,
-        isCompliance: c.q.domain_id === 'D2',
-        priority:
-          c.rec.score_impact_points / (EFFORT_WEIGHT[c.rec.effort_level] ?? 2),
-      }))
+    const ranked = rows.rows
+      .map((q) => {
+        const score = q.normalized_score != null ? Number(q.normalized_score) : 0;
+        const gap = (100 - score) * (Number(q.effective_weight) || 1);
+        return {
+          q,
+          score,
+          gap,
+          isCompliance: q.domain_id === 'REG',
+          redFlag: q.red_flag ?? false,
+        };
+      })
       .sort((a, b) => {
+        if (a.redFlag !== b.redFlag) return a.redFlag ? -1 : 1;
         if (a.isCompliance !== b.isCompliance) return a.isCompliance ? -1 : 1;
-        if (b.priority !== a.priority) return b.priority - a.priority;
         return b.gap - a.gap;
       });
 
     return ranked.map((c, index) => ({
       rank: index + 1,
-      recommendationId: c.rec.id,
+      recommendationId: c.q.recommendation_id ?? c.q.bank_question_id,
       questionId: c.q.bank_question_id,
       domainId: c.q.domain_id,
-      materialityTopicId: c.q.materiality_topic_id,
-      currentScore: c.answer,
+      materialityTopicId: null,
+      currentScore: c.score,
       isCompliance: c.isCompliance,
       questionTextAr: c.q.text_ar,
       questionTextEn: c.q.text_en,
-      immediateActionAr: c.rec.immediate_action_ar,
-      immediateActionEn: c.rec.immediate_action_en,
-      shortTermActionAr: c.rec.short_term_action_ar,
-      shortTermActionEn: c.rec.short_term_action_en,
-      mediumTermActionAr: c.rec.medium_term_action_ar,
-      mediumTermActionEn: c.rec.medium_term_action_en,
-      costEstimate: c.rec.cost_estimate,
-      effortLevel: c.rec.effort_level,
-      scoreImpactPoints: c.rec.score_impact_points,
-      timelineWeeks: c.rec.timeline_weeks,
-      legalReference: c.rec.legal_reference,
+      immediateActionAr:
+        c.q.guidance_ar ?? 'عالج هذه الفجوة ذات الأولوية لرفع مستوى الأداء البيئي.',
+      immediateActionEn: '',
+      shortTermActionAr: SHORT_TERM_AR,
+      shortTermActionEn: '',
+      mediumTermActionAr: MEDIUM_TERM_AR,
+      mediumTermActionEn: '',
+      costEstimate: null,
+      effortLevel: c.isCompliance ? 'high' : 'medium',
+      scoreImpactPoints: Math.round(100 - c.score),
+      timelineWeeks: 0,
+      legalReference: null,
     }));
   }
 }
