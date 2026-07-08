@@ -1,0 +1,92 @@
+name: E2E
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Cancel superseded runs on the same ref.
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  playwright:
+    name: Playwright E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: env_project
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      # --- Runtime mode: dev so migrations run on boot and the OTP test seam is
+      #     allowed. SMTP disabled so no real emails are attempted. ---
+      NODE_ENV: development
+      E2E_TEST_MODE: 'true'
+      SMTP_HOST: ''
+      # Non-placeholder secret (>= 32 chars) so the API boots.
+      JWT_SECRET: ci-e2e-jwt-secret-not-a-real-secret-0123456789abcdef
+      # --- Database (matches the postgres service) ---
+      POSTGRES_HOST: 127.0.0.1
+      POSTGRES_PORT: '5432'
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: env_project
+      POSTGRES_ADMIN_DB: postgres
+      POSTGRES_SSL: 'false'
+      SKIP_DB_CREATE: 'true'
+      # --- Web <-> API wiring for the local servers Playwright starts ---
+      CORS_ORIGIN: http://localhost:3000
+      APP_WEB_URL: http://localhost:3000
+      NEXT_PUBLIC_API_URL: http://localhost:4000/api
+      # --- Seeded superadmin used by the admin/auth specs ---
+      SEED_ADMIN_EMAIL: admin@env-project.sa
+      SEED_ADMIN_PASSWORD: AdminPass123
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+        working-directory: apps/web
+
+      - name: Run database migrations (schema + seed content)
+        run: npm run migrate --workspace api
+
+      - name: Seed superadmin
+        run: >-
+          npx ts-node --transpile-only -P tsconfig.build.json
+          src/admin/seed-admin.ts --email "$SEED_ADMIN_EMAIL" --password "$SEED_ADMIN_PASSWORD"
+        working-directory: apps/api
+
+      - name: Run Playwright E2E
+        run: npm run test:e2e
+
+      - name: Upload Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report
+          retention-days: 7

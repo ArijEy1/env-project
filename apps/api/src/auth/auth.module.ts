@@ -9,6 +9,7 @@ import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
 import { LoginRateLimiter } from './login-rate-limiter';
 import { RegisterRateLimiter } from './register-rate-limiter';
+import { TestSupportController } from './test-support.controller';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { RegisterRateLimiter } from './register-rate-limiter';
       },
     }),
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, TestSupportController],
   providers: [
     AuthService,
     AuthEmailService,
