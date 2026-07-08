@@ -124,6 +124,31 @@ export class AuthService {
     process.env.PASSWORD_RESET_TTL_MINUTES ?? 30,
   );
 
+  // DEV/E2E ONLY: last OTP per email, so the Playwright suite can verify the
+  // full sign-up flow without reading a mailbox. Never populated or readable in
+  // production — both writes and reads are gated behind `isTestSeamEnabled()`.
+  private readonly devOtpCodes = new Map<string, string>();
+
+  private isTestSeamEnabled(): boolean {
+    return (
+      process.env.NODE_ENV !== 'production' && process.env.E2E_TEST_MODE === 'true'
+    );
+  }
+
+  private rememberDevOtp(email: string, code: string): void {
+    if (this.isTestSeamEnabled()) {
+      this.devOtpCodes.set(email, code);
+    }
+  }
+
+  /** DEV/E2E ONLY. Returns null in production or when the seam is disabled. */
+  peekDevOtp(email: string): string | null {
+    if (!this.isTestSeamEnabled()) {
+      return null;
+    }
+    return this.devOtpCodes.get(email.toLowerCase().trim()) ?? null;
+  }
+
   constructor(
     private readonly jwtService: JwtService,
     private readonly databaseService: DatabaseService,
@@ -201,6 +226,7 @@ export class AuthService {
       [uuidv4(), normalizedEmail, this.hashOtp(code), JSON.stringify(payload), expiresAt],
     );
 
+    this.rememberDevOtp(normalizedEmail, code);
     await this.authEmailService.sendOtpEmail({
       email: normalizedEmail,
       fullName,
@@ -308,6 +334,7 @@ export class AuthService {
       [this.hashOtp(code), expiresAt, normalizedEmail],
     );
 
+    this.rememberDevOtp(normalizedEmail, code);
     await this.authEmailService.sendOtpEmail({
       email: normalizedEmail,
       fullName: pending.payload.user.fullName,

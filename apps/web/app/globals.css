@@ -2247,6 +2247,7 @@ body[data-language='en'] .session-badge {
   .auth-showcase,
   .auth-page-shell,
   .reports-layout,
+  .reports-layout-inner,
   .final-cta {
     grid-template-columns: 1fr;
   }
