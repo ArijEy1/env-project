@@ -227,14 +227,22 @@ sudo rm -f /etc/nginx/sites-enabled/default
 sudo nginx -t && sudo systemctl reload nginx
 
 echo "==> Nightly database backups (02:10, kept 14 days)"
-sudo tee /opt/sems/backup-db.sh > /dev/null <<'EOF'
+# Local dumps kept 14 days; also uploaded to Azure Blob (VM managed identity,
+# 90-day server-side lifecycle delete). BACKUP_STORAGE_ACCOUNT: see README.
+BACKUP_STORAGE_ACCOUNT="${4:-semsbkpf54aa2}"
+sudo tee /opt/sems/backup-db.sh > /dev/null <<EOF
 #!/usr/bin/env bash
 set -euo pipefail
 umask 077
-d=$(date +%F)
+d=\$(date +%F)
+export AZCOPY_AUTO_LOGIN_TYPE=MSI
+BLOB_URL="https://${BACKUP_STORAGE_ACCOUNT}.blob.core.windows.net/db-backups"
 for db in env_project_prod env_project_stg; do
-  sudo -u postgres pg_dump -Fc "$db" > "/opt/sems/backups/${db}-${d}.dump.tmp"
-  mv "/opt/sems/backups/${db}-${d}.dump.tmp" "/opt/sems/backups/${db}-${d}.dump"
+  f="/opt/sems/backups/\${db}-\${d}.dump"
+  sudo -u postgres pg_dump -Fc "\$db" > "\$f.tmp"
+  mv "\$f.tmp" "\$f"
+  azcopy copy "\$f" "\$BLOB_URL/\${db}-\${d}.dump" --output-level quiet \\
+    || echo "WARNING: offsite upload failed for \$f (local copy kept)" >&2
 done
 find /opt/sems/backups -name '*.dump' -mtime +14 -delete
 EOF
