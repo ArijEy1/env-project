@@ -97,8 +97,7 @@ activate() { # <env> <release-dir>  — flip symlink, restart, health-check
   if health "$env"; then
     echo "sems: $env now on $(basename "$reldir")"
   else
-    echo "sems: WARNING — $env health check failed on $(basename "$reldir")" >&2
-    echo "sems: previous releases are intact; use 'sems rollback $env' if needed" >&2
+    echo "sems: health check failed on $(basename "$reldir")" >&2
     return 1
   fi
 }
@@ -141,7 +140,24 @@ cmd_install() { # <env> <tarball>
     node dist/database/import-sems-v04.js
   )
 
-  activate "$env" "$reldir"
+  # Remember what was live so a bad release can be rolled back automatically.
+  local prev=""
+  [[ -L $BASE/$env/current ]] && prev=$(readlink "$BASE/$env/current")
+
+  if ! activate "$env" "$reldir"; then
+    if [[ -n "$prev" && -d "$prev" ]]; then
+      echo "sems: AUTO-ROLLBACK — reverting $env to $(basename "$prev")" >&2
+      echo "sems: note — database migrations from the failed release are NOT reverted" >&2
+      if activate "$env" "$prev"; then
+        echo "sems: $env restored; failed release $id kept for inspection" >&2
+      else
+        echo "sems: CRITICAL — previous release is also unhealthy, manual action needed ('sems logs $env api')" >&2
+      fi
+    else
+      echo "sems: no previous release to roll back to" >&2
+    fi
+    exit 1
+  fi
 
   # Prune old releases (never the active one).
   local active; active=$(basename "$(readlink "$BASE/$env/current")")
