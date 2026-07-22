@@ -29,6 +29,22 @@ sudo apt-get install -y postgresql-18
 echo "==> nginx"
 sudo apt-get install -y nginx
 
+echo "==> fail2ban (SSH brute-force protection)"
+sudo apt-get install -y fail2ban
+sudo tee /etc/fail2ban/jail.local > /dev/null <<'F2B'
+[sshd]
+enabled = true
+backend = systemd
+maxretry = 5
+findtime = 10m
+bantime = 1h
+F2B
+sudo systemctl enable --now fail2ban
+
+echo "==> SSH: no root login"
+echo 'PermitRootLogin no' | sudo tee /etc/ssh/sshd_config.d/60-no-root.conf > /dev/null
+sudo systemctl reload ssh
+
 echo "==> App directory + user permissions"
 sudo mkdir -p /opt/sems
 sudo chown azureuser:azureuser /opt/sems

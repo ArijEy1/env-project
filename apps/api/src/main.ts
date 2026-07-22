@@ -48,8 +48,10 @@ async function bootstrap() {
   );
 
   const port = Number(process.env.PORT ?? 4000);
-  await app.listen(port);
-  console.log(`API listening on http://localhost:${port}/api`);
+  // BIND_HOST=127.0.0.1 in production keeps the API reachable only via nginx.
+  const host = process.env.BIND_HOST ?? '0.0.0.0';
+  await app.listen(port, host);
+  console.log(`API listening on http://${host}:${port}/api`);
 }
 
 // Don't let a stray rejection/exception silently take down the process.

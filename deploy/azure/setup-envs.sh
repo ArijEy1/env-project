@@ -25,6 +25,7 @@ write_api_env() { # <env> <api-port> <web-url>
   cat > "$envfile" <<EOF
 NODE_ENV=production
 PORT=$apiport
+BIND_HOST=127.0.0.1
 TRUST_PROXY=1
 FORCE_HTTPS=true
 JWT_SECRET=$(openssl rand -hex 32)
@@ -56,7 +57,7 @@ EOF
 write_web_env() { # <env> <web-port>
   local envfile=/opt/sems/$1/shared/web.env
   if [ -f "$envfile" ]; then echo "  $envfile exists, keeping"; return; fi
-  printf 'PORT=%s\n' "$2" > "$envfile"
+  printf 'PORT=%s\nHOSTNAME=127.0.0.1\n' "$2" > "$envfile"
   echo "  wrote $envfile"
 }
 
@@ -99,7 +100,7 @@ User=azureuser
 WorkingDirectory=/opt/sems/%i/current/apps/web
 Environment=NODE_ENV=production
 EnvironmentFile=/opt/sems/%i/shared/web.env
-ExecStart=/usr/bin/npm run start
+ExecStart=/usr/bin/npm run start -- -H 127.0.0.1
 Restart=always
 RestartSec=5
 
@@ -109,6 +110,39 @@ EOF
 
 sudo systemctl daemon-reload
 sudo systemctl enable sems-api@prod sems-web@prod sems-api@stg sems-web@stg 2>/dev/null
+
+echo "==> nginx security baseline (Cloudflare real IP, rate limit, headers, TLS reject)"
+{
+  echo "# Restore the real client IP behind the Cloudflare proxy."
+  for r in $(curl -sf https://www.cloudflare.com/ips-v4) $(curl -sf https://www.cloudflare.com/ips-v6); do
+    echo "set_real_ip_from $r;"
+  done
+  echo "real_ip_header CF-Connecting-IP;"
+} | sudo tee /etc/nginx/conf.d/cloudflare-realip.conf > /dev/null
+
+sudo tee /etc/nginx/conf.d/sems-security.conf > /dev/null <<'EOF'
+server_tokens off;
+# Per-client API rate limit (real client IP via cloudflare-realip.conf).
+limit_req_zone $binary_remote_addr zone=api:10m rate=10r/s;
+limit_req_status 429;
+EOF
+
+sudo tee /etc/nginx/snippets/sems-web-headers.conf > /dev/null <<'EOF'
+# Security headers for web responses (API sets its own via helmet).
+add_header X-Content-Type-Options "nosniff" always;
+add_header X-Frame-Options "SAMEORIGIN" always;
+add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+EOF
+
+sudo tee /etc/nginx/sites-available/default-tls-reject > /dev/null <<'EOF'
+server {
+    listen 443 ssl default_server;
+    listen [::]:443 ssl default_server;
+    ssl_reject_handshake on;
+}
+EOF
+sudo ln -sf /etc/nginx/sites-available/default-tls-reject /etc/nginx/sites-enabled/default-tls-reject
 
 echo "==> nginx vhosts"
 if grep -q 'managed by Certbot' /etc/nginx/sites-available/sems 2>/dev/null; then
@@ -125,6 +159,7 @@ server {
     client_max_body_size 10m;
 
     location /api/ {
+        limit_req zone=api burst=30 nodelay;
         proxy_pass http://127.0.0.1:4000;
         proxy_http_version 1.1;
         proxy_set_header Host \$host;
@@ -134,6 +169,7 @@ server {
         proxy_read_timeout 60s;
     }
     location / {
+        include snippets/sems-web-headers.conf;
         proxy_pass http://127.0.0.1:3000;
         proxy_http_version 1.1;
         proxy_set_header Host \$host;
@@ -155,6 +191,7 @@ server {
     client_max_body_size 10m;
 
     location /api/ {
+        limit_req zone=api burst=30 nodelay;
         proxy_pass http://127.0.0.1:4001;
         proxy_http_version 1.1;
         proxy_set_header Host \$host;
@@ -164,6 +201,7 @@ server {
         proxy_read_timeout 60s;
     }
     location / {
+        include snippets/sems-web-headers.conf;
         proxy_pass http://127.0.0.1:3001;
         proxy_http_version 1.1;
         proxy_set_header Host \$host;
@@ -192,6 +230,7 @@ echo "==> Nightly database backups (02:10, kept 14 days)"
 sudo tee /opt/sems/backup-db.sh > /dev/null <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
+umask 077
 d=$(date +%F)
 for db in env_project_prod env_project_stg; do
   sudo -u postgres pg_dump -Fc "$db" > "/opt/sems/backups/${db}-${d}.dump.tmp"

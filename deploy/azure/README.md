@@ -97,6 +97,23 @@ scp /tmp/r.tar.gz azureuser@<IP>:/tmp/ && ssh azureuser@<IP> 'sems install stg /
 3. Update `CORS_ORIGIN`/`APP_WEB_URL` in `shared/api.env`.
 4. Update the URLs in `.github/workflows/deploy.yml` (they're baked into the web build) and redeploy.
 
+## Security posture
+
+- **Origin locked to Cloudflare**: NSG allows 80/443 only from Cloudflare's IPv4
+  ranges — the VM cannot be reached directly (update the rule if Cloudflare's
+  ranges change: `curl https://www.cloudflare.com/ips-v4`). Port 8080 closed.
+- **Real client IPs**: nginx restores the visitor IP from `CF-Connecting-IP`
+  (`conf.d/cloudflare-realip.conf`), so the app's per-IP login lockout and the
+  nginx `/api/` rate limit (10 r/s, burst 30) key on real clients.
+- **Apps bind to 127.0.0.1 only** (web via `-H`, API via `BIND_HOST`); postgres
+  is localhost-only with peer-auth superuser.
+- **SSH**: keys only, no root login, fail2ban (5 tries → 1 h ban).
+- **TLS**: Let's Encrypt with auto-renew; unknown-SNI handshakes rejected;
+  HSTS + security headers on web responses (helmet covers the API).
+- **OS**: unattended security upgrades enabled. Backups are root-only (0600).
+- **Dependencies**: `npm audit` clean — next/react on latest, `overrides` pin
+  patched sharp/postcss until Next ships them.
+
 ## Known gaps
 
 - Email (OTP/password reset) depends on Brevo SMTP — the VM's IP must be listed
