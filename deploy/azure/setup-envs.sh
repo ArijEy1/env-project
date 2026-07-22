@@ -72,6 +72,7 @@ sudo tee /etc/systemd/system/sems-api@.service > /dev/null <<'EOF'
 Description=SEMS API (NestJS) — %i
 After=network.target postgresql.service
 Wants=postgresql.service
+StartLimitIntervalSec=0
 
 [Service]
 Type=simple
@@ -90,6 +91,7 @@ sudo tee /etc/systemd/system/sems-web@.service > /dev/null <<'EOF'
 [Unit]
 Description=SEMS Web (Next.js) — %i
 After=network.target sems-api@%i.service
+StartLimitIntervalSec=0
 
 [Service]
 Type=simple
@@ -109,6 +111,9 @@ sudo systemctl daemon-reload
 sudo systemctl enable sems-api@prod sems-web@prod sems-api@stg sems-web@stg 2>/dev/null
 
 echo "==> nginx vhosts"
+if grep -q 'managed by Certbot' /etc/nginx/sites-available/sems 2>/dev/null; then
+  echo "  certbot-managed config present — NOT overwriting (edit it in place instead)"
+else
 sudo tee /etc/nginx/sites-available/sems > /dev/null <<EOF
 map \$http_upgrade \$connection_upgrade { default upgrade; "" close; }
 
@@ -178,6 +183,7 @@ server {
     return 444;
 }
 EOF
+fi
 sudo ln -sf /etc/nginx/sites-available/sems /etc/nginx/sites-enabled/sems
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo nginx -t && sudo systemctl reload nginx
