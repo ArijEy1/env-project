@@ -113,9 +113,12 @@ scp /tmp/r.tar.gz azureuser@<IP>:/tmp/ && ssh azureuser@<IP> 'sems install stg /
 - **OS**: unattended security upgrades enabled. Backups are root-only (0600).
 - **Off-VM backups**: nightly dumps also upload to Azure Blob Storage
   (`semsbkpf54aa2`/`db-backups`, UAE North) via the VM's managed identity —
-  no stored keys; blobs auto-delete after 90 days (lifecycle policy). Restore:
-  `azcopy copy 'https://semsbkpf54aa2.blob.core.windows.net/db-backups/<file>' . `
-  (on the VM), then `pg_restore -d <db> <file>`.
+  no stored keys; blobs auto-delete after 90 days (lifecycle policy). The
+  storage firewall denies all networks except the VM's subnet (VNet service
+  endpoint), so restores must run **on the VM** (or temporarily allowlist your
+  IP: `az storage account network-rule add --ip-address <your-ip> …`):
+  `azcopy copy 'https://semsbkpf54aa2.blob.core.windows.net/db-backups/<file>' .`
+  then `pg_restore -d <db> <file>`.
 - **Dependencies**: `npm audit` clean — next/react on latest, `overrides` pin
   patched sharp/postcss until Next ships them.
 
