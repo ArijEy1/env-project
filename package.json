@@ -5,6 +5,10 @@
     "apps/api",
     "apps/web"
   ],
+  "overrides": {
+    "sharp": "^0.35.0",
+    "postcss": "^8.5.10"
+  },
   "scripts": {
     "dev:api": "npm run start:dev --workspace api",
     "dev:web": "npm run dev --workspace web",
