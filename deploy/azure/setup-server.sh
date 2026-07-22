@@ -45,6 +45,11 @@ echo "==> SSH: no root login"
 echo 'PermitRootLogin no' | sudo tee /etc/ssh/sshd_config.d/60-no-root.conf > /dev/null
 sudo systemctl reload ssh
 
+echo "==> journal retention (app logs: 1G cap, 3 months)"
+sudo mkdir -p /etc/systemd/journald.conf.d
+printf '[Journal]\nSystemMaxUse=1G\nMaxRetentionSec=3month\n' | sudo tee /etc/systemd/journald.conf.d/50-sems.conf > /dev/null
+sudo systemctl restart systemd-journald
+
 echo "==> App directory + user permissions"
 sudo mkdir -p /opt/sems
 sudo chown azureuser:azureuser /opt/sems
