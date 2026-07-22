@@ -1,0 +1,187 @@
+#!/usr/bin/env bash
+# sems — manage SEMS deployments on this VM.
+#
+#   sems status                     overview of both environments
+#   sems install <env> <tarball>    install a release (used by CI)
+#   sems releases <env>             list installed releases
+#   sems rollback <env> [release]   switch back to previous (or named) release
+#   sems restart <env>              restart both services of an env
+#   sems logs <env> <api|web> [-f]  tail service logs
+#
+# Layout per environment (/opt/sems/<env>):
+#   releases/<id>/   immutable release trees (RELEASE.json inside)
+#   current          symlink to the active release
+#   shared/          api.env + web.env (secrets/config, survive releases)
+set -euo pipefail
+
+BASE=/opt/sems
+KEEP_RELEASES=5
+ENVS="prod stg"
+
+die() { echo "sems: $*" >&2; exit 1; }
+need_env() { [[ "$1" == "prod" || "$1" == "stg" ]] || die "unknown env '$1' (prod|stg)"; }
+
+env_port() { # <env> <api|web>
+  local f=$BASE/$1/shared/$2.env
+  grep -E '^PORT=' "$f" | cut -d= -f2
+}
+
+release_field() { # <release-dir> <field>
+  node -e "console.log(require('$1/RELEASE.json').$2 ?? '?')" 2>/dev/null || echo "?"
+}
+
+health() { # <env> -> prints "api: … / web: …", returns nonzero on failure
+  local api_port web_port ok=0
+  api_port=$(env_port "$1" api); web_port=$(env_port "$1" web)
+  # X-Forwarded-Proto avoids the app's FORCE_HTTPS redirect (TRUST_PROXY=1).
+  if out=$(curl -sf --max-time 10 -H 'X-Forwarded-Proto: https' \
+      "http://127.0.0.1:${api_port}/api/health") && [[ "$out" == *'"ok"'* ]]; then
+    echo "  api: $out"
+  else
+    echo "  api: FAIL (port $api_port${out:+, got: $out})"; ok=1
+  fi
+  local code
+  code=$(curl -so /dev/null --max-time 10 -w '%{http_code}' "http://127.0.0.1:${web_port}/" || true)
+  if [[ "$code" == "200" ]]; then echo "  web: 200"; else echo "  web: FAIL ($code, port $web_port)"; ok=1; fi
+  return $ok
+}
+
+cmd_status() {
+  echo "SEMS deployment status — $(hostname), $(date '+%Y-%m-%d %H:%M %Z')"
+  echo
+  for env in $ENVS; do
+    local dir=$BASE/$env
+    echo "── $env ─────────────────────────────"
+    if [[ -L $dir/current ]]; then
+      local rel; rel=$(readlink "$dir/current")
+      echo "  release: ${rel##*/}  (sha $(release_field "$dir/current" sha), built $(release_field "$dir/current" built_at))"
+    else
+      echo "  release: NONE DEPLOYED"
+    fi
+    for unit in sems-api@$env sems-web@$env; do
+      echo "  $unit: $(systemctl is-active "$unit" 2>/dev/null || true)"
+    done
+    [[ -L $dir/current ]] && health "$env" || true
+    echo
+  done
+  echo "── system ───────────────────────────"
+  echo "  disk: $(df -h /opt --output=used,avail | tail -1 | awk '{print $1" used, "$2" free"}')"
+  local b
+  b=$(ls -t $BASE/backups/*.dump 2>/dev/null | head -1 || true)
+  echo "  last db backup: ${b:-none}"
+  for d in medi.qzz.io stg.medi.qzz.io; do
+    if [[ -f /etc/letsencrypt/live/$d/cert.pem ]]; then
+      echo "  tls $d: $(sudo openssl x509 -enddate -noout -in /etc/letsencrypt/live/$d/cert.pem | cut -d= -f2)"
+    else
+      echo "  tls $d: no certificate"
+    fi
+  done
+}
+
+cmd_releases() {
+  need_env "$1"
+  local dir=$BASE/$1 cur=""
+  [[ -L $dir/current ]] && cur=$(basename "$(readlink "$dir/current")")
+  for r in $(ls -1 "$dir/releases" 2>/dev/null | sort -r); do
+    local mark=" "
+    [[ "$r" == "$cur" ]] && mark="*"
+    echo " $mark $r  (sha $(release_field "$dir/releases/$r" sha))"
+  done
+}
+
+activate() { # <env> <release-dir>  — flip symlink, restart, health-check
+  local env=$1 reldir=$2
+  ln -sfn "$reldir" "$BASE/$env/current"
+  sudo systemctl restart "sems-api@$env" "sems-web@$env"
+  sleep 5
+  if health "$env"; then
+    echo "sems: $env now on $(basename "$reldir")"
+  else
+    echo "sems: WARNING — $env health check failed on $(basename "$reldir")" >&2
+    echo "sems: previous releases are intact; use 'sems rollback $env' if needed" >&2
+    return 1
+  fi
+}
+
+cmd_install() { # <env> <tarball>
+  local env=$1 tar=$2
+  need_env "$env"; [[ -f "$tar" ]] || die "tarball not found: $tar"
+
+  # Serialize installs — one build/install at a time on this VM.
+  exec 200>$BASE/.deploy.lock; flock 200
+
+  local tmp; tmp=$(mktemp -d "$BASE/$env/releases/.incoming.XXXX")
+  tar -xzf "$tar" -C "$tmp"
+  [[ -f "$tmp/RELEASE.json" ]] || { rm -rf "$tmp"; die "tarball has no RELEASE.json"; }
+  local id; id=$(release_field "$tmp" id)
+  [[ "$id" != "?" ]] || { rm -rf "$tmp"; die "RELEASE.json has no id"; }
+  local reldir=$BASE/$env/releases/$id
+  rm -rf "$reldir"; mv "$tmp" "$reldir"
+  echo "sems: installing $env release $id"
+
+  # node_modules: reuse from current release when the lockfile is identical.
+  local cur=$BASE/$env/current
+  if [[ -L $cur && -d $cur/node_modules ]] && \
+     cmp -s "$cur/package-lock.json" "$reldir/package-lock.json"; then
+    echo "sems: lockfile unchanged — hardlinking node_modules from current release"
+    cp -al "$cur/node_modules" "$reldir/node_modules"
+    for ws in api web; do
+      [[ -d $cur/apps/$ws/node_modules ]] && cp -al "$cur/apps/$ws/node_modules" "$reldir/apps/$ws/node_modules"
+    done
+  else
+    echo "sems: installing production dependencies"
+    (cd "$reldir" && npm ci --omit=dev --no-audit --no-fund)
+  fi
+
+  echo "sems: running migrations + content import"
+  (
+    cd "$reldir/apps/api"
+    set -a; . "$BASE/$env/shared/api.env"; set +a
+    node dist/database/migrate.js
+    node dist/database/import-sems-v04.js
+  )
+
+  activate "$env" "$reldir"
+
+  # Prune old releases (never the active one).
+  local active; active=$(basename "$(readlink "$BASE/$env/current")")
+  ls -1 "$BASE/$env/releases" | sort -r | tail -n +$((KEEP_RELEASES+1)) | while read -r old; do
+    [[ "$old" == "$active" ]] && continue
+    echo "sems: pruning old release $old"
+    rm -rf "$BASE/$env/releases/$old"
+  done
+}
+
+cmd_rollback() { # <env> [release]
+  local env=$1 target=${2:-}
+  need_env "$env"
+  local dir=$BASE/$env
+  [[ -L $dir/current ]] || die "$env has no active release"
+  local cur; cur=$(basename "$(readlink "$dir/current")")
+  if [[ -z "$target" ]]; then
+    target=$(ls -1 "$dir/releases" | sort -r | grep -vx "$cur" | head -1 || true)
+    [[ -n "$target" ]] || die "no previous release to roll back to"
+  fi
+  [[ -d $dir/releases/$target ]] || die "release not found: $target (see 'sems releases $env')"
+  echo "sems: rolling $env back: $cur -> $target"
+  echo "sems: note — database migrations are NOT reverted"
+  activate "$env" "$dir/releases/$target"
+}
+
+cmd_restart() { need_env "$1"; sudo systemctl restart "sems-api@$1" "sems-web@$1"; sleep 3; health "$1"; }
+
+cmd_logs() { # <env> <api|web> [-f]
+  need_env "$1"
+  [[ "$2" == "api" || "$2" == "web" ]] || die "usage: sems logs <env> <api|web> [-f]"
+  journalctl -u "sems-$2@$1" -n 100 ${3:-}
+}
+
+case "${1:-}" in
+  status)   cmd_status ;;
+  install)  shift; cmd_install "$@" ;;
+  releases) shift; cmd_releases "$@" ;;
+  rollback) shift; cmd_rollback "$@" ;;
+  restart)  shift; cmd_restart "$@" ;;
+  logs)     shift; cmd_logs "$@" ;;
+  *) sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
+esac

@@ -5,7 +5,8 @@
   "scripts": {
     "start": "node dist/main.js",
     "start:dev": "ts-node-dev --respawn --transpile-only src/main.ts",
-    "build": "tsc -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.build.json && npm run build:seed",
+    "build:seed": "node -e \"require('fs').cpSync('src/database/seed/sems-v04', 'dist/database/seed/sems-v04', {recursive: true})\"",
     "migrate": "ts-node --transpile-only -P tsconfig.build.json src/database/migrate.ts",
     "migrate:prod": "node dist/database/migrate.js",
     "import:sems": "ts-node --transpile-only -P tsconfig.build.json src/database/import-sems-v04.ts",
