@@ -37,16 +37,17 @@ jobs:
           ssh-keyscan -H "${{ secrets.VM_HOST }}" >> ~/.ssh/known_hosts
 
       - name: Upload release
+        # Per-run file names: prod and staging deploys may run concurrently.
         run: |
-          scp /tmp/release.tar.gz "azureuser@${{ secrets.VM_HOST }}:/tmp/release-${DEPLOY_ENV}.tar.gz"
-          scp deploy/azure/sems "azureuser@${{ secrets.VM_HOST }}:/tmp/sems"
+          scp /tmp/release.tar.gz "azureuser@${{ secrets.VM_HOST }}:/tmp/release-${{ github.run_id }}-${DEPLOY_ENV}.tar.gz"
+          scp deploy/azure/sems "azureuser@${{ secrets.VM_HOST }}:/tmp/sems-${{ github.run_id }}"
 
       - name: Install release (migrate, activate, health-check)
         run: |
           ssh "azureuser@${{ secrets.VM_HOST }}" \
-            "sudo install -m 0755 /tmp/sems /usr/local/bin/sems \
-             && sems install ${DEPLOY_ENV} /tmp/release-${DEPLOY_ENV}.tar.gz \
-             && rm -f /tmp/release-${DEPLOY_ENV}.tar.gz /tmp/sems"
+            "sudo install -m 0755 /tmp/sems-${{ github.run_id }} /usr/local/bin/sems \
+             && sems install ${DEPLOY_ENV} /tmp/release-${{ github.run_id }}-${DEPLOY_ENV}.tar.gz \
+             && rm -f /tmp/release-${{ github.run_id }}-${DEPLOY_ENV}.tar.gz /tmp/sems-${{ github.run_id }}"
 
       - name: Deployment summary
         if: always()
